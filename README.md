@@ -1,28 +1,23 @@
-# MindQuest Arcade
+# MindQuest Arcade — Memory Lab v0.2
 
-Playable educational-game MVP for testing.
+## What is included
+- 20 progressive Memory Lab levels.
+- 4 mini-activities per level = 80 activities.
+- Automatic level progression after all 4 activities are passed.
+- A failed activity fails the level and restarts it from Activity 1.
+- Six memory activity types: Visual Recall, Sequence Recall, Location Memory, Pair Memory, Feature Memory and Working Memory.
+- Age-specific memory loads and timing for ages 3–5, 6–8, 9–11, 12–14 and 15–18.
+- Difficulty progressively increases through memory load, distractors, sequence length, spatial grids, feature combinations and response windows.
+- No external libraries.
 
-## Run locally
-Open `index.html` in a browser.
+## Timing approach
+The timing is deliberately conservative: younger learners receive longer study and response windows, while older pathways gradually receive shorter windows and higher memory loads. These settings are intended for a playable educational prototype and should be tuned further using real learner performance data rather than treated as a clinically validated optimum.
 
-## Deploy to GitHub Pages
-1. Create a GitHub repository.
-2. Upload all files in this folder.
-3. Enable GitHub Pages from the repository's Settings > Pages.
-4. Select the branch containing `index.html` as the deployment source.
+## Files
+- index.html
+- styles.css
+- app.js
+- memory-lab.js
 
-## Current playable games
-- Memory Lab — cognitive
-- Detective — cognitive
-- Reflex Arena — psychomotor
-- Builder — cognitive
-- Team Quest — behavioural
-
-## Progression rule
-Every game has 20 levels.
-- Successful completion automatically starts the next level.
-- Each level increases challenge using game-specific difficulty variables.
-- A failed level does not advance.
-- XP and streaks increase on successful completion.
-
-This is an MVP foundation; persistent accounts, cloud saves, audio, analytics, parental controls, richer content and production-grade assessment logic should be added before public release.
+## Deploy
+Replace the corresponding files in the MindQuest-Arcade GitHub Pages repository and commit/push them to `main`.

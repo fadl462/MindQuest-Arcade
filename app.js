@@ -87,7 +87,7 @@ function levelFailed(){
 }
 function nextChallenge(){
   clearTimeout(state.timer); updateGlobal();
-  if(state.game==="memory")memory(); else if(state.game==="detective")detective();
+  if(state.game==="memory")(window.MQMemoryLab?window.MQMemoryLab.run:memory)(); else if(state.game==="detective")detective();
   else if(state.game==="reflex")reflex(); else if(state.game==="builder")builder(); else team();
 }
 function memory(){
@@ -160,5 +160,5 @@ function finishGame(){
 $("back-home").addEventListener("click",()=>{clearTimeout(state.timer);state.active=false;show("home");});
 $("result-home").addEventListener("click",()=>show("home"));
 $("play-again").addEventListener("click",()=>startGame(state.game));
-renderAges(); renderGames(); updateGlobal();
+window.MQ={state,$,ages,updateGlobal,levelComplete,levelFailed,nextChallenge}; renderAges(); renderGames(); updateGlobal();
 })();
