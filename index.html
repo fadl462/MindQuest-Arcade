@@ -17,84 +17,25 @@
         <span>🏅 <b id="badges">0</b></span>
       </div>
     </header>
-
     <main>
       <section id="home" class="screen active">
         <div class="hero">
-          <div>
-            <p class="eyebrow">PLAY • LEARN • MASTER</p>
-            <h1>Welcome to MindQuest</h1>
-            <p class="lead">A game adventure designed to build thinking, behaviour and coordination skills.</p>
-          </div>
+          <div><p class="eyebrow">PLAY • LEARN • MASTER</p><h1>Welcome to MindQuest</h1><p class="lead">A game adventure designed to build thinking, behaviour and coordination skills.</p></div>
           <div class="hero-orb">🚀</div>
         </div>
-
-        <div class="card">
-          <h2>Choose your age pathway</h2>
-          <div id="age-options" class="age-grid"></div>
-        </div>
-
-        <div class="card">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">GAME ARCADE</p>
-              <h2>Choose a challenge</h2>
-            </div>
-            <span id="path-label" class="pill">Ages 3–5</span>
-          </div>
-          <div id="game-list" class="game-grid"></div>
-        </div>
+        <div class="card"><h2>Choose your age pathway</h2><div id="age-options" class="age-grid"></div></div>
+        <div class="card"><div class="section-heading"><div><p class="eyebrow">GAME ARCADE</p><h2>Choose a challenge</h2></div><span id="path-label" class="pill">Ages 3–5</span></div><div id="game-list" class="game-grid"></div></div>
       </section>
-
       <section id="game" class="screen">
-        <div class="game-head">
-          <button id="back-home" class="ghost-btn">← Game Arcade</button>
-          <div class="game-title">
-            <span id="game-icon">🧠</span>
-            <div><p id="game-skill" class="eyebrow">COGNITIVE</p><h2 id="game-name">Memory Lab</h2></div>
-          </div>
-          <div class="level-box">LEVEL <b id="level">1</b><small>/ 20</small></div>
-        </div>
-
-        <div class="progress-wrap">
-          <div class="progress-line"><span id="progress"></span></div>
-          <div class="progress-meta"><span id="progress-label">Level 1 of 20</span><span id="difficulty">Difficulty 1.0×</span></div>
-        </div>
-
-        <div class="game-card">
-          <div class="hud">
-            <span>❤️ <b id="lives">3</b></span>
-            <span>🔥 <b id="game-streak">0</b></span>
-            <span>⭐ <b id="score">0</b></span>
-          </div>
-          <div id="game-stage"></div>
-          <div id="game-message" class="game-message" aria-live="polite"></div>
-        </div>
+        <div class="game-head"><button id="back-home" class="ghost-btn">← Save &amp; Game Arcade</button><div class="game-title"><span id="game-icon">🧠</span><div><p id="game-skill" class="eyebrow">COGNITIVE</p><h2 id="game-name">Memory Lab</h2></div></div><div class="level-box">LEVEL <b id="level">1</b><small>/ 20</small></div></div>
+        <div class="progress-wrap"><div class="progress-line"><span id="progress"></span></div><div class="progress-meta"><span id="progress-label">Level 1 of 20</span><span id="difficulty">Difficulty 1.0×</span></div></div>
+        <div class="game-card"><div class="hud"><span>❤️ <b id="lives">3</b></span><span>🔥 <b id="game-streak">0</b></span><span>⭐ <b id="score">0</b></span></div><div id="game-stage"></div><div id="game-message" class="game-message" aria-live="polite"></div></div>
       </section>
-
-      <section id="result" class="screen">
-        <div class="result-card">
-          <div id="result-icon" class="result-icon">🏆</div>
-          <p class="eyebrow">MISSION COMPLETE</p>
-          <h1 id="result-title">Amazing work!</h1>
-          <p id="result-text"></p>
-          <div class="result-stats">
-            <div><span>XP earned</span><b id="result-xp">0</b></div>
-            <div><span>Levels</span><b id="result-levels">20</b></div>
-            <div><span>Best streak</span><b id="result-streak">0</b></div>
-          </div>
-          <div class="result-actions">
-            <button id="play-again" class="primary-btn">Play Again</button>
-            <button id="result-home" class="ghost-btn">Back to Arcade</button>
-          </div>
-        </div>
-      </section>
+      <section id="result" class="screen"><div class="result-card"><div id="result-icon" class="result-icon">🏆</div><p class="eyebrow">MISSION COMPLETE</p><h1 id="result-title">Amazing work!</h1><p id="result-text"></p><div class="result-stats"><div><span>XP earned</span><b id="result-xp">0</b></div><div><span>Levels</span><b id="result-levels">20</b></div><div><span>Best streak</span><b id="result-streak">0</b></div></div><div class="result-actions"><button id="play-again" class="primary-btn">Play Again</button><button id="result-home" class="ghost-btn">Back to Arcade</button></div></div></section>
     </main>
   </div>
   <script src="app.js?v=0.9"></script>
   <script>
-    // Age pathway must not silently reset to Skill Builders on refresh.
-    // Default is Little Explorers (3–5); once a pathway is selected, remember it.
     (() => {
       const mq = window.MQ;
       if (!mq) return;
@@ -112,6 +53,6 @@
   </script>
   <script src="memory-lab.js?v=0.9"></script>
   <script src="detective.js?v=1.2"></script>
-  <script src="progress.js?v=1.0"></script>
+  <script src="progress.js?v=1.7"></script>
 </body>
 </html>

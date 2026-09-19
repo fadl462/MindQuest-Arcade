@@ -8,11 +8,13 @@
   const AGE_KEY = 'mindquest-age-pathway';
   const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { return {}; } })();
   let suppressSave = false;
+  let arcadeExitSave = false;
 
   const keyFor = (age, game) => `${age}:${game}`;
   const gameName = id => ({memory:'Memory Lab', detective:'Detective', reflex:'Reflex Arena', builder:'Builder', team:'Team Quest'})[id] || id;
+
   const save = () => {
-    if (suppressSave || !MQ.state.game) return;
+    if (suppressSave || !MQ.state.game || arcadeExitSave) return;
     const s = MQ.state;
     saved[keyFor(s.age, s.game)] = {
       age:s.age, game:s.game, level:s.level, lives:s.lives, streak:s.streak,
@@ -27,6 +29,28 @@
       localStorage.setItem(AGE_KEY, String(s.age));
     } catch {}
   };
+
+  const saveAndExit = () => {
+    const s = MQ.state;
+    if (!s.game) return;
+    // Capture the checkpoint BEFORE app.js resets the transient game state.
+    saved[keyFor(s.age, s.game)] = {
+      age:s.age, game:s.game, level:s.level, lives:s.lives, streak:s.streak,
+      bestStreak:s.bestStreak, xp:s.xp, score:s.score, earnedThisRun:s.earnedThisRun,
+      detectiveActivity:Number.isInteger(s.detectiveActivity)?s.detectiveActivity:0,
+      memoryActivity:Number.isInteger(s.memoryActivity)?s.memoryActivity:0,
+      skills:s.skills
+    };
+    try {
+      localStorage.setItem(STORE, JSON.stringify(saved));
+      localStorage.setItem(SESSION, JSON.stringify({age:s.age,game:s.game}));
+      localStorage.setItem(AGE_KEY, String(s.age));
+    } catch {}
+    // Prevent the 400ms autosave from overwriting the checkpoint with app.js's reset-to-level-1 state.
+    arcadeExitSave = true;
+    setTimeout(() => { arcadeExitSave = false; }, 1500);
+  };
+
   const restore = (p) => {
     const s = MQ.state;
     Object.assign(s, p);
@@ -35,12 +59,12 @@
     s.skills = p.skills || s.skills;
     MQ.updateGlobal();
   };
+
   const showGame = () => {
     document.querySelectorAll('.screen').forEach(x => x.classList.remove('active'));
     document.getElementById('game').classList.add('active');
   };
 
-  // Restore the selected age immediately and keep it across refreshes.
   try {
     const age = Number(localStorage.getItem(AGE_KEY));
     if (Number.isInteger(age) && age >= 0 && age < MQ.ages.length) {
@@ -50,31 +74,32 @@
     }
   } catch {}
 
-  // Save frequently so refreshes/browser closes do not erase progress.
+  // Continuous autosave protects refreshes and accidental tab closes.
   setInterval(save, 400);
   window.addEventListener('beforeunload', save);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
 
-  // If the player is on a game and refreshes, resume that game at the saved level/activity.
+  // Refresh while inside a game resumes the saved session. Going to the Arcade does not auto-open it.
   let session = null;
   try { session = JSON.parse(localStorage.getItem(SESSION) || 'null'); } catch {}
-  if (session) {
+  const onFreshLoad = performance.getEntriesByType('navigation')[0]?.type === 'reload';
+  if (session && onFreshLoad) {
     const p = saved[keyFor(session.age, session.game)];
     if (p && p.level >= 1 && p.level <= 20) {
       setTimeout(() => {
         restore(p);
-        const g = document.querySelector('#game-icon');
-        const n = document.querySelector('#game-name');
-        const sk = document.querySelector('#game-skill');
         const meta = {memory:['🧠','Memory Lab','COGNITIVE'],detective:['🔎','Detective','COGNITIVE'],reflex:['⚡','Reflex Arena','PSYCHOMOTOR'],builder:['🧩','Builder','COGNITIVE'],team:['🤝','Team Quest','BEHAVIOURAL']}[p.game];
-        if (meta) { g.textContent=meta[0]; n.textContent=meta[1]; sk.textContent=meta[2]; }
+        if (meta) {
+          document.getElementById('game-icon').textContent=meta[0];
+          document.getElementById('game-name').textContent=meta[1];
+          document.getElementById('game-skill').textContent=meta[2];
+        }
         showGame();
         MQ.nextChallenge();
       }, 80);
     }
   }
 
-  // Add a clear Resume button to the arcade home screen.
   const homeCard = document.querySelector('#home .card:last-of-type');
   if (homeCard) {
     const resumeWrap = document.createElement('div');
@@ -91,6 +116,7 @@
       resumeWrap.innerHTML = `<div class="resume-card" style="border:1px solid var(--line);border-radius:16px;padding:14px;background:#f8f9fc;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><strong>Continue ${gameName(p.game)}</strong><div style="color:var(--muted);font-size:13px;margin-top:3px">Ages ${MQ.ages[p.age].range} • Level ${p.level}/20 • ${p.xp} XP</div></div><button id="resume-last" class="primary-btn" type="button">Resume Game →</button></div>`;
       document.getElementById('resume-last').onclick = () => {
         suppressSave = true;
+        arcadeExitSave = false;
         restore(p);
         suppressSave = false;
         const meta = {memory:['🧠','Memory Lab','COGNITIVE'],detective:['🔎','Detective','COGNITIVE'],reflex:['⚡','Reflex Arena','PSYCHOMOTOR'],builder:['🧩','Builder','COGNITIVE'],team:['🤝','Team Quest','BEHAVIOURAL']}[p.game];
@@ -106,14 +132,11 @@
     setInterval(renderResume, 1000);
   }
 
-  // Preserve the saved checkpoint when the player uses "Game Arcade".
+  // Clicking Game Arcade deliberately saves the current checkpoint first.
   document.getElementById('back-home')?.addEventListener('click', () => {
-    save();
-    suppressSave = true;
-    setTimeout(() => { suppressSave = false; }, 1200);
+    saveAndExit();
   }, true);
 
-  // Age buttons should update the persistent pathway immediately.
   document.querySelectorAll('.age-btn').forEach((b,i) => b.addEventListener('click', () => {
     try { localStorage.setItem(AGE_KEY, String(i)); } catch {}
   }));
