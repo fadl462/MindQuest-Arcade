@@ -1,251 +1,49 @@
 (() => {
 "use strict";
-
-const MQ = window.MQ;
-if (!MQ) return;
-const S = MQ.state;
-const $ = MQ.$;
-const shuffle = arr => [...arr].sort(() => Math.random() - .5);
-const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
-
-const ICONS = ["🐶","🚲","🍎","⭐","🎈","🐟","🚀","🌳","⚽","🎸","🦁","🍕","🌈","🐼","🦋","🎯","🌻","🍉","🐢","🚌","🧸","🥕","🎁","🐝","🏀","🌙","🍓","🐱","🎵","🪁"];
-const WORDS = ["river","market","garden","school","bridge","forest","island","window","village","planet","basket","lantern","camera","library","rainbow","journey","harbour","mountain","festival","ocean"];
-const COLORS = ["red","blue","green","yellow","orange","purple","pink","teal"];
-const SHAPES = ["●","■","▲","◆","★","⬟","⬢","✦"];
-
-const PLANS = [
- ["visual","sequence","location","feature"],["visual","pairs","location","sequence"],
- ["sequence","visual","location","pairs"],["pairs","location","sequence","feature"],
- ["visual","sequence","working","location"],["location","pairs","working","sequence"],
- ["feature","visual","location","working"],["sequence","working","pairs","location"],
- ["location","feature","sequence","working"],["pairs","working","location","feature"],
- ["working","sequence","feature","location"],["feature","pairs","working","sequence"],
- ["location","working","feature","pairs"],["sequence","feature","location","working"],
- ["working","pairs","sequence","feature"],["feature","location","working","sequence"],
- ["working","feature","pairs","location"],["sequence","working","feature","pairs"],
- ["feature","working","sequence","location"]
+const MQ=window.MQ;if(!MQ)return;const S=MQ.state,$=MQ.$;
+const shuffle=a=>[...a].sort(()=>Math.random()-.5),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const ICONS=["🐶","🚲","🍎","⭐","🎈","🐟","🚀","🌳","⚽","🎸","🦁","🍕","🌈","🐼","🦋","🎯","🌻","🍉","🐢","🚌","🧸","🥕","🎁","🐝","🏀","🌙","🍓","🐱","🎵","🪁","🧃","🍪","🛴","🐘","🌺","🎨"];
+const WORDS=["river","market","garden","school","bridge","forest","island","window","village","planet","basket","lantern","camera","library","rainbow","journey","harbour","mountain","festival","ocean","pencil","family","morning","farmer","music","village","doctor","circle","engine","travel"];
+const COLORS=["red","blue","green","yellow","orange","purple","pink","teal"];
+const SHAPES=["●","■","▲","◆","★","⬟","⬢","✦"];
+const PLANS=[
+["visual","sequence","location","feature"],["pairs","change","location","visual"],["sequence","category","pairs","feature"],["location","order","working","change"],["visual","pairs","count","sequence"],
+["feature","location","category","working"],["change","sequence","order","pairs"],["visual","count","feature","location"],["category","working","change","sequence"],["pairs","order","visual","feature"],
+["location","count","working","change"],["sequence","category","feature","order"],["visual","pairs","location","working"],["change","count","sequence","feature"],["order","category","pairs","location"],
+["working","visual","change","count"],["feature","order","category","sequence"],["location","pairs","working","change"],["count","visual","feature","order"],["category","sequence","location","working"]
 ];
-
-const TYPE_INFO = {
- visual:["Visual Recall","Study the objects, then find every object you saw.","VISUAL MEMORY"],
- sequence:["Sequence Recall","Watch the order carefully, then rebuild it exactly.","SEQUENCING"],
- location:["Location Memory","Remember where each object was placed on the board.","SPATIAL MEMORY"],
- pairs:["Pair Memory","Remember which cards belong together.","ASSOCIATION"],
- feature:["Feature Memory","Remember two details at once: shape and colour.","DETAIL MEMORY"],
- working:["Working Memory","Hold information in mind while it changes.","WORKING MEMORY"]
+const INFO={
+visual:["Visual Recall","Remember the objects, then find every object you saw.","VISUAL MEMORY"],
+sequence:["Sequence Recall","Remember the exact order of the objects.","SEQUENCING"],
+location:["Location Memory","Remember where each object appeared.","SPATIAL MEMORY"],
+pairs:["Pair Memory","Remember which cards belong together.","ASSOCIATION"],
+feature:["Feature Memory","Remember the exact shape and colour together.","DETAIL MEMORY"],
+working:["Working Memory","Hold information in mind while part of it changes.","WORKING MEMORY"],
+change:["Change Detective","Remember the scene, then spot what changed.","CHANGE DETECTION"],
+category:["Category Recall","Remember which objects belonged to a named group.","CATEGORICAL MEMORY"],
+order:["Order Builder","Remember positions in an ordered set, then rebuild them.","ORDER MEMORY"],
+count:["Count & Recall","Remember how many times each object appeared.","QUANTITY MEMORY"]
 };
-
-function ageConfig(){
-  return [
-    {show:6200,response:22000,count:3,grid:3},
-    {show:5000,response:18000,count:4,grid:3},
-    {show:4100,response:14500,count:5,grid:4},
-    {show:3500,response:12000,count:6,grid:4},
-    {show:3100,response:10500,count:6,grid:5}
-  ][S.age];
-}
-function spec(){
-  const a=ageConfig(), p=(S.level-1)/19;
-  const count=clamp(a.count+Math.floor(S.level/5),a.count,a.count+5);
-  const show=Math.round(a.show-(a.show*.28*p));
-  const response=Math.round(a.response-(a.response*.18*p));
-  return {count,show,response};
-}
-function header(type, subtitleOverride){
-  const info=TYPE_INFO[type];
-  return '<div class="memory-lab-head"><div><span class="memory-kind">'+info[2]+'</span><h3>'+info[0]+'</h3><p class="memory-sub">'+(subtitleOverride||info[1])+'</p></div><div class="activity-chip">Activity '+(S.memoryActivity+1)+'/4</div></div>';
-}
-function begin(type, draw){
-  S.active=false;
-  S.memoryRoundToken=(S.memoryRoundToken||0)+1;
-  const token=S.memoryRoundToken;
-  draw(spec(),token);
-}
-function deadline(ms){
-  S.timer=setTimeout(()=>{if(S.active)fail();},ms);
-}
-function fail(){
-  if (!S.active) return;
-  S.memoryMistakes=(S.memoryMistakes||0)+1;
-  MQ.levelFailed();
-}
-function completeActivity(){
-  if (!S.active) return;
-  S.active=false;
-  clearTimeout(S.timer);
-  S.memoryCorrect=(S.memoryCorrect||0)+1;
-  const last=S.memoryActivity===3;
-  $("game-message").textContent=last ? "✓ Four memory activities complete!": "✓ Activity "+(S.memoryActivity+1)+" complete. Loading the next activity…";
-  if(last){
-    S.timer=setTimeout(()=>{S.memoryActivity=0;MQ.levelComplete();},650);
-  }else{
-    S.memoryActivity++;
-    S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge();},650);
-  }
-}
-
-function visual(){
-  begin("visual",(sp,token)=>{
-    const answer=shuffle(ICONS).slice(0,sp.count);
-    const distract=shuffle(ICONS.filter(x=>!answer.includes(x))).slice(0,clamp(3+Math.floor(S.level/4),3,8));
-    $("game-stage").innerHTML='<div class="memory-wrap">'+header("visual")+
-      '<div class="memory-timer">Study for <b>'+(sp.show/1000).toFixed(1)+' seconds</b></div>'+
-      '<div class="memory-items memory-study">'+answer.map(x=>'<div class="memory-item">'+x+'</div>').join("")+'</div>'+
-      '<div class="memory-tip">Take in the whole set. The next screen will test your recall.</div></div>';
-    S.timer=setTimeout(()=>{
-      if(token!==S.memoryRoundToken)return;
-      $("game-stage").innerHTML='<div class="memory-wrap">'+header("visual","Select every object you remember. One wrong choice ends this level.")+
-        '<div class="memory-timer">Response window: <b>'+Math.round(sp.response/1000)+' seconds</b></div><div id="choices" class="memory-items"></div></div>';
-      const box=$("choices");let found=0;S.active=true;
-      shuffle(answer.concat(distract)).forEach(x=>{
-        const b=document.createElement("button");b.type="button";b.className="choice";b.textContent=x;
-        b.addEventListener("click",()=>{if(!S.active||b.disabled)return;b.disabled=true;
-          if(!answer.includes(x)){b.classList.add("bad");fail();return;}
-          b.classList.add("good");found++;if(found===answer.length)completeActivity();
-        });box.appendChild(b);
-      });deadline(sp.response);
-    },sp.show);
-  });
-}
-
-function sequence(){
-  begin("sequence",(sp,token)=>{
-    const len=clamp(sp.count,3,10), seq=shuffle(ICONS).slice(0,len);
-    $("game-stage").innerHTML='<div class="memory-wrap">'+header("sequence")+
-      '<div class="memory-timer">Watch the sequence for <b>'+(sp.show/1000).toFixed(1)+' seconds</b></div>'+
-      '<div class="sequence-display">'+seq.map(x=>'<span class="sequence-token">'+x+'</span>').join("")+'</div></div>';
-    S.timer=setTimeout(()=>{
-      if(token!==S.memoryRoundToken)return;
-      $("game-stage").innerHTML='<div class="memory-wrap">'+header("sequence","Tap the objects in the exact order you saw them.")+
-        '<div class="memory-timer">Response window: <b>'+Math.round(sp.response/1000)+' seconds</b></div>'+
-        '<div id="sequence-choices" class="memory-items"></div><div id="sequence-picked" class="picked-sequence"></div></div>';
-      const box=$("sequence-choices"),picked=$("sequence-picked");let next=0;S.active=true;
-      shuffle(seq).forEach(x=>{
-        const b=document.createElement("button");b.type="button";b.className="choice";b.textContent=x;
-        b.addEventListener("click",()=>{if(!S.active||b.disabled)return;
-          if(x!==seq[next]){b.classList.add("bad");fail();return;}
-          b.disabled=true;b.classList.add("good");picked.textContent+=(next?" ":"")+x;next++;
-          if(next===seq.length)completeActivity();
-        });box.appendChild(b);
-      });deadline(sp.response);
-    },sp.show);
-  });
-}
-
-function location(){
-  begin("location",(sp,token)=>{
-    const size=S.level<8?3:S.level<15?4:5, slots=size*size;
-    const count=clamp(Math.min(sp.count,Math.floor(slots*.55)),3,Math.min(10,slots-1));
-    const positions=shuffle(Array.from({length:slots},(_,i)=>i)).slice(0,count);
-    const icons=shuffle(ICONS).slice(0,count);
-    const answer=positions.map((slot,i)=>({slot,icon:icons[i]}));
-    $("game-stage").innerHTML='<div class="memory-wrap">'+header("location")+
-      '<div class="memory-timer">Remember the objects and their locations for <b>'+(sp.show/1000).toFixed(1)+' seconds</b></div>'+
-      '<div class="memory-board" style="--grid:'+size+'">'+Array.from({length:slots},(_,i)=>{
-        const a=answer.find(x=>x.slot===i);return '<div class="memory-cell">'+(a?a.icon:"")+'</div>';
-      }).join("")+'</div></div>';
-    S.timer=setTimeout(()=>{
-      if(token!==S.memoryRoundToken)return;
-      $("game-stage").innerHTML='<div class="memory-wrap">'+header("location","Choose an object, then choose the place where you saw it.")+
-        '<div class="location-recall"><div id="location-icons" class="location-icons"></div><div id="location-grid" class="memory-board" style="--grid:'+size+'"></div></div></div>';
-      const ib=$("location-icons"),gb=$("location-grid");let chosen=null,placed=0;S.active=true;
-      shuffle(icons).forEach(icon=>{
-        const b=document.createElement("button");b.type="button";b.className="location-icon";b.textContent=icon;
-        b.addEventListener("click",()=>{if(!S.active)return;document.querySelectorAll(".location-icon").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");chosen=icon;});
-        ib.appendChild(b);
-      });
-      for(let i=0;i<slots;i++){
-        const b=document.createElement("button");b.type="button";b.className="memory-cell recall-cell";
-        b.addEventListener("click",()=>{if(!S.active||!chosen||b.disabled)return;
-          const target=answer.find(x=>x.slot===i);
-          if(!target||target.icon!==chosen){b.classList.add("bad");fail();return;}
-          b.textContent=chosen;b.classList.add("placed");b.disabled=true;placed++;
-          const source=[...document.querySelectorAll(".location-icon")].find(x=>x.textContent===chosen);
-          if(source){source.disabled=true;source.classList.add("used");}
-          chosen=null;if(placed===answer.length)completeActivity();
-        });gb.appendChild(b);
-      }
-      deadline(sp.response*1.25);
-    },sp.show);
-  });
-}
-
-function pairs(){
-  begin("pairs",(sp,token)=>{
-    const pairCount=clamp(Math.floor(sp.count/2)+2,3,7),chosen=shuffle(ICONS).slice(0,pairCount);
-    $("game-stage").innerHTML='<div class="memory-wrap">'+header("pairs")+
-      '<div class="memory-timer">Study the matching pairs for <b>'+(sp.show/1000).toFixed(1)+' seconds</b></div>'+
-      '<div class="memory-items">'+shuffle(chosen.flatMap(x=>[x,x])).map(x=>'<div class="memory-item">'+x+'</div>').join("")+'</div></div>';
-    S.timer=setTimeout(()=>{
-      if(token!==S.memoryRoundToken)return;
-      $("game-stage").innerHTML='<div class="memory-wrap">'+header("pairs","Turn over two cards at a time and match every pair.")+
-        '<div class="memory-timer">Response window: <b>'+Math.round(sp.response/1000)+' seconds</b></div><div id="pair-grid" class="pair-grid"></div></div>';
-      const pb=$("pair-grid");let first=null,matched=0,busy=false;S.active=true;
-      shuffle(chosen.flatMap((icon,id)=>[{id,icon},{id,icon}])).forEach(card=>{
-        const b=document.createElement("button");b.type="button";b.className="pair-card";b.innerHTML="<span>?</span>";
-        b.addEventListener("click",()=>{
-          if(!S.active||busy||b.classList.contains("matched")||b===first?.b)return;
-          b.classList.add("flipped");b.innerHTML="<span>"+card.icon+"</span>";
-          if(!first){first={b,card};return;}
-          busy=true;
-          if(first.card.id===card.id){first.b.classList.add("matched");b.classList.add("matched");matched++;first=null;busy=false;if(matched===chosen.length)completeActivity();}
-          else{const old=first.b;setTimeout(()=>{old.classList.remove("flipped");b.classList.remove("flipped");old.innerHTML="<span>?</span>";b.innerHTML="<span>?</span>";first=null;busy=false;},420);}
-        });pb.appendChild(b);
-      });deadline(sp.response*1.35);
-    },sp.show);
-  });
-}
-
-function feature(){
-  begin("feature",(sp,token)=>{
-    const count=clamp(sp.count,3,8),colors=shuffle(COLORS).slice(0,count),shapes=shuffle(SHAPES).slice(0,count);
-    const items=colors.map((color,i)=>({color,shape:shapes[i]}));
-    $("game-stage").innerHTML='<div class="memory-wrap">'+header("feature")+
-      '<div class="memory-timer">Remember shape and colour shape and colour for <b>'+(sp.show/1000).toFixed(1)+' seconds</b>.</div>'+
-      '<div class="feature-items">'+items.map(x=>'<div class="feature-item"><span>'+x.shape+'</span><small>'+x.color+'</small></div>').join("")+'</div></div>';
-    S.timer=setTimeout(()=>{
-      if(token!==S.memoryRoundToken)return;
-      const distract=items.slice(0,Math.min(3,items.length)).map((x,i)=>({color:x.color,shape:shapes[(i+1)%items.length],correct:false}));
-      const choices=shuffle(items.map(x=>({color:x.color,shape:x.shape,correct:true})).concat(distract));
-      $("game-stage").innerHTML='<div class="memory-wrap">'+header("feature","Select every exact shape-and-colour combination you saw.")+
-        '<div class="memory-timer">Response window: <b>'+Math.round(sp.response/1000)+' seconds</b></div><div id="feature-choices" class="feature-items"></div></div>';
-      const box=$("feature-choices");let found=0;S.active=true;
-      choices.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="feature-choice";b.innerHTML="<span>"+x.shape+"</span><small>"+x.color+"</small>";
-        b.addEventListener("click",()=>{if(!S.active||b.disabled)return;b.disabled=true;if(!x.correct){b.classList.add("bad");fail();return;}b.classList.add("good");found++;if(found===items.length)completeActivity();});box.appendChild(b);});
-      deadline(sp.response);
-    },sp.show);
-  });
-}
-
-function working(){
-  begin("working",(sp,token)=>{
-    const len=clamp(sp.count,4,10),seq=shuffle(WORDS).slice(0,len);
-    const removeCount=S.level>=15?2:1;
-    $("game-stage").innerHTML='<div class="memory-wrap">'+header("working")+
-      '<div class="memory-timer">Hold this sequence in mind for <b>'+(sp.show/1000).toFixed(1)+' seconds</b>.</div>'+
-      '<div class="word-sequence">'+seq.map(x=>'<span>'+x+'</span>').join("")+'</div></div>';
-    S.timer=setTimeout(()=>{
-      if(token!==S.memoryRoundToken)return;
-      const missing=seq.slice(0,removeCount),remaining=seq.slice(removeCount);
-      const distract=shuffle(WORDS.filter(x=>!seq.includes(x))).slice(0,3);
-      $("game-stage").innerHTML='<div class="memory-wrap">'+header("working","Which word or words were removed from the original sequence?")+
-        '<div class="word-sequence faded">'+remaining.map(x=>'<span>'+x+'</span>').join("")+'</div><div id="working-options" class="word-options"></div></div>';
-      const box=$("working-options");let found=0;S.active=true;
-      shuffle(missing.concat(distract)).forEach(x=>{const b=document.createElement("button");b.type="button";b.className="word-option";b.textContent=x;
-        b.addEventListener("click",()=>{if(!S.active||b.disabled)return;b.disabled=true;if(!missing.includes(x)){b.classList.add("bad");fail();return;}b.classList.add("good");found++;if(found===missing.length)completeActivity();});box.appendChild(b);});
-      deadline(sp.response);
-    },sp.show);
-  });
-}
-
-function run(){
-  const type=PLANS[S.level-1][S.memoryActivity] || "visual";
-  if(type==="visual")visual();
-  else if(type==="sequence")sequence();
-  else if(type==="location")location();
-  else if(type==="pairs")pairs();
-  else if(type==="feature")feature();
-  else working();
-}
+function ageConfig(){return [{show:6200,response:22000,count:3},{show:5000,response:18000,count:4},{show:4100,response:14500,count:5},{show:3500,response:12000,count:6},{show:3100,response:10500,count:6}][S.age]}
+function spec(){const a=ageConfig(),p=(S.level-1)/19;return{count:clamp(a.count+Math.floor(S.level/4),a.count,a.count+6),show:Math.round(a.show*(1-.28*p)),response:Math.round(a.response*(1-.18*p))}}
+function header(type,sub){const i=INFO[type];return `<div class="memory-lab-head"><div><span class="memory-kind">${i[2]}</span><h3>${i[0]}</h3><p class="memory-sub">${sub||i[1]}</p></div><div class="activity-chip">Activity ${(S.memoryActivity||0)+1}/4</div></div>`}
+function begin(draw){S.active=false;S.memoryRoundToken=(S.memoryRoundToken||0)+1;const t=S.memoryRoundToken;draw(spec(),t)}
+function deadline(ms){S.timer=setTimeout(()=>{if(S.active)fail()},ms)}
+function fail(){if(!S.active)return;S.memoryMistakes=(S.memoryMistakes||0)+1;MQ.levelFailed()}
+function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);S.memoryCorrect=(S.memoryCorrect||0)+1;const last=S.memoryActivity===3;$('game-message').textContent=last?'✓ Four memory activities complete!':`✓ Activity ${S.memoryActivity+1} complete. Loading the next activity…`;if(last)S.timer=setTimeout(()=>{S.memoryActivity=0;MQ.levelComplete()},650);else{S.memoryActivity++;S.timer=setTimeout(()=>{$('game-message').textContent="";MQ.nextChallenge()},650)}}
+function visual(){begin((sp,t)=>{const a=shuffle(ICONS).slice(0,sp.count),d=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,clamp(3+Math.floor(S.level/3),3,9));$('game-stage').innerHTML=`<div class="memory-wrap">${header('visual')}<div class="memory-timer">Study for <b>${(sp.show/1000).toFixed(1)} seconds</b></div><div class="memory-items memory-study">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('visual','Select every object you remember. One wrong choice ends the level.')}<div class="memory-timer">Response: <b>${Math.round(sp.response/1000)} seconds</b></div><div id="choices" class="memory-items"></div></div>`;const box=$('choices');let n=0;S.active=true;shuffle(a.concat(d)).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(!a.includes(x)){b.classList.add('bad');fail()}else{b.classList.add('good');if(++n===a.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)})}
+function sequence(){begin((sp,t)=>{const a=shuffle(ICONS).slice(0,clamp(sp.count,3,11));$('game-stage').innerHTML=`<div class="memory-wrap">${header('sequence')}<div class="memory-timer">Watch for <b>${(sp.show/1000).toFixed(1)} seconds</b></div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('sequence','Tap the objects in exactly the same order.')}<div class="memory-timer">Response: <b>${Math.round(sp.response/1000)} seconds</b></div><div id="sequence-choices" class="memory-items"></div><div id="sequence-picked" class="picked-sequence"></div></div>`;const box=$('sequence-choices'),picked=$('sequence-picked');let n=0;S.active=true;shuffle(a).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==a[n]){b.classList.add('bad');fail()}else{b.disabled=true;b.classList.add('good');picked.textContent+=(n?' ':'')+x;if(++n===a.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)})}
+function location(){begin((sp,t)=>{const size=S.level<8?3:S.level<15?4:5,slots=size*size,count=clamp(Math.min(sp.count,Math.floor(slots*.55)),3,Math.min(12,slots-1)),pos=shuffle([...Array(slots).keys()]).slice(0,count),icons=shuffle(ICONS).slice(0,count),ans=pos.map((slot,i)=>({slot,icon:icons[i]}));$('game-stage').innerHTML=`<div class="memory-wrap">${header('location')}<div class="memory-timer">Remember the objects and locations for <b>${(sp.show/1000).toFixed(1)} seconds</b></div><div class="memory-board" style="--grid:${size}">${[...Array(slots)].map((_,i)=>{const a=ans.find(x=>x.slot===i);return `<div class="memory-cell">${a?a.icon:''}</div>`}).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('location','Select an object, then place it where you saw it.')}<div class="location-recall"><div id="location-icons" class="location-icons"></div><div id="location-grid" class="memory-board" style="--grid:${size}"></div></div></div>`;const ib=$('location-icons'),gb=$('location-grid');let chosen=null,n=0;S.active=true;shuffle(icons).forEach(icon=>{const b=document.createElement('button');b.className='location-icon';b.textContent=icon;b.onclick=()=>{document.querySelectorAll('.location-icon').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');chosen=icon};ib.appendChild(b)});for(let i=0;i<slots;i++){const b=document.createElement('button');b.className='memory-cell recall-cell';b.onclick=()=>{if(!S.active||!chosen||b.disabled)return;const a=ans.find(x=>x.slot===i);if(!a||a.icon!==chosen){b.classList.add('bad');fail();return}b.textContent=chosen;b.classList.add('placed');b.disabled=true;const s=[...document.querySelectorAll('.location-icon')].find(x=>x.textContent===chosen);if(s){s.disabled=true;s.classList.add('used')}chosen=null;if(++n===ans.length)complete()};gb.appendChild(b)}deadline(sp.response*1.25)},sp.show)})}
+function pairs(){begin((sp,t)=>{const count=clamp(Math.floor(sp.count/2)+2,3,8),icons=shuffle(ICONS).slice(0,count);$('game-stage').innerHTML=`<div class="memory-wrap">${header('pairs')}<div class="memory-timer">Study the pairs for <b>${(sp.show/1000).toFixed(1)} seconds</b></div><div class="memory-items">${shuffle(icons.flatMap(x=>[x,x])).map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('pairs','Turn over two cards at a time and match every pair.')}<div class="pair-grid" id="pair-grid"></div></div>`;const box=$('pair-grid');let first=null,n=0,busy=false;S.active=true;shuffle(icons.flatMap((icon,id)=>[{id,icon},{id,icon}])).forEach(c=>{const b=document.createElement('button');b.className='pair-card';b.innerHTML='<span>?</span>';b.onclick=()=>{if(!S.active||busy||b.classList.contains('matched')||first?.b===b)return;b.classList.add('flipped');b.innerHTML=`<span>${c.icon}</span>`;if(!first){first={b,c};return}busy=true;if(first.c.id===c.id){first.b.classList.add('matched');b.classList.add('matched');first=null;busy=false;if(++n===icons.length)complete()}else{const old=first.b;setTimeout(()=>{old.classList.remove('flipped');b.classList.remove('flipped');old.innerHTML='<span>?</span>';b.innerHTML='<span>?</span>';first=null;busy=false},420)}};box.appendChild(b)});deadline(sp.response*1.35)},sp.show)})}
+function feature(){begin((sp,t)=>{const count=clamp(sp.count,3,8),colors=shuffle(COLORS).slice(0,count),shapes=shuffle(SHAPES).slice(0,count),a=colors.map((color,i)=>({color,shape:shapes[i]}));$('game-stage').innerHTML=`<div class="memory-wrap">${header('feature')}<div class="memory-timer">Remember shape + colour for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="feature-items">${a.map(x=>`<div class="feature-item"><span>${x.shape}</span><small>${x.color}</small></div>`).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;const d=a.slice(0,Math.min(4,a.length)).map((x,i)=>({color:x.color,shape:shapes[(i+1)%a.length],correct:false}));$('game-stage').innerHTML=`<div class="memory-wrap">${header('feature','Select every exact shape-and-colour combination you saw.')}<div id="feature-choices" class="feature-items"></div></div>`;const box=$('feature-choices');let n=0;S.active=true;shuffle(a.map(x=>({...x,correct:true})).concat(d)).forEach(x=>{const b=document.createElement('button');b.className='feature-choice';b.innerHTML=`<span>${x.shape}</span><small>${x.color}</small>`;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(!x.correct){b.classList.add('bad');fail()}else{b.classList.add('good');if(++n===a.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)})}
+function working(){begin((sp,t)=>{const len=clamp(sp.count,4,11),seq=shuffle(WORDS).slice(0,len),remove=S.level>=15?2:1; $('game-stage').innerHTML=`<div class="memory-wrap">${header('working')}<div class="memory-timer">Hold the sequence for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="word-sequence">${seq.map(x=>`<span>${x}</span>`).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;const missing=seq.slice(0,remove),remain=seq.slice(remove),d=shuffle(WORDS.filter(x=>!seq.includes(x))).slice(0,4);$('game-stage').innerHTML=`<div class="memory-wrap">${header('working','Which word or words were removed?')}<div class="word-sequence faded">${remain.map(x=>`<span>${x}</span>`).join('')}</div><div id="working-options" class="word-options"></div></div>`;const box=$('working-options');let n=0;S.active=true;shuffle(missing.concat(d)).forEach(x=>{const b=document.createElement('button');b.className='word-option';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(!missing.includes(x)){b.classList.add('bad');fail()}else{b.classList.add('good');if(++n===missing.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)})}
+function change(){begin((sp,t)=>{const count=clamp(sp.count,4,9),before=shuffle(ICONS).slice(0,count),changeIndex=Math.floor(Math.random()*count),after=[...before],replacement=shuffle(ICONS.filter(x=>!before.includes(x)))[0];after[changeIndex]=replacement;$('game-stage').innerHTML=`<div class="memory-wrap">${header('change')}<div class="memory-timer">Study Scene A for <b>${(sp.show*.72/1000).toFixed(1)} seconds</b></div><div class="memory-items">${before.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;S.timer=setTimeout(()=>{$('game-stage').innerHTML=`<div class="memory-wrap">${header('change','Now study Scene B. The change will be tested after it disappears.')}<div class="memory-timer">Scene B: <b>${(sp.show*.55/1000).toFixed(1)} seconds</b></div><div class="memory-items">${shuffle(after).map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('change','What changed between Scene A and Scene B?')}<div class="change-options"><button class="word-option" id="same">Nothing changed</button><button class="word-option" id="changed">One object changed</button></div></div>`;S.active=true;$('#same').onclick=fail;$('#changed').onclick=complete;deadline(sp.response)},sp.show*.55)},sp.show*.72)})}
+function category(){begin((sp,t)=>{const groups=[['Animals',['🐶','🐱','🐘','🦁','🐼','🐢','🐝']],['Food',['🍎','🍕','🍓','🍉','🍪','🥕','🧃']],['Things',['🚲','🚀','🎸','🎁','🚌','🪁','🎨']]];const g=groups[Math.floor(Math.random()*groups.length)],a=shuffle(g[1]).slice(0,clamp(sp.count,3,7)),d=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,3);$('game-stage').innerHTML=`<div class="memory-wrap">${header('category')}<div class="memory-timer">Remember the objects from the <b>${g[0]}</b> category for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('category',`Select only the objects that belonged to the ${g[0]} group.`)}<div class="memory-items" id="cat"></div></div>`;const box=$('cat');let n=0;S.active=true;shuffle(a.concat(d)).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(!a.includes(x)){b.classList.add('bad');fail()}else{b.classList.add('good');if(++n===a.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)})}
+function order(){begin((sp,t)=>{const len=clamp(sp.count,4,9),a=shuffle(ICONS).slice(0,len);$('game-stage').innerHTML=`<div class="memory-wrap">${header('order')}<div class="memory-timer">Remember the left-to-right order for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="sequence-display">${a.map((x,i)=>`<span class="sequence-token">${i+1}. ${x}</span>`).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('order','Rebuild the order from first to last.')}<div id="order-options" class="memory-items"></div><div id="order-picked" class="picked-sequence"></div></div>`;const box=$('order-options'),picked=$('order-picked');let n=0;S.active=true;shuffle(a).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==a[n]){b.classList.add('bad');fail()}else{b.disabled=true;b.classList.add('good');picked.textContent+=(n?' → ':'')+x;if(++n===a.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)})}
+function count(){begin((sp,t)=>{const n=clamp(sp.count,3,7),types=shuffle(ICONS).slice(0,n),counts=types.map((x,i)=>clamp(2+(S.level>8?Math.floor(S.level/7):0)+(i%2),2,4)),pool=types.flatMap((x,i)=>Array(counts[i]).fill(x));$('game-stage').innerHTML=`<div class="memory-wrap">${header('count')}<div class="memory-timer">Remember how many times each object appears for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="memory-items">${shuffle(pool).map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('count','Choose the number that matches each object.')}<div class="count-list" id="count-list"></div></div>`;const box=$('count-list');let n=0;S.active=true;types.forEach(icon=>{const row=document.createElement('div');row.className='count-row';row.innerHTML=`<span>${icon}</span><div class="count-choices"></div>`;const cb=row.querySelector('.count-choices');shuffle([counts[types.indexOf(icon)],1,2,3,4].filter((v,i,a)=>a.indexOf(v)===i)).forEach(v=>{const b=document.createElement('button');b.className='word-option';b.textContent=v;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(v!==counts[types.indexOf(icon)]){b.classList.add('bad');fail()}else{b.classList.add('good');n++;if(n===types.length)complete()}};cb.appendChild(b)});box.appendChild(row)});deadline(sp.response*1.4)},sp.show)})}
+const START={visual,sequence,location,pairs,feature,working,change,category,order,count};
+const RULES={visual:'Look carefully at every object. Then select every object you remember.',sequence:'Watch the order. Then tap the objects in exactly the same order.',location:'Remember both the object and its position. Choose an object, then place it in the matching location.',pairs:'Memorise the cards. Turn over two at a time and find every matching pair.',feature:'Remember the exact shape AND colour of each item. Select only the combinations you saw.',working:'Hold the sequence in your mind. After part is removed, identify what was missing.',change:'Compare two scenes in your memory. Decide whether an object changed.',category:'Remember the named category. Later, select only the objects that belonged to it.',order:'Remember the left-to-right order. Then rebuild it from first to last.',count:'Remember how many times each object appeared. Later, choose the correct count for each object.'};
+function instructions(type){const i=INFO[type],sp=spec(),timing=`Study: ${(sp.show/1000).toFixed(1)} sec • Response: ${Math.round(sp.response/1000)} sec`;$('game-stage').innerHTML=`<div class="memory-instruction-screen"><div class="instruction-icon">🧠</div><span class="memory-kind">${i[2]}</span><div class="instruction-activity">Activity ${(S.memoryActivity||0)+1} of 4</div><h2>${i[0]}</h2><p class="instruction-purpose">${i[1]}</p><div class="instruction-rule"><strong>How to play</strong><p>${RULES[type]}</p></div><div class="instruction-timing"><span>⏱️ ${timing}</span><span>🎯 Pass with no incorrect response</span></div><button id="start-memory-activity" class="primary-btn instruction-start">Start Activity →</button></div>`;S.active=false;clearTimeout(S.timer);$('#start-memory-activity').onclick=()=>START[type]()}
+function run(){S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;instructions(PLANS[S.level-1][S.memoryActivity]||'visual')}
 window.MQMemoryLab={run};
 })();

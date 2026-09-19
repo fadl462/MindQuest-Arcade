@@ -21,3 +21,6 @@ The timing is deliberately conservative: younger learners receive longer study a
 
 ## Deploy
 Replace the corresponding files in the MindQuest-Arcade GitHub Pages repository and commit/push them to `main`.
+
+## v0.3 interaction update
+Each Memory Lab activity now opens with a dedicated instruction screen before the timed challenge begins. The learner sees the objective, how to play, timing and pass condition, then chooses “Start Activity”.
