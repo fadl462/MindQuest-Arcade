@@ -95,30 +95,11 @@
   window.addEventListener('beforeunload', save);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
 
-  // Refresh while inside a game resumes the saved session. Refreshing the Arcade
-  // itself stays on the Arcade and only shows the Resume Game card.
-  let session = null;
-  try { session = JSON.parse(localStorage.getItem(SESSION) || 'null'); } catch {}
-  const onFreshLoad = performance.getEntriesByType('navigation')[0]?.type === 'reload';
-  const wasInGame = (() => { try { return localStorage.getItem(VIEW_KEY) === 'game'; } catch { return false; } })();
-  if (session && onFreshLoad && wasInGame) {
-    const p = saved[keyFor(session.age, session.game)];
-    if (p && p.level >= 1 && p.level <= 20) {
-      setTimeout(() => {
-        restore(p);
-        const meta = {memory:['🧠','Memory Lab','COGNITIVE'],detective:['🔎','Detective','COGNITIVE'],reflex:['⚡','Reflex Arena','PSYCHOMOTOR'],builder:['🧩','Builder','COGNITIVE'],team:['🤝','Team Quest','BEHAVIOURAL']}[p.game];
-        if (meta) {
-          document.getElementById('game-icon').textContent=meta[0];
-          document.getElementById('game-name').textContent=meta[1];
-          document.getElementById('game-skill').textContent=meta[2];
-        }
-        showGame();
-        try { localStorage.setItem(VIEW_KEY, 'game'); } catch {}
-        lastView = 'game';
-        MQ.nextChallenge();
-      }, 80);
-    }
-  }
+  // Saved progress is always available through the Resume Game card.
+  // Refreshing the site never auto-opens a game. This keeps the Arcade homepage
+  // as the stable landing page while preserving the player checkpoint.
+  try { localStorage.setItem(VIEW_KEY, 'home'); } catch {}
+  lastView = 'home';
 
   const homeCard = document.querySelector('#home .card:last-of-type');
   if (homeCard) {
