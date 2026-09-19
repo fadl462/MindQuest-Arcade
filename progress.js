@@ -6,9 +6,11 @@
   const STORE = 'mindquest-progress-v2';
   const SESSION = 'mindquest-session-v2';
   const AGE_KEY = 'mindquest-age-pathway';
+  const VIEW_KEY = 'mindquest-current-view-v1';
   const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { return {}; } })();
   let suppressSave = false;
   let arcadeExitSave = false;
+  let lastView = 'home';
 
   const keyFor = (age, game) => `${age}:${game}`;
   const gameName = id => ({memory:'Memory Lab', detective:'Detective', reflex:'Reflex Arena', builder:'Builder', team:'Team Quest'})[id] || id;
@@ -33,7 +35,6 @@
   const saveAndExit = () => {
     const s = MQ.state;
     if (!s.game) return;
-    // Capture the checkpoint BEFORE app.js resets the transient game state.
     saved[keyFor(s.age, s.game)] = {
       age:s.age, game:s.game, level:s.level, lives:s.lives, streak:s.streak,
       bestStreak:s.bestStreak, xp:s.xp, score:s.score, earnedThisRun:s.earnedThisRun,
@@ -46,7 +47,6 @@
       localStorage.setItem(SESSION, JSON.stringify({age:s.age,game:s.game}));
       localStorage.setItem(AGE_KEY, String(s.age));
     } catch {}
-    // Prevent the 400ms autosave from overwriting the checkpoint with app.js's reset-to-level-1 state.
     arcadeExitSave = true;
     setTimeout(() => { arcadeExitSave = false; }, 1500);
   };
@@ -74,16 +74,34 @@
     }
   } catch {}
 
+  // Track whether the user is actually inside the game screen. A saved checkpoint
+  // can exist without making the Arcade auto-open that game on refresh.
+  const syncView = () => {
+    const inGame = !!document.querySelector('#game.screen.active');
+    const view = inGame ? 'game' : 'home';
+    if (view !== lastView) {
+      lastView = view;
+      try { localStorage.setItem(VIEW_KEY, view); } catch {}
+    }
+  };
+  try {
+    const storedView = localStorage.getItem(VIEW_KEY);
+    lastView = storedView === 'game' ? 'game' : 'home';
+    if (!storedView) localStorage.setItem(VIEW_KEY, 'home');
+  } catch {}
+
   // Continuous autosave protects refreshes and accidental tab closes.
-  setInterval(save, 400);
+  setInterval(() => { syncView(); save(); }, 400);
   window.addEventListener('beforeunload', save);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
 
-  // Refresh while inside a game resumes the saved session. Going to the Arcade does not auto-open it.
+  // Refresh while inside a game resumes the saved session. Refreshing the Arcade
+  // itself stays on the Arcade and only shows the Resume Game card.
   let session = null;
   try { session = JSON.parse(localStorage.getItem(SESSION) || 'null'); } catch {}
   const onFreshLoad = performance.getEntriesByType('navigation')[0]?.type === 'reload';
-  if (session && onFreshLoad) {
+  const wasInGame = (() => { try { return localStorage.getItem(VIEW_KEY) === 'game'; } catch { return false; } })();
+  if (session && onFreshLoad && wasInGame) {
     const p = saved[keyFor(session.age, session.game)];
     if (p && p.level >= 1 && p.level <= 20) {
       setTimeout(() => {
@@ -95,6 +113,8 @@
           document.getElementById('game-skill').textContent=meta[2];
         }
         showGame();
+        try { localStorage.setItem(VIEW_KEY, 'game'); } catch {}
+        lastView = 'game';
         MQ.nextChallenge();
       }, 80);
     }
@@ -124,6 +144,8 @@
         document.getElementById('game-name').textContent=meta[1];
         document.getElementById('game-skill').textContent=meta[2];
         showGame();
+        try { localStorage.setItem(VIEW_KEY, 'game'); } catch {}
+        lastView = 'game';
         localStorage.setItem(SESSION, JSON.stringify({age:p.age,game:p.game}));
         MQ.nextChallenge();
       };
@@ -132,9 +154,10 @@
     setInterval(renderResume, 1000);
   }
 
-  // Clicking Game Arcade deliberately saves the current checkpoint first.
   document.getElementById('back-home')?.addEventListener('click', () => {
     saveAndExit();
+    try { localStorage.setItem(VIEW_KEY, 'home'); } catch {}
+    lastView = 'home';
   }, true);
 
   document.querySelectorAll('.age-btn').forEach((b,i) => b.addEventListener('click', () => {
