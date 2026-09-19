@@ -13,7 +13,7 @@
   let lastView = 'home';
 
   const keyFor = (age, game) => `${age}:${game}`;
-  const gameName = id => ({memory:'Memory Lab', detective:'Detective', reflex:'Reflex Arena', builder:'Builder', team:'Team Quest'})[id] || id;
+  const gameName = id => ({memory:'Memory Lab', detective:'Detective', reflex:'Reflex Arena', builder:'Builder', team:'Team Quest', world:'World Explorer'})[id] || id;
 
   const save = () => {
     if (suppressSave || !MQ.state.game || arcadeExitSave) return;
@@ -120,7 +120,7 @@
         arcadeExitSave = false;
         restore(p);
         suppressSave = false;
-        const meta = {memory:['🧠','Memory Lab','COGNITIVE'],detective:['🔎','Detective','COGNITIVE'],reflex:['⚡','Reflex Arena','PSYCHOMOTOR'],builder:['🧩','Builder','COGNITIVE'],team:['🤝','Team Quest','BEHAVIOURAL']}[p.game];
+        const meta = {memory:['🧠','Memory Lab','COGNITIVE'],detective:['🔎','Detective','COGNITIVE'],reflex:['⚡','Reflex Arena','PSYCHOMOTOR'],builder:['🧩','Builder','COGNITIVE'],team:['🤝','Team Quest','BEHAVIOURAL'],world:['🌍','World Explorer','COGNITIVE']}[p.game];
         document.getElementById('game-icon').textContent=meta[0];
         document.getElementById('game-name').textContent=meta[1];
         document.getElementById('game-skill').textContent=meta[2];

@@ -14,7 +14,8 @@ const games = [
   {id:"detective", icon:"🔎", name:"Detective", skill:"COGNITIVE", desc:"Solve patterns, sequences and logic challenges."},
   {id:"reflex", icon:"⚡", name:"Reflex Arena", skill:"PSYCHOMOTOR", desc:"React quickly as the target gets faster."},
   {id:"builder", icon:"🧩", name:"Builder", skill:"COGNITIVE", desc:"Plan and construct structures with limited spaces."},
-  {id:"team", icon:"🤝", name:"Team Quest", skill:"BEHAVIOURAL", desc:"Navigate social situations and constructive choices."}
+  {id:"team", icon:"🤝", name:"Team Quest", skill:"BEHAVIOURAL", desc:"Navigate social situations and constructive choices."},
+  {id:"world", icon:"🌍", name:"World Explorer", skill:"COGNITIVE", desc:"Explore countries, landmarks, maps and journeys."}
 ];
 
 const state = {
@@ -60,7 +61,7 @@ function renderGames(){
   });
 }
 function startGame(id){
-  clearTimeout(state.timer); state.game=id; state.level=1; state.lives=3; state.streak=0; state.score=0; state.earnedThisRun=0; state.detectiveActivity=0; state.memoryActivity=0; state.memoryCorrect=0; state.memoryMistakes=0;
+  clearTimeout(state.timer); state.game=id; state.level=1; state.lives=3; state.streak=0; state.score=0; state.earnedThisRun=0; state.detectiveActivity=0; state.memoryActivity=0; state.reflexActivity=0; state.builderActivity=0; state.teamActivity=0; state.worldActivity=0; state.memoryCorrect=0; state.memoryMistakes=0;
   const g=games.find(x=>x.id===id);
   $("game-icon").textContent=g.icon; $("game-name").textContent=g.name; $("game-skill").textContent=g.skill;
   show("game"); updateGlobal(); nextChallenge();
@@ -92,6 +93,7 @@ function nextChallenge(){
   else if(state.game==="reflex")(window.MQReflexArena?window.MQReflexArena.run:reflex);
   else if(state.game==="builder")(window.MQBuilder?window.MQBuilder.run:builder);
   else if(state.game==="team")(window.MQTeamQuest?window.MQTeamQuest.run:team);
+  else if(state.game==="world")(window.MQWorldExplorer?window.MQWorldExplorer.run:world)();
 }
 function memory(){
   const icons=["🐶","🚲","🍎","⭐","🎈","🐟","🚀","🌳","⚽","🎸","🦁","🍕","🌈","🐼","🦋","🎯"];
@@ -146,6 +148,7 @@ function runBuilder(){
   }
 }
 function team(){ return window.MQTeamQuest?window.MQTeamQuest.run:showGameInstruction("team"); }
+function world(){ return window.MQWorldExplorer?window.MQWorldExplorer.run:showGameInstruction("world"); }
 function runTeam(){
   const questions=[
     ["A teammate makes a mistake. What is the most constructive response?",["Help them fix it","Blame them","Ignore the problem"]],
@@ -165,7 +168,8 @@ function showGameInstruction(id){
     detective:{icon:"🔎",skill:"COGNITIVE",name:"Detective",purpose:"Solve the challenge carefully and choose the answer that fits the clues.",how:"Read the sequence, inspect the choices, then select the answer. A wrong answer fails the level.",timing:"No countdown • Think carefully",pass:"Choose the correct answer"},
     reflex:{icon:"⚡",skill:"PSYCHOMOTOR",name:"Reflex Arena",purpose:"Test your reaction speed and timing.",how:"Wait until the target appears. Tap it as quickly as you can. Do not tap early.",timing:"Reaction window • Gets faster",pass:"Hit the target after it appears"},
     builder:{icon:"🧩",skill:"COGNITIVE",name:"Builder",purpose:"Plan a structure and place the required number of blocks.",how:"Choose spaces on the grid. Fill the required number of blocks to complete the build.",timing:"No countdown • Plan first",pass:"Place every required block"},
-    team:{icon:"🤝",skill:"BEHAVIOURAL",name:"Team Quest",purpose:"Make constructive decisions in realistic team situations.",how:"Read the situation and choose the response that supports cooperation, communication and responsibility.",timing:"No countdown • Read carefully",pass:"Choose the constructive response"}
+    team:{icon:"🤝",skill:"BEHAVIOURAL",name:"Team Quest",purpose:"Make constructive decisions in realistic team situations.",how:"Read the situation and choose the response that supports cooperation, communication and responsibility.",timing:"No countdown • Read carefully",pass:"Choose the constructive response"},
+    world:{icon:"🌍",skill:"COGNITIVE",name:"World Explorer",purpose:"Explore countries, landmarks, maps and journeys.",how:"Read the clue and choose the place, landmark or route that fits the information shown.",timing:"No countdown • Explore carefully",pass:"Choose the answer that fits"}
   }[id];
   if(!info)return;
   state.active=false; clearTimeout(state.timer);

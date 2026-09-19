@@ -1,0 +1,67 @@
+(() => {
+"use strict";
+const MQ=window.MQ;if(!MQ)return;
+const S=MQ.state,$=MQ.$;
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+const TYPES=["place","landmark","clue","route"];
+const AGE=['3–5','6–8','9–11','12–14','15–18'];
+const PLACES=[
+ ["Ghana","Africa","Accra"],["Kenya","Africa","Nairobi"],["Egypt","Africa","Cairo"],["Nigeria","Africa","Abuja"],
+ ["Morocco","Africa","Rabat"],["South Africa","Africa","Pretoria"],["Brazil","South America","Brasília"],["Canada","North America","Ottawa"],
+ ["Japan","Asia","Tokyo"],["India","Asia","New Delhi"],["Australia","Oceania","Canberra"],["France","Europe","Paris"],
+ ["Italy","Europe","Rome"],["Spain","Europe","Madrid"],["Mexico","North America","Mexico City"],["Peru","South America","Lima"],
+ ["Greece","Europe","Athens"],["China","Asia","Beijing"],["New Zealand","Oceania","Wellington"],["Argentina","South America","Buenos Aires"]
+];
+const LANDMARKS=[
+ ["Pyramids of Giza","Egypt","Africa"],["Eiffel Tower","France","Europe"],["Great Wall","China","Asia"],["Statue of Liberty","United States","North America"],
+ ["Taj Mahal","India","Asia"],["Christ the Redeemer","Brazil","South America"],["Sydney Opera House","Australia","Oceania"],["Acropolis","Greece","Europe"],
+ ["Table Mountain","South Africa","Africa"],["Mount Fuji","Japan","Asia"],["Machu Picchu","Peru","South America"],["Golden Gate Bridge","United States","North America"],
+ ["Kakum National Park","Ghana","Africa"],["Victoria Falls","Zambia/Zimbabwe","Africa"],["Sagrada Família","Spain","Europe"],["Burj Khalifa","United Arab Emirates","Asia"]
+];
+const CLUES=[
+ ["I am a country in West Africa. My capital is Accra. What am I?","Ghana",["Ghana","Kenya","India","Brazil"]],
+ ["I am an island country in East Asia. My capital is Tokyo. What am I?","Japan",["Japan","Egypt","Peru","Canada"]],
+ ["I am famous for the Pyramids of Giza. What country am I in?","Egypt",["Egypt","France","Greece","Australia"]],
+ ["I am in South America and my capital is Lima. What country am I?","Peru",["Peru","Italy","Morocco","Japan"]],
+ ["I am a European country whose capital is Paris. What am I?","France",["France","India","Brazil","Ghana"]],
+ ["I am in North America and my capital is Ottawa. What country am I?","Canada",["Canada","Spain","Kenya","China"]],
+ ["I am a landmark in India known for its white marble. What am I?","Taj Mahal",["Taj Mahal","Eiffel Tower","Great Wall","Acropolis"]],
+ ["I am a landmark in Brazil with a huge statue overlooking Rio. What am I?","Christ the Redeemer",["Christ the Redeemer","Machu Picchu","Table Mountain","Sydney Opera House"]],
+ ["I am in Australia and am famous for my sail-like roof. What am I?","Sydney Opera House",["Sydney Opera House","Golden Gate Bridge","Pyramids of Giza","Burj Khalifa"]],
+ ["I am a famous mountain in Japan. What am I?","Mount Fuji",["Mount Fuji","Table Mountain","Mount Everest","Kilimanjaro"]],
+ ["I am a famous ancient site in Peru high in the Andes. What am I?","Machu Picchu",["Machu Picchu","Acropolis","Taj Mahal","Great Wall"]],
+ ["I am a national park in Ghana known for a canopy walkway. What am I?","Kakum National Park",["Kakum National Park","Serengeti","Kruger National Park","Yellowstone"]]
+];
+const ROUTES=[
+ ["Travel from Ghana to Kenya. Which continent do you stay on?","Africa",["Africa","Europe","Asia","South America"]],
+ ["Travel from France to Italy. Which continent do you stay on?","Europe",["Europe","Africa","Asia","Oceania"]],
+ ["Travel from Japan to India. Which continent do you stay on?","Asia",["Asia","Europe","Africa","North America"]],
+ ["Travel from Brazil to Peru. Which continent do you stay on?","South America",["South America","Africa","Europe","Asia"]],
+ ["Put these in a sensible journey order: airport → hotel → sightseeing. What comes first?","Airport",["Airport","Hotel","Sightseeing","Dinner"]],
+ ["A map route is: start → river → bridge → town. What comes after the river?","Bridge",["Bridge","Start","Town","Airport"]],
+ ["You are planning a trip. Which should usually happen before choosing a hotel?","Choose the destination",["Choose the destination","Pack souvenirs","Take photos","Return home"]],
+ ["Which direction takes you from Accra toward Kumasi?","North",["North","South","East","West"]]
+];
+const INFO={
+ place:["Place Finder","Identify a country, continent or capital.","Read the clue and choose the place that fits."],
+ landmark:["Landmark Match","Connect a famous place with its country or region.","Use what you know about the landmark and its location."],
+ clue:["Explorer Clues","Solve a geography clue using all the information shown.","Every part of the clue matters. Choose the only answer that fits."],
+ route:["Journey Planner","Think about locations, directions and travel order.","Choose the answer that keeps the journey logical."]
+};
+function activity(){return Number.isInteger(S.worldActivity)?S.worldActivity:0}
+function levelIndex(){return (S.level-1)%20}
+function ageBand(){return AGE[S.age]||AGE[0]}
+function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">WORLD EXPLORER • ${ageBand()}</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
+function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four exploration challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next exploration…`;if(last){S.worldActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.worldActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
+function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
+function ageText(t){if(S.age===0)return t.replace(/continent/g,"place area").replace(/capital/g,"main city").replace(/landmark/g,"famous place");return t}
+function instruction(){const type=TYPES[(S.level-1+activity())%4],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🌍</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🌍 Explore places</span><span>✓ Four activities per level</span></div><button id="world-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("world-start").onclick=()=>runActivity(type)}
+function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else route()}
+function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
+function choice(title,prompt,choices,correct){$("game-stage").innerHTML=`<div class="team-stage world-stage">${title}<div class="team-question">${prompt}</div><div id="world-options" class="team-options"></div></div>`;const box=$("world-options");S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(x);b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
+function place(){const p=PLACES[levelIndex()];const mode=S.level<6?"country":S.level<13?"continent":"capital";if(mode==="country"){const others=shuffle(PLACES.filter(x=>x[1]===p[1]).map(x=>x[0])).slice(0,3);choice(head("place"),`Which country is in ${p[1]} and has ${p[2]} as its capital?`,[p[0],...others],p[0])}else if(mode==="continent"){const others=shuffle(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[1])).filter((x,i,a)=>a.indexOf(x)===i).slice(0,3);choice(head("place"),`Which continent is ${p[0]} in?`,[p[1],...others],p[1])}else{const others=shuffle(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[2])).slice(0,3);choice(head("place"),`What is the capital of ${p[0]}?`,[p[2],...others],p[2])}}
+function landmark(){const l=LANDMARKS[levelIndex()%LANDMARKS.length];const mode=S.level<8?"country":S.level<15?"continent":"landmark";if(mode==="country"){const others=shuffle(LANDMARKS.filter(x=>x[0]!==l[0]).map(x=>x[1])).slice(0,3);choice(head("landmark"),`The ${l[0]} is associated with which country?`,[l[1],...others],l[1])}else if(mode==="continent"){const others=shuffle(LANDMARKS.filter(x=>x[0]!==l[0]).map(x=>x[2])).filter((x,i,a)=>a.indexOf(x)===i).slice(0,3);choice(head("landmark"),`Which continent is the ${l[0]} associated with?`,[l[2],...others],l[2])}else{const others=shuffle(LANDMARKS.filter(x=>x[0]!==l[0]).map(x=>x[0])).slice(0,3);choice(head("landmark"),`Which landmark is associated with ${l[1]}?`,[l[0],...others],l[0])}}
+function clue(){const c=CLUES[levelIndex()%CLUES.length];choice(head("clue"),ageText(c[0]),c[2],c[1])}
+function route(){const r=ROUTES[(levelIndex()+activity()*2)%ROUTES.length];choice(head("route"),ageText(r[0]),r[2],r[1])}
+window.MQWorldExplorer={run:instruction};
+})();
