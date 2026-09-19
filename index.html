@@ -40,7 +40,7 @@
               <p class="eyebrow">GAME ARCADE</p>
               <h2>Choose a challenge</h2>
             </div>
-            <span id="path-label" class="pill">Ages 6–8</span>
+            <span id="path-label" class="pill">Ages 3–5</span>
           </div>
           <div id="game-list" class="game-grid"></div>
         </div>
@@ -92,7 +92,26 @@
     </main>
   </div>
   <script src="app.js?v=0.9"></script>
+  <script>
+    // Age pathway must not silently reset to Skill Builders on refresh.
+    // Default is Little Explorers (3–5); once a pathway is selected, remember it.
+    (() => {
+      const mq = window.MQ;
+      if (!mq) return;
+      const key = 'mindquest-age-pathway';
+      const stored = Number(localStorage.getItem(key));
+      const age = Number.isInteger(stored) && stored >= 0 && stored < mq.ages.length ? stored : 0;
+      mq.state.age = age;
+      document.querySelectorAll('.age-btn').forEach((button, index) => {
+        button.classList.toggle('active', index === age);
+        button.addEventListener('click', () => localStorage.setItem(key, String(index)));
+      });
+      document.getElementById('path-label').textContent = 'Ages ' + mq.ages[age].range;
+      mq.updateGlobal();
+    })();
+  </script>
   <script src="memory-lab.js?v=0.9"></script>
   <script src="detective.js?v=1.2"></script>
+  <script src="progress.js?v=1.0"></script>
 </body>
 </html>
