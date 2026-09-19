@@ -111,7 +111,8 @@ function memory(){
     });
   },show);
 }
-function detective(){
+function detective(){ return showGameInstruction("detective"); }
+function runDetective(){
   const max=9, n=clamp(3+Math.floor(state.level/6),3,6);
   const nums=shuffle(Array.from({length:max},(_,i)=>i+1)).slice(0,n);
   const missing=nums[Math.floor(Math.random()*nums.length)];
@@ -121,7 +122,8 @@ function detective(){
   const box=$("choices"); state.active=true;
   shuffle([missing,...distract]).forEach(x=>{const b=document.createElement("button");b.type="button";b.className="number";b.textContent=x;b.addEventListener("click",()=>x===missing?levelComplete():levelFailed());box.appendChild(b);});
 }
-function reflex(){
+function reflex(){ return showGameInstruction("reflex"); }
+function runReflex(){
   $("game-stage").innerHTML=`<div><h3>Wait for it…</h3><p class="lead">Tap the target as soon as it appears.</p><button id="target" class="target" type="button" disabled>?</button></div>`;
   const delay=clamp(Math.round(1450-(state.level*48)*ages[state.age].factor),260,1450);
   state.active=false;
@@ -129,7 +131,8 @@ function reflex(){
     t.addEventListener("click",levelComplete,{once:true});
   },delay);
 }
-function builder(){
+function builder(){ return showGameInstruction("builder"); }
+function runBuilder(){
   const size=state.level<7?3:state.level<14?4:5;
   const needed=clamp(Math.round(2+state.level*.55*difficulty()),2,size*size-1);
   $("game-stage").innerHTML=`<div><h3>Build with ${needed} blocks</h3><p class="lead">Choose spaces to complete the structure.</p><div id="builder" class="builder-grid"></div></div>`;
@@ -139,7 +142,8 @@ function builder(){
     box.appendChild(b);
   }
 }
-function team(){
+function team(){ return showGameInstruction("team"); }
+function runTeam(){
   const questions=[
     ["A teammate makes a mistake. What is the most constructive response?",["Help them fix it","Blame them","Ignore the problem"]],
     ["Your team disagrees about a solution. What should happen next?",["Listen and discuss","Shout louder","Quit"]],
@@ -151,6 +155,24 @@ function team(){
   const box=$("scenario-options");state.active=true;
   q[1].forEach((x,i)=>{const b=document.createElement("button");b.type="button";b.className="scenario-option";b.textContent=x;
     b.addEventListener("click",()=>i===0?levelComplete():levelFailed());box.appendChild(b);});
+}
+
+function showGameInstruction(id){
+  const info={
+    detective:{icon:"🔎",skill:"COGNITIVE",name:"Detective",purpose:"Solve the challenge carefully and choose the answer that fits the clues.",how:"Read the sequence, inspect the choices, then select the answer. A wrong answer fails the level.",timing:"No countdown • Think carefully",pass:"Choose the correct answer"},
+    reflex:{icon:"⚡",skill:"PSYCHOMOTOR",name:"Reflex Arena",purpose:"Test your reaction speed and timing.",how:"Wait until the target appears. Tap it as quickly as you can. Do not tap early.",timing:"Reaction window • Gets faster",pass:"Hit the target after it appears"},
+    builder:{icon:"🧩",skill:"COGNITIVE",name:"Builder",purpose:"Plan a structure and place the required number of blocks.",how:"Choose spaces on the grid. Fill the required number of blocks to complete the build.",timing:"No countdown • Plan first",pass:"Place every required block"},
+    team:{icon:"🤝",skill:"BEHAVIOURAL",name:"Team Quest",purpose:"Make constructive decisions in realistic team situations.",how:"Read the situation and choose the response that supports cooperation, communication and responsibility.",timing:"No countdown • Read carefully",pass:"Choose the constructive response"}
+  }[id];
+  if(!info)return;
+  state.active=false; clearTimeout(state.timer);
+  $("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">${info.icon}</div><span class="ui-skill">${info.skill}</span><h2>${info.name}</h2><p class="ui-purpose">${info.purpose}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${info.how}</p></div><div class="ui-meta"><span>✓ ${info.pass}</span><span>⏱ ${info.timing}</span></div><button id="ui-start" class="primary-btn ui-start">Start Activity →</button></div>`;
+  $("ui-start").addEventListener("click",()=>{
+    if(id==="detective")runDetective();
+    else if(id==="reflex")runReflex();
+    else if(id==="builder")runBuilder();
+    else runTeam();
+  });
 }
 function finishGame(){
   state.active=false; updateGlobal(); show("result");

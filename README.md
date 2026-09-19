@@ -24,3 +24,13 @@ Replace the corresponding files in the MindQuest-Arcade GitHub Pages repository 
 
 ## v0.3 interaction update
 Each Memory Lab activity now opens with a dedicated instruction screen before the timed challenge begins. The learner sees the objective, how to play, timing and pass condition, then chooses “Start Activity”.
+
+
+## v0.6 — Single-screen game experience
+
+All five games now use the same compact viewport-first experience:
+- Instruction screen appears before the activity.
+- The activity does not start until the learner presses Start Activity.
+- Game content is sized to fit the available viewport on desktop/laptop screens.
+- Detective, Reflex Arena, Builder and Team Quest now have dedicated instruction screens just like Memory Lab.
+- The gameplay area uses compact layouts so the learner should not need to scroll during a normal activity.
