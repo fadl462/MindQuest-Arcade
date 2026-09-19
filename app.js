@@ -188,10 +188,8 @@ function goHome(){
   updateGlobal();
 }
 function leaveGame(){
-  if(state.active || document.querySelector("#game.screen.active")){
-    const ok=window.confirm("Save your current progress and return to the Game Arcade? You can resume from this checkpoint later.");
-    if(!ok)return;
-  }
+  // The button itself is an explicit save-and-leave action.
+  // Return directly to the Arcade without an extra confirmation dialog.
   goHome();
 }
 $("back-home").addEventListener("click",leaveGame);
