@@ -13,6 +13,7 @@ const INFO={
 };
 function activity(){return Number.isInteger(S.builderActivity)?S.builderActivity:0}
 function size(){return S.level<7?3:S.level<14?4:5}
+function ageScale(){return [0.72,0.88,1,1.12,1.24][S.age]||1}
 function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">BUILDER</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four building challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next build…`;if(last){S.builderActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.builderActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;MQ.levelFailed()}
@@ -24,7 +25,7 @@ function instruction(){
 function makeGrid(n){return `<div class="builder-lab-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button type="button" class="builder-cell" data-i="${i}"></button>`).join("")}</div>`}
 function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else mirror()}
 function fill(){
- const n=size(),total=n*n,need=clamp(2+Math.floor(S.level*.55)+activity(),2,total-2),blocked=shuffle([...Array(total).keys()]).slice(0,Math.min(2+Math.floor(S.level/7),4));
+ const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.55)+activity())*ageScale()),2,total-2),blocked=shuffle([...Array(total).keys()]).slice(0,Math.min(2+Math.floor(S.level/7),4));
  $("game-stage").innerHTML=`<div class="builder-stage">${head("fill")}<p class="builder-task">Build with <b>${need}</b> blocks. Avoid the blocked cells.</p>${makeGrid(n)}</div>`;
  const cells=[...document.querySelectorAll(".builder-cell")];blocked.forEach(i=>cells[i].classList.add("blocked"));let count=0;S.active=true;
  cells.forEach((b,i)=>b.onclick=()=>{if(!S.active||b.disabled||blocked.includes(i))return;b.classList.add("filled");b.disabled=true;if(++count===need)complete()});

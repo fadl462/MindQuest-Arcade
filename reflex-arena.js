@@ -52,21 +52,21 @@ function runActivity(type){if(type==="target")target();else if(type==="color")co
 function target(){
  const token=startRound(),c=cfg(),size=clamp(78-S.level*1.2,48,78);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("target")}<p class="reflex-count">Get ready…</p><div class="reflex-target-slot"><button id="reflex-target" class="reflex-target" disabled>+</button></div></div>`;
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const b=$("reflex-target");b.disabled=false;b.textContent="🎯";b.style.width=size+"px";b.style.height=size+"px";b.onclick=complete;S.active=true},c.delay);
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const b=$("reflex-target");b.disabled=false;b.textContent="🎯";b.style.width=size+"px";b.style.height=size+"px";b.onclick=complete;S.active=true;S.timer=setTimeout(()=>{if(S.active)fail()},c.window)},c.delay);
 }
 function color(){
  const token=startRound(),c=cfg(),correct=COLORS[(S.level*2+activity()+S.age)%COLORS.length];
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("color","Wait for the flash, then tap the matching color.")}<div class="reflex-signal" id="reflex-signal">?</div><div id="reflex-colors" class="reflex-options"></div></div>`;
  const box=$("reflex-colors");
  shuffle(COLORS.slice(0,4+(S.level>10?1:0))).forEach(x=>{const b=document.createElement("button");b.className="reflex-color";b.innerHTML=`<span style="background:${x.hex}"></span>${x.name}`;b.disabled=true;b.onclick=()=>x.name===correct.name?complete():fail();box.appendChild(b)});
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("reflex-signal").textContent=correct.emoji;box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true},c.delay);
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("reflex-signal").textContent=correct.emoji;box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true;S.timer=setTimeout(()=>{if(S.active)fail()},c.window)},c.delay);
 }
 function avoid(){
  const token=startRound(),c=cfg(),safe=SHAPES[(S.level+activity())%SHAPES.length],hazard=SHAPES[(S.level+activity()+3)%SHAPES.length];
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("avoid","A safe symbol appears with hazards. Tap only the safe one.")}<div class="reflex-signal" id="avoid-signal">?</div><div id="avoid-options" class="reflex-options"></div></div>`;
  const box=$("avoid-options");
  shuffle([safe,hazard,...shuffle(SHAPES.filter(x=>x!==safe&&x!==hazard)).slice(0,2+(S.level>12?1:0))]).forEach(x=>{const b=document.createElement("button");b.className="reflex-symbol";b.textContent=x;b.disabled=true;b.onclick=()=>x===safe?complete():fail();box.appendChild(b)});
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("avoid-signal").textContent="GO";box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true},c.delay);
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("avoid-signal").textContent="GO";box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true;S.timer=setTimeout(()=>{if(S.active)fail()},c.window)},c.delay);
 }
 function sequence(){
  const token=startRound(),c=cfg(),len=c.count;
