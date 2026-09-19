@@ -179,8 +179,27 @@ function finishGame(){
   $("result-text").textContent=`You mastered all 20 levels of ${games.find(x=>x.id===state.game).name}. The challenges became progressively harder as you advanced.`;
   $("result-xp").textContent=state.earnedThisRun; $("result-levels").textContent=20; $("result-streak").textContent=state.bestStreak;
 }
-$("back-home").addEventListener("click",()=>{clearTimeout(state.timer);state.active=false;show("home");});
-$("result-home").addEventListener("click",()=>show("home"));
+function goHome(){
+  clearTimeout(state.timer);
+  state.active=false;
+  state.level=1;
+  state.lives=3;
+  state.streak=0;
+  state.score=0;
+  state.earnedThisRun=0;
+  show("home");
+  updateGlobal();
+}
+function leaveGame(){
+  if(state.active || document.querySelector("#game.screen.active")){
+    const ok=window.confirm("Leave this game and return to the Game Arcade? Your current level attempt will end.");
+    if(!ok)return;
+  }
+  goHome();
+}
+$("back-home").addEventListener("click",leaveGame);
+$("home-brand").addEventListener("click",goHome);
+$("result-home").addEventListener("click",goHome);
 $("play-again").addEventListener("click",()=>startGame(state.game));
 window.MQ={state,$,ages,updateGlobal,levelComplete,levelFailed,nextChallenge}; renderAges(); renderGames(); updateGlobal();
 })();
