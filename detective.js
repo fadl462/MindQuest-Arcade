@@ -60,7 +60,16 @@ function begin(type,html,choices,correct){
 }
 function activityComplete(){
  if(!S.active)return;S.active=false;S.detectiveCorrect=(S.detectiveCorrect||0)+1;
- if(S.detectiveActivity===3){S.detectiveActivity=0;$('game-message').textContent='✓ Four investigations solved!';S.timer=setTimeout(()=>MQ.levelComplete(),650)}
+ if(S.detectiveActivity===3){
+  S.detectiveActivity=0;
+  $('game-message').textContent='✓ Four investigations solved!';
+  // Keep the level attempt active until MQ.levelComplete() runs. The app-level
+  // completion guard requires state.active=true; disabling the choices prevents
+  // a second click during the short completion transition.
+  $('detective-choices')?.querySelectorAll('button').forEach(b=>b.disabled=true);
+  S.active=true;
+  S.timer=setTimeout(()=>MQ.levelComplete(),650);
+ }
  else{S.detectiveActivity++;$('game-message').textContent='✓ Investigation solved. Loading the next case…';S.timer=setTimeout(()=>{$('game-message').textContent='';MQ.nextChallenge()},650)}
 }
 function numberSequence(values,question,correct,others,rule){
