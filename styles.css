@@ -127,3 +127,6 @@ main:has(#game.active){padding-top:10px;padding-bottom:10px}
 .brand-button{appearance:none;border:0;background:transparent;color:inherit;font:inherit;padding:0;cursor:pointer}
 .brand-button:hover .brand-mark{transform:scale(1.04)}
 .brand-button:focus-visible,.ghost-btn:focus-visible,.primary-btn:focus-visible{outline:3px solid rgba(91,92,226,.28);outline-offset:3px}
+
+/* v0.9: brand is a real navigation link, so home navigation never depends on JavaScript. */
+.brand-button{appearance:none;border:0;background:transparent;color:inherit;font:inherit;padding:0;cursor:pointer;text-decoration:none}.brand-button:hover .brand-mark{transform:scale(1.04)}

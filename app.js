@@ -198,7 +198,6 @@ function leaveGame(){
   goHome();
 }
 $("back-home").addEventListener("click",leaveGame);
-$("home-brand").addEventListener("click",goHome);
 $("result-home").addEventListener("click",goHome);
 $("play-again").addEventListener("click",()=>startGame(state.game));
 window.MQ={state,$,ages,updateGlobal,levelComplete,levelFailed,nextChallenge}; renderAges(); renderGames(); updateGlobal();

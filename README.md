@@ -30,3 +30,7 @@ Each Memory Lab activity now opens with a dedicated instruction screen before th
 - Fixed Memory Lab Start Activity event handling.
 - Added visible Starting state and guarded launch.
 - Added cache-busting query strings to app.js and memory-lab.js so GitHub Pages receives the new scripts.
+
+
+## v0.9 — Guaranteed home navigation
+The MindQuest brand is a real `index.html` link, so it returns to the home page independently of JavaScript. Script version numbers were also bumped to force browser cache refresh.
