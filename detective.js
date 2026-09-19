@@ -28,7 +28,22 @@ const info={
 };
 function age(){return S.age}
 function tier(){return age()}
-function choose(correct,others){return shuffle([String(correct),...others.map(String)]);}
+function choose(correct,others){
+ const answer=String(correct);
+ const out=[answer];
+ for(const item of others.map(String)){
+   if(!out.includes(item))out.push(item);
+ }
+ const n=Number(answer);
+ if(out.length<4 && Number.isFinite(n)){
+   for(const delta of [1,-1,2,-2,3,-3,4,-4,5,-5]){
+     const candidate=String(n+delta);
+     if(!out.includes(candidate))out.push(candidate);
+     if(out.length===4)break;
+   }
+ }
+ return shuffle(out.slice(0,4));
+}
 function opts(correct,others){return choose(correct,others).map(v=>({value:String(v),label:`<strong>${v}</strong>`}));}
 function renderInstruction(type){
  const x=info[type];
