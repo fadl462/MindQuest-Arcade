@@ -60,7 +60,7 @@ function renderGames(){
   });
 }
 function startGame(id){
-  clearTimeout(state.timer); state.game=id; state.level=1; state.lives=3; state.streak=0; state.score=0; state.earnedThisRun=0; state.memoryActivity=0; state.memoryCorrect=0; state.memoryMistakes=0;
+  clearTimeout(state.timer); state.game=id; state.level=1; state.lives=3; state.streak=0; state.score=0; state.earnedThisRun=0; state.detectiveActivity=0; state.memoryActivity=0; state.memoryCorrect=0; state.memoryMistakes=0;
   const g=games.find(x=>x.id===id);
   $("game-icon").textContent=g.icon; $("game-name").textContent=g.name; $("game-skill").textContent=g.skill;
   show("game"); updateGlobal(); nextChallenge();
@@ -87,7 +87,7 @@ function levelFailed(){
 }
 function nextChallenge(){
   clearTimeout(state.timer); updateGlobal();
-  if(state.game==="memory")(window.MQMemoryLab?window.MQMemoryLab.run:memory)(); else if(state.game==="detective")detective();
+  if(state.game==="memory")(window.MQMemoryLab?window.MQMemoryLab.run:memory)(); else if(state.game==="detective")(window.MQDetective?window.MQDetective.run:detective)();
   else if(state.game==="reflex")reflex(); else if(state.game==="builder")builder(); else team();
 }
 function memory(){
