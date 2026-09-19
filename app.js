@@ -87,8 +87,11 @@ function levelFailed(){
 }
 function nextChallenge(){
   clearTimeout(state.timer); updateGlobal();
-  if(state.game==="memory")(window.MQMemoryLab?window.MQMemoryLab.run:memory)(); else if(state.game==="detective")(window.MQDetective?window.MQDetective.run:detective)();
-  else if(state.game==="reflex")reflex(); else if(state.game==="builder")builder(); else team();
+  if(state.game==="memory")(window.MQMemoryLab?window.MQMemoryLab.run:memory)();
+  else if(state.game==="detective")(window.MQDetective?window.MQDetective.run:detective)();
+  else if(state.game==="reflex")(window.MQReflexArena?window.MQReflexArena.run:reflex);
+  else if(state.game==="builder")(window.MQBuilder?window.MQBuilder.run:builder);
+  else if(state.game==="team")(window.MQTeamQuest?window.MQTeamQuest.run:team);
 }
 function memory(){
   const icons=["🐶","🚲","🍎","⭐","🎈","🐟","🚀","🌳","⚽","🎸","🦁","🍕","🌈","🐼","🦋","🎯"];
@@ -122,7 +125,7 @@ function runDetective(){
   const box=$("choices"); state.active=true;
   shuffle([missing,...distract]).forEach(x=>{const b=document.createElement("button");b.type="button";b.className="number";b.textContent=x;b.addEventListener("click",()=>x===missing?levelComplete():levelFailed());box.appendChild(b);});
 }
-function reflex(){ return showGameInstruction("reflex"); }
+function reflex(){ return window.MQReflexArena?window.MQReflexArena.run:showGameInstruction("reflex"); }
 function runReflex(){
   $("game-stage").innerHTML=`<div><h3>Wait for it…</h3><p class="lead">Tap the target as soon as it appears.</p><button id="target" class="target" type="button" disabled>?</button></div>`;
   const delay=clamp(Math.round(1450-(state.level*48)*ages[state.age].factor),260,1450);
@@ -131,7 +134,7 @@ function runReflex(){
     t.addEventListener("click",levelComplete,{once:true});
   },delay);
 }
-function builder(){ return showGameInstruction("builder"); }
+function builder(){ return window.MQBuilder?window.MQBuilder.run:showGameInstruction("builder"); }
 function runBuilder(){
   const size=state.level<7?3:state.level<14?4:5;
   const needed=clamp(Math.round(2+state.level*.55*difficulty()),2,size*size-1);
@@ -142,7 +145,7 @@ function runBuilder(){
     box.appendChild(b);
   }
 }
-function team(){ return showGameInstruction("team"); }
+function team(){ return window.MQTeamQuest?window.MQTeamQuest.run:showGameInstruction("team"); }
 function runTeam(){
   const questions=[
     ["A teammate makes a mistake. What is the most constructive response?",["Help them fix it","Blame them","Ignore the problem"]],
@@ -182,14 +185,19 @@ function finishGame(){
 function goHome(){
   clearTimeout(state.timer);
   state.active=false;
-  // Returning to the Arcade must never reset the current checkpoint.
-  // A fresh run is created only by deliberately starting a game.
+  state.level=1;
+  state.lives=3;
+  state.streak=0;
+  state.score=0;
+  state.earnedThisRun=0;
   show("home");
   updateGlobal();
 }
 function leaveGame(){
-  // The button itself is an explicit save-and-leave action.
-  // Return directly to the Arcade without an extra confirmation dialog.
+  if(state.active || document.querySelector("#game.screen.active")){
+    const ok=window.confirm("Leave this game and return to the Game Arcade? Your current level attempt will end.");
+    if(!ok)return;
+  }
   goHome();
 }
 $("back-home").addEventListener("click",leaveGame);
