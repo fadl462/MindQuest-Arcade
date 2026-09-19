@@ -43,7 +43,26 @@ function order(){begin((sp,t)=>{const len=clamp(sp.count,4,9),a=shuffle(ICONS).s
 function count(){begin((sp,t)=>{const n=clamp(sp.count,3,7),types=shuffle(ICONS).slice(0,n),counts=types.map((x,i)=>clamp(2+(S.level>8?Math.floor(S.level/7):0)+(i%2),2,4)),pool=types.flatMap((x,i)=>Array(counts[i]).fill(x));$('game-stage').innerHTML=`<div class="memory-wrap">${header('count')}<div class="memory-timer">Remember how many times each object appears for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="memory-items">${shuffle(pool).map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('count','Choose the number that matches each object.')}<div class="count-list" id="count-list"></div></div>`;const box=$('count-list');let n=0;S.active=true;types.forEach(icon=>{const row=document.createElement('div');row.className='count-row';row.innerHTML=`<span>${icon}</span><div class="count-choices"></div>`;const cb=row.querySelector('.count-choices');shuffle([counts[types.indexOf(icon)],1,2,3,4].filter((v,i,a)=>a.indexOf(v)===i)).forEach(v=>{const b=document.createElement('button');b.className='word-option';b.textContent=v;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(v!==counts[types.indexOf(icon)]){b.classList.add('bad');fail()}else{b.classList.add('good');n++;if(n===types.length)complete()}};cb.appendChild(b)});box.appendChild(row)});deadline(sp.response*1.4)},sp.show)})}
 const START={visual,sequence,location,pairs,feature,working,change,category,order,count};
 const RULES={visual:'Look carefully at every object. Then select every object you remember.',sequence:'Watch the order. Then tap the objects in exactly the same order.',location:'Remember both the object and its position. Choose an object, then place it in the matching location.',pairs:'Memorise the cards. Turn over two at a time and find every matching pair.',feature:'Remember the exact shape AND colour of each item. Select only the combinations you saw.',working:'Hold the sequence in your mind. After part is removed, identify what was missing.',change:'Compare two scenes in your memory. Decide whether an object changed.',category:'Remember the named category. Later, select only the objects that belonged to it.',order:'Remember the left-to-right order. Then rebuild it from first to last.',count:'Remember how many times each object appeared. Later, choose the correct count for each object.'};
-function instructions(type){const i=INFO[type],sp=spec(),timing=`Study: ${(sp.show/1000).toFixed(1)} sec • Response: ${Math.round(sp.response/1000)} sec`;$('game-stage').innerHTML=`<div class="memory-instruction-screen"><div class="instruction-icon">🧠</div><span class="memory-kind">${i[2]}</span><div class="instruction-activity">Activity ${(S.memoryActivity||0)+1} of 4</div><h2>${i[0]}</h2><p class="instruction-purpose">${i[1]}</p><div class="instruction-rule"><strong>How to play</strong><p>${RULES[type]}</p></div><div class="instruction-timing"><span>⏱️ ${timing}</span><span>🎯 Pass with no incorrect response</span></div><button id="start-memory-activity" class="primary-btn instruction-start">Start Activity →</button></div>`;S.active=false;clearTimeout(S.timer);$('#start-memory-activity').onclick=()=>START[type]()}
+function instructions(type){
+  const i=INFO[type],sp=spec(),timing=`Study: ${(sp.show/1000).toFixed(1)} sec • Response: ${Math.round(sp.response/1000)} sec`;
+  $('game-stage').innerHTML=`<div class="memory-instruction-screen"><div class="instruction-icon">🧠</div><span class="memory-kind">${i[2]}</span><div class="instruction-activity">Activity ${(S.memoryActivity||0)+1} of 4</div><h2>${i[0]}</h2><p class="instruction-purpose">${i[1]}</p><div class="instruction-rule"><strong>How to play</strong><p>${RULES[type]}</p></div><div class="instruction-timing"><span>⏱️ ${timing}</span><span>🎯 Pass with no incorrect response</span></div><button id="start-memory-activity" type="button" class="primary-btn instruction-start">Start Activity →</button></div>`;
+  S.active=false; clearTimeout(S.timer);
+  const button=$('start-memory-activity');
+  if(!button)return;
+  const launch=()=>{
+    if(button.dataset.started==='1')return;
+    button.dataset.started='1';
+    button.disabled=true;
+    button.textContent='Starting…';
+    try { START[type](); }
+    catch(err){
+      console.error('Memory Lab activity failed to start:',err);
+      button.disabled=false; button.dataset.started=''; button.textContent='Start Activity →';
+      $('game-message').textContent='The activity could not start. Please try again.';
+    }
+  };
+  button.addEventListener('click',launch);
+}
 function run(){S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;instructions(PLANS[S.level-1][S.memoryActivity]||'visual')}
 window.MQMemoryLab={run};
 })();
