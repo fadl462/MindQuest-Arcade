@@ -182,17 +182,14 @@ function finishGame(){
 function goHome(){
   clearTimeout(state.timer);
   state.active=false;
-  state.level=1;
-  state.lives=3;
-  state.streak=0;
-  state.score=0;
-  state.earnedThisRun=0;
+  // Returning to the Arcade must never reset the current checkpoint.
+  // A fresh run is created only by deliberately starting a game.
   show("home");
   updateGlobal();
 }
 function leaveGame(){
   if(state.active || document.querySelector("#game.screen.active")){
-    const ok=window.confirm("Leave this game and return to the Game Arcade? Your current level attempt will end.");
+    const ok=window.confirm("Save your current progress and return to the Game Arcade? You can resume from this checkpoint later.");
     if(!ok)return;
   }
   goHome();
