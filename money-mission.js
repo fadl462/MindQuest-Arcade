@@ -8,6 +8,7 @@ const INFO={
  compare:["Price Detective","Compare prices and decide which amount is greater, smaller or equal.","Read both amounts before choosing."],
  change:["Change Maker","Work out the change from a purchase.","Subtract the price from the amount paid."],
  budget:["Smart Shopper","Choose purchases that fit the budget.","Add the selected prices. Stay within the budget." ],
+ unit:["Unit Price Detective","Compare the cost per item to find the better value.","Divide the total price by the number of items."],
  discount:["Sale Detective","Work out the sale price after a simple discount.","Find the discount amount, then subtract it from the original price."]
 };
 const VALUES=[1,2,5,10,20,50,100];
@@ -19,7 +20,7 @@ function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head">
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$('game-message').textContent=last?'✓ Four money challenges complete!':`✓ Activity ${activity()+1} complete. Loading the next money challenge…`;if(last){S.moneyActivity=0;S.timer=setTimeout(()=>finishLevel(),650)}else{S.moneyActivity=activity()+1;S.timer=setTimeout(()=>{$('game-message').textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){const type=TYPES[(S.level-1+activity())%5],i=INFO[type];S.active=false;clearTimeout(S.timer);$('game-stage').innerHTML=`<div class="universal-instruction"><div class="ui-icon">💰</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>💵 Use Ghana cedis</span><span>✓ 4 activities per level</span></div><button id="money-start" class="primary-btn ui-start">Start Activity →</button></div>`;$('money-start').onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else budget()}
+function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="unit")unit();else budget()}
 function money(n){return `GH₵${Number(n).toFixed(n%1?2:0)}`}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$('game-stage').innerHTML=`<div class="team-stage money-stage">${title}<div class="team-question">${prompt}</div><div id="money-options" class="team-options"></div></div>`;const box=$('money-options');S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===String(correct)?complete():fail();box.appendChild(b)})}
@@ -54,6 +55,7 @@ function discount(){
  choice(head('discount'),`An item costs <b>${money(price)}</b> and is <b>${rate}% off</b>. What is the sale price?`,choices.map(money),money(sale));
 }
 
+function unit(){const bundles=[[4,20],[5,25],[6,24],[8,40],[10,50],[3,18],[12,60]],q=bundles[(S.level+activity()+S.age)%bundles.length],a=q[0],total=q[1],unitPrice=total/a,alt=unitPrice+(S.level%3)+1;choice(head('unit'),`Which option has the lower cost per item? <div class="money-compare"><b>${a} items for ${money(total)}</b><span>vs</span><b>${a} items for ${money(alt*a)}</b></div>`,['FIRST','SECOND'],unitPrice<alt?'FIRST':'SECOND');}
 function finishLevel(){ if(!S.active)return; S.active=false; MQ.levelComplete(); }
 
 window.MQMoneyMission={run:instruction};

@@ -9,7 +9,7 @@ const plans=[
  ['clue','pattern','analogy','odd'],['rule','sequence','math','clue'],['order','analogy','pattern','deduction'],['math','clue','sequence','rule'],
  ['deduction','pattern','order','analogy'],['sequence','rule','clue','math'],['visual','odd','deduction','order'],['pattern','math','analogy','clue'],
  ['rule','deduction','sequence','visual'],['analogy','order','math','pattern'],['clue','rule','deduction','sequence'],['visual','math','order','analogy'],
- ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','deduction'],
+ ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','estimate'],
  ['estimate','classify','compare','sequence'],['classify','estimate','deduction','math']
 ];
 const info={
@@ -23,6 +23,8 @@ const info={
  rule:['Rule Detective','Discover which rule the group follows.','Test the choices against the rule and select the one that fits.'],
  visual:['Shape Detective','Find the shape that completes the visual rule.','Compare sides, symbols, position or rotation to discover the rule.'],
  compare:['Comparison Detective','Compare two quantities and identify the correct relationship.','Look carefully at both sides before deciding which is greater, smaller or equal.'],
+ estimate:['Estimate Detective','Estimate a quantity using the information given.','Use sensible rounding or comparison to choose the closest answer.'],
+ classification:['Classification Detective','Identify which category or rule best describes the item.','Look for the defining property shared by the correct group.'],
  deduction:['Logic Detective','Combine clues to make one logical conclusion.','Use all the information. Do not choose an answer that conflicts with a clue.'],
  estimate:['Estimate Detective','Choose the closest sensible estimate.','Use the scale and information given. An estimate should be close, not exact.'],
  classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.']
@@ -126,6 +128,15 @@ function classify(){
  ];
  const q=sets[(S.level+age())%sets.length];
  begin('classify',`<div class=\"detective-prompt\"><h3>${q[0]}</h3><p>Choose the item that fits the category.</p></div>`,q[1].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[2]);
+}
+function estimate(){
+ const l=S.level,a=age(),base=18+(l*7)+(a*5),step=l<8?10:l<15?25:50;
+ const value=Math.round(base/step)*step,others=[value-step,value+step,value+step*2].filter(x=>x>0);
+ begin('estimate',`<div class="detective-prompt"><div class="logic-sequence"><span>Estimate</span><b>≈</b><span>${base}</span></div><p>Which value is the closest sensible estimate?</p></div>`,chooseObjs(value,others),String(value));
+}
+function classification(){
+ const sets=[['Which belongs with fruits?',['Apple','Carrot','Potato','Onion'],'Apple'],['Which belongs with vehicles?',['Bus','Chair','Cup','Book'],'Bus'],['Which is a renewable energy source?',['Sunlight','Plastic','Glass','Concrete'],'Sunlight'],['Which is a geometric shape?',['Triangle','River','Cloud','Forest'],'Triangle'],['Which is used for measuring time?',['Clock','Ruler','Compass','Scale'],'Clock']];
+ const q=sets[(S.level+S.age)%sets.length];begin('classification',`<div class="detective-prompt"><h3>${q[0]}</h3></div>`,q[1].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[2]);
 }
 function deduction(){
  const sets=S.level<8?[['All red blocks are circles.','This block is red.','It must be a…','Circle',['Circle','Square','Triangle','Star']],['Every bird has wings.','Kofi is a bird.','Kofi has…','Wings',['Wings','Wheels','Fins','Roots']]]:[['All planners make lists.','Ama is a planner.','Ama makes…','Lists',['Lists','Cakes','Maps','Songs']],['Every triangle has three sides.','This shape is a triangle.','It has…','Three sides',['Three sides','Four sides','Five sides','No sides']]];

@@ -15,6 +15,7 @@ const INFO={
  target:["Target Rush","Wait for the target, then tap it as quickly as possible.","Tap the target only after it appears."],
  color:["Color Flash","Watch the signal and tap the matching color.","Ignore the decoys and react to the target color."],
  avoid:["Safe Tap","Find the safe symbol among the hazards.","Tap only the safe symbol."],
+ multitap:["Multi-Target Rush","Tap the targets in the order they appear.","React to each target in sequence without tapping a decoy."],
  sequence:["Reaction Sequence","Watch the short sequence, then repeat it.","Tap the symbols in exactly the order shown."],
  double:["Double Target","React to two targets in the correct order.","Tap the first target, then the second target without tapping a decoy."]
 };
@@ -32,7 +33,7 @@ function instruction(){
  $("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">⚡</div><span class="ui-skill">PSYCHOMOTOR</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>⚡ Faster as you advance</span><span>✓ Four activities per level</span></div><button id="reflex-start" class="primary-btn ui-start">Start Activity →</button></div>`;
  $("reflex-start").onclick=()=>runActivity(type);
 }
-function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else if(type==="double")doubleTarget();else sequence()}
+function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else if(type==="double")doubleTarget();else if(type==="multitap")multiTap();else sequence()}
 function goNoGo(){
  const token=begin(),go=Math.random()>.38;
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('go','Wait for the signal. Tap GO, but do not tap NO-GO.')}<div class="reflex-signal" id="go-signal">Get ready…</div><div id="go-button-wrap" class="reflex-options"><button id="go-button" class="reflex-target" disabled>GO</button></div></div>`;
@@ -71,6 +72,12 @@ function avoid(){
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("avoid","The safe symbol will be revealed. Tap only that symbol.")}<div class="reflex-signal" id="avoid-signal">?</div><div id="avoid-options" class="reflex-options"></div></div>`;
  const box=$("avoid-options");options.forEach(x=>{const b=document.createElement("button");b.className="reflex-symbol";b.textContent=x;b.disabled=true;b.onclick=()=>x===safe?complete():fail();box.appendChild(b)});
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("avoid-signal").textContent=`SAFE: ${safe}`;box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true;S.timer=setTimeout(fail,responseWindow(.95))},signalDelay());
+}
+function multiTap(){
+ const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+activity(),2,5),positions=Array.from({length:len},(_,i)=>(S.level*3+i*2+S.age)%6);
+ $("game-stage").innerHTML=`<div class="reflex-stage">${head("multitap","Watch the target order, then tap the same positions.")}<div id="multi-board" class="reflex-options"></div></div>`;
+ const board=$("multi-board");for(let i=0;i<6;i++){const b=document.createElement("button");b.className="reflex-target";b.textContent="";b.dataset.i=i;b.disabled=true;board.appendChild(b)}
+ let show=0;const reveal=()=>{if(token!==S.reflexToken)return;if(show<positions.length){board.querySelectorAll("button").forEach(b=>b.textContent="");board.querySelectorAll("button")[positions[show]].textContent="🎯";show++;S.timer=setTimeout(reveal,Math.max(280,650-S.level*12));}else{let n=0;board.querySelectorAll("button").forEach(b=>{b.disabled=false;b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(i!==positions[n])return fail();b.classList.add("good");if(++n===positions.length)complete()}});S.active=true;S.timer=setTimeout(fail,responseWindow(1.1)+positions.length*180)}};reveal();
 }
 function sequence(){
  const token=begin(),len=clamp(3+Math.floor((S.level-1)/4)+activity(),3,8),mode=S.level%4;

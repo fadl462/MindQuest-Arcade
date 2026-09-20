@@ -10,6 +10,7 @@ const INFO={
  pattern:["Pattern Builder","Complete the structure by following its visual rule.","Study the filled cells, then choose the missing cell."],
  path:["Path Builder","Connect the start to the finish while avoiding blocked cells.","Select the next correct cell in the path."],
  mirror:["Mirror Builder","Complete the reflected half of the structure.","Copy the pattern across the mirror line." ],
+ rotate:["Rotation Builder","Complete the construction by matching the rotated target.","Mentally rotate the pattern and select the correct orientation."],
  count:["Count Builder","Read the construction target and select the grid with the correct number of filled cells.","Count carefully and choose the matching construction."],
  rotate:["Rotation Builder","Identify the cell pattern after a quarter-turn rotation.","Imagine rotating the shape 90 degrees clockwise, then choose the new position."]
 };
@@ -20,7 +21,7 @@ function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head">
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four building challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next build…`;if(last){S.builderActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.builderActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){const type=TYPES[(S.level-1+activity())%5],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🧩</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🧩 Plan before you place</span><span>✓ Four activities per level</span></div><button id="builder-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("builder-start").onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else mirror()}
+function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="rotate")rotate();else mirror()}
 function makeGrid(n){return `<div class="builder-lab-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button type="button" class="builder-cell" data-i="${i}"></button>`).join("")}</div>`}
 function fill(){
  const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.5)+activity())*ageScale()),2,total-2),blockedCount=clamp(1+Math.floor(S.level/5),1,4),blocked=shuffle([...Array(total).keys()]).slice(0,blockedCount);
@@ -64,6 +65,11 @@ function rotate(){
  const wrongs=shuffle([...Array(n*n).keys()].filter(i=>i!==target)).slice(0,3);
  $('game-stage').innerHTML=`<div class=\"builder-stage\">${head('rotate',`Rotate the highlighted cell 90° clockwise.`)}<p class=\"builder-task\">Where does it land?</p>${makeGrid(n)}<div id=\"rotate-options\" class=\"builder-choice-row\"></div></div>`;
  const cells=[...document.querySelectorAll('.builder-cell')];cells[r*n+c].classList.add('filled');const box=$('rotate-options');shuffle([target,...wrongs]).forEach(i=>{const b=document.createElement('button');b.className='word-option';b.textContent=`Cell ${i+1}`;b.onclick=()=>i===target?complete():fail();box.appendChild(b)});S.active=true;
+}
+function rotate(){
+ const variants=[["↑","→","↓","←"],["└","┌","┐","┘"],["▲","▶","▼","◀"]],v=variants[(S.level+activity())%variants.length],correct=v[(S.level+activity())%4];
+ $("game-stage").innerHTML=`<div class="builder-stage">${head("rotate")}<p class="builder-task">The shape turns one quarter-turn at a time. Which direction comes next?</p><div class="rotation-display">${v.slice(0,3).map(x=>`<span>${x}</span>`).join("<b>→</b>")}<b>→</b><span>?</span></div><div class="builder-choice-row" id="rotation-options"></div></div>`;
+ const box=$("rotation-options");S.active=true;shuffle(v).forEach(x=>{const b=document.createElement("button");b.className="word-option";b.textContent=x;b.onclick=()=>x===correct?complete():fail();box.appendChild(b)});
 }
 function mirror(){
  const n=size(),axis=Math.floor(n/2),mode=S.level%3,left=[];

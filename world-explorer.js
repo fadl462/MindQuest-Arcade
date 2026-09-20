@@ -48,6 +48,7 @@ const INFO={
  clue:["Explorer Clues","Solve a geography clue using all the information shown.","Every part of the clue matters. Choose the only answer that fits."],
  route:["Journey Planner","Think about locations, directions and travel order.","Choose the answer that keeps the journey logical."],
  culture:["Culture & Nature","Connect places with a simple cultural or environmental clue.","Use the clue to identify the country, region or natural feature."],
+ continent:["Continent Challenge","Connect countries with their correct continents.","Use the country location to identify its continent."],
  capital:["Capital Challenge","Match a country with its capital city.","Use the country clue and choose the correct capital."]
 };
 function activity(){return Number.isInteger(S.worldActivity)?S.worldActivity:0}
@@ -58,7 +59,7 @@ function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);con
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function ageText(t){if(S.age===0)return t.replace(/continent/g,"place area").replace(/capital/g,"main city").replace(/landmark/g,"famous place");return t}
 function instruction(){const type=TYPES[(S.level-1+activity())%5],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🌍</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🌍 Explore places</span><span>✓ Four activities per level</span></div><button id="world-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("world-start").onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else if(type==="capital")capital();else if(type==="culture")culture();else route()}
+function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else if(type==="capital")capital();else if(type==="culture")culture();else if(type==="continent")continent();else route()}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$("game-stage").innerHTML=`<div class="team-stage world-stage">${title}<div class="team-question">${prompt}</div><div id="world-options" class="team-options"></div></div>`;const box=$("world-options");S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(x);b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
 function place(){const p=PLACES[levelIndex()];const mode=S.level<6?"country":S.level<13?"continent":"capital";if(mode==="country"){const others=shuffle(PLACES.filter(x=>x[1]===p[1]&&x[0]!==p[0]).map(x=>x[0])).slice(0,3);choice(head("place"),`Which country is in ${p[1]} and has ${p[2]} as its capital?`,[p[0],...others],p[0])}else if(mode==="continent"){const others=shuffle(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[1])).filter((x,i,a)=>a.indexOf(x)===i).slice(0,3);choice(head("place"),`Which continent is ${p[0]} in?`,[p[1],...others],p[1])}else{const others=shuffle([...new Set(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[2]))]).slice(0,3);choice(head("place"),`What is the capital of ${p[0]}?`,[p[2],...others],p[2])}}
@@ -84,6 +85,7 @@ function culture(){
  const q=BANK[(S.level+activity()*2+S.age)%BANK.length];
  choice(head('culture'),ageText(q[0]),q[2],q[1]);
 }
+function continent(){const p=PLACES[(S.level*3+activity()*2+S.age)%PLACES.length],others=shuffle([...new Set(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[1]))]).filter(x=>x!==p[1]).slice(0,3);choice(head('continent'),`Which continent is <b>${p[0]}</b> in?`,[p[1],...others],p[1]);}
 function route(){const r=ROUTES[(levelIndex()+activity()*2)%ROUTES.length];choice(head("route"),ageText(r[0]),r[2],r[1])}
 window.MQWorldExplorer={run:instruction};
 })();

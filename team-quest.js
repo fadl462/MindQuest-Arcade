@@ -79,6 +79,7 @@ const INFO={
  order:["Team Order","Put the teamwork steps in the most useful order.","Think about what must happen first, what follows, and what should be checked at the end."],
  match:["Team Match","Match the situation with the helpful response.","Choose the response that best fits the situation."],
  plan:["Team Plan","Select actions that create a strong team plan.","Choose useful actions and avoid actions that create conflict or confusion."],
+ responsibility:["Responsibility Check","Choose the action that shows ownership and reliability.","Think about honesty, following through and taking responsibility for shared work."],
  empathy:["Perspective Check","Choose the response that best recognises another person's perspective.","Think about how the other person may feel and what response would help."],
  responsibility:["Responsibility Check","Choose the action that shows ownership of a shared task.","Look for actions that are honest, dependable and considerate of the group."]
 };
@@ -93,7 +94,7 @@ function ageText(text){
  return text;
 }
 function instruction(){const type=TYPES[(S.level-1+activity())%5],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🤝</div><span class="ui-skill">BEHAVIOURAL</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🤝 Think about others</span><span>✓ Four activities per level</span></div><button id="team-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("team-start").onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else plan()}
+function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="responsibility")responsibility();else plan()}
 function responsibility(){
  const BANK=[
   ['You promised to bring the team materials, but forgot. What is responsible?', ['Tell the team honestly and help find another solution','Hide the mistake','Blame someone else']],
@@ -132,6 +133,11 @@ function empathy(){
  const box=$('team-options');S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement('button');b.className='team-option';b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});
 }
 
+function responsibility(){
+ const cases=[["You promised to bring materials but forgot. What is responsible?",["Tell the team honestly and help find a solution","Pretend you brought them","Blame someone else"]],["You notice a mistake in your team's work. What should you do?",["Tell the team and help correct it","Hide it","Wait for someone else to notice"]],["You finish your assigned task. What should you do next?",["Check whether the team needs help","Leave immediately","Delete someone else's work"]],["A group rule applies to everyone. What should you do?",["Follow it consistently","Follow it only when watched","Ask others to follow it while you ignore it"]],["You cannot finish your part on time. What is responsible?",["Tell the team early and discuss a solution","Say nothing","Wait until the deadline passes"]]];
+ const q=cases[(S.level+activity()+S.age)%cases.length];$("game-stage").innerHTML=`<div class="team-stage">${head("responsibility")}<div class="team-match-situation">${ageText(q[0])}</div><p class="team-question">Which response shows responsibility?</p><div id="team-options" class="team-options"></div></div>`;
+ const box=$("team-options");S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});
+}
 function plan(){
  const base=PLANS[(levelIndex()+activity()*2)%PLANS.length],need=S.level<6?Math.min(2,base.length):S.level<13?Math.min(3,base.length):Math.min(4,base.length);const correct=shuffle(base).slice(0,need),distractors=["Hide information","Blame a teammate","Ignore the plan","Interrupt everyone","Keep the goal secret","Change roles without telling anyone"];const options=shuffle(correct.concat(shuffle(distractors).slice(0,4)));
  $("game-stage").innerHTML=`<div class="team-stage">${head("plan",`Choose ${need} actions that belong in a strong team plan.`)}<div id="team-plan" class="team-plan"></div><button id="team-submit" class="primary-btn ui-start">Check Plan ✓</button></div>`;
