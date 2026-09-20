@@ -29,16 +29,16 @@ function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);con
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🧩</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🧩 Plan before you place</span><span>✓ Four activities per level</span></div><button id="builder-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("builder-start").onclick=()=>runActivity(type)}
 function weight(){
- const target=6+Math.floor(S.level/4),weights=[1,2,3],left=2+(S.level%3),need=Math.max(2,target-left*2);
+ const left=6+(S.level%5),right=2+((S.level+activity()+S.age)%3),need=left-right;
  const options=[need,Math.max(1,need-1),need+1,need+2];
- choiceBuilder('weight',`The left side weighs <b>${left*2}</b>. Choose the added weight that makes the total balanced at <b>${target}</b>.`,options,target-left*2);
+ choiceBuilder('weight',`The left side weighs <b>${left}</b> units and the right side weighs <b>${right}</b> units. How much weight must you add to the right side to balance the structure?`,options,need);
 }
 function choiceBuilder(type,prompt,choices,correct){
  $('game-stage').innerHTML=`<div class="builder-stage">${head(type)}<div class="builder-prompt">${prompt}</div><div class="builder-options" id="builder-choice"></div></div>`;const box=$('builder-choice');S.active=true;shuffle(choices).forEach(x=>{const b=document.createElement('button');b.className='builder-option';b.textContent=x;b.onclick=()=>Number(x)===Number(correct)?complete():fail();box.appendChild(b)})
 }
 function allocate(){
  const total=S.level<8?8:S.level<15?12:16,target=2+(S.level+activity())%5,need=Math.min(total-2,target+2);
- $('game-stage').innerHTML=`<div class="builder-stage">${head('balance','Choose exactly the right number of blocks without exceeding the build budget.')}<div class="builder-prompt"><h3>Resource Allocation</h3><p>You have <b>${total}</b> blocks. Your structure needs <b>${need}</b> blocks.</p><div id="alloc" class="builder-options"></div><button id="alloc-done" class="primary-btn">Build Structure →</button><div id="alloc-count" style="margin-top:12px">Selected: 0</div></div></div>`;
+ $('game-stage').innerHTML=`<div class="builder-stage">${head('allocate','Choose exactly the right number of blocks without exceeding the build budget.')}<div class="builder-prompt"><h3>Resource Allocation</h3><p>You have <b>${total}</b> blocks. Your structure needs <b>${need}</b> blocks.</p><div id="alloc" class="builder-options"></div><button id="alloc-done" class="primary-btn">Build Structure →</button><div id="alloc-count" style="margin-top:12px">Selected: 0</div></div></div>`;
  const box=$('alloc');let n=0;S.active=true;for(let i=0;i<total;i++){const b=document.createElement('button');b.className='builder-option';b.textContent='□';b.onclick=()=>{if(!S.active)return;b.classList.toggle('good');n+=b.classList.contains('good')?1:-1;$('alloc-count').textContent=`Selected: ${n}`};box.appendChild(b)}$('alloc-done').onclick=()=>n===need?complete():fail();
 }
 function buildSequence(){
@@ -124,7 +124,12 @@ function rotate(){
  const box=$("rotation-options");S.active=true;shuffle(v).forEach(x=>{const b=document.createElement("button");b.className="word-option";b.textContent=x;b.onclick=()=>x===correct?complete():fail();box.appendChild(b)});
 }
 
-function balance(){const left=2+(S.level%5),right=left+(activity()%2);const target=left*2+right;const correct=target;const choices=[correct,correct+1,Math.max(1,correct-1),correct+2];const i=INFO.balance;$('game-stage').innerHTML=`<div class="builder-stage">${head('balance')}<div class="builder-prompt"><h3>Balance the structure</h3><p>Left side: ${left} blocks + ${right} blocks. What total weight must the right side have?</p><div class="builder-options">${shuffle(choices).map(v=>`<button class="builder-option" data-v="${v}">${v} blocks</button>`).join('')}</div></div></div>`;S.active=true;document.querySelectorAll('.builder-option').forEach(b=>b.onclick=()=>b.dataset.v===String(correct)?complete():fail())}
+function balance(){
+ const left=4+(S.level%4),right=2+((S.level+activity()+S.age)%3),gap=left-right;
+ const choices=[gap,Math.max(1,gap-1),gap+1,gap+2];
+ $('game-stage').innerHTML=`<div class="builder-stage">${head('balance','Balance the structure by adding blocks to the lighter side.')}<div class="builder-prompt"><h3>How many blocks are needed?</h3><div class="builder-balance-visual" style="display:flex;align-items:center;justify-content:center;gap:18px;margin:18px auto;max-width:620px"><div class="builder-balance-side" style="flex:1;display:grid;gap:6px;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:16px"><strong>LEFT</strong><span>${left} blocks</span></div><div class="builder-balance-scale" aria-hidden="true" style="font-size:32px">⚖️</div><div class="builder-balance-side" style="flex:1;display:grid;gap:6px;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:16px"><strong>RIGHT</strong><span>${right} blocks</span></div></div><p>How many blocks should be added to the right side so both sides are equal?</p><div class="builder-options">${shuffle(choices).map(v=>`<button class="builder-option" data-v="${v}">${v} block${v===1?'':'s'}</button>`).join('')}</div></div></div>`;
+ S.active=true;document.querySelectorAll('.builder-option').forEach(b=>b.onclick=()=>b.dataset.v===String(gap)?complete():fail());
+}
 
 function mirror(){
  const n=size(),axis=Math.floor(n/2),mode=S.level%3,left=[];

@@ -2,7 +2,7 @@ const fs=require('fs'),path=require('path');
 const ROOT=path.resolve(__dirname,'..');
 const read=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
 let pass=0,fail=0;const ok=(n,c,d='')=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'} ${n}${d?` [${d}]`:''}`)};
-const team=read('team-quest.js'),world=read('world-explorer.js'),money=read('money-mission.js'),detective=read('detective.js');
+const team=read('team-quest.js'),world=read('world-explorer.js'),money=read('money-mission.js'),detective=read('detective.js'),reflex=read('reflex-arena.js'),builder=read('builder.js');
 const types=(team.match(/const TYPES=\[([\s\S]*?)\];/)||[])[1]||'';
 const expected=['choice','order','match','plan','empathy','responsibility','communication','negotiation','conflict','leadership','actionSequence','tradeoff','activeListening','perspective'];
 for(const t of expected)ok(`Team Quest mechanic: ${t}`,types.includes(`'${t}'`)||types.includes(`"${t}"`));
@@ -13,4 +13,6 @@ ok('World Explorer uses distinct distance distractors',/vals=\[base,base\+5\+\(a
 ok('Money Mission guarantees four savings options',/\[correct,wk\(weeks\+1\),wk\(weeks\+2\),weeks>1\?wk\(weeks-1\):wk\(weeks\+3\)\]/.test(money));
 ok('Money Mission exact change supports undo and clear',/change-undo/.test(money)&&/change-clear/.test(money));
 ok('Detective probability includes fraction reasoning',/probability of red\?','3\/5/.test(detective)&&/2\/5/.test(detective));
+ok('Reflex advanced mechanics are reachable',/\"mirror\".*\"chase\"/.test(reflex)&&/type===\"chase\"/.test(reflex));
+ok('Builder balance has a single defensible answer',/const left=4\+\(S\.level%4\),right=2\+/.test(builder)&&/data-v=\"\$\{v\}\"/.test(builder));
 console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0);
