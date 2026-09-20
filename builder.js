@@ -86,7 +86,7 @@ function maze(){
 function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else if(type==="symmetry")symmetry();else if(type==="packing")packing();else if(type==="allocate")allocate();else if(type==="weight")weight();else if(type==="maze")maze();else if(type==="tileMatch")tileMatch();else mirror()}
 function makeGrid(n){return `<div class="builder-lab-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button type="button" class="builder-cell" data-i="${i}"></button>`).join("")}</div>`}
 function fill(){
- const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.55)+activity()+tier())*ageScale()),2,total-2),blockedCount=clamp(1+tier(),1,6),blocked=shuffle([...Array(total).keys()]).slice(0,blockedCount);
+ const n=size(),total=n*n,blockedCount=clamp(1+tier(),1,6),blocked=shuffle([...Array(total).keys()]).slice(0,Math.min(blockedCount,total-3)),available=total-blocked.length,need=clamp(Math.round((2+Math.floor(S.level*.55)+activity()+tier())*ageScale()),2,Math.max(2,available-1));
  $("game-stage").innerHTML=`<div class="builder-stage">${head("fill")}<p class="builder-task">Build with <b>${need}</b> blocks. Avoid the blocked cells.</p>${makeGrid(n)}</div>`;
  const cells=[...document.querySelectorAll(".builder-cell")];blocked.forEach(i=>cells[i].classList.add("blocked"));let count=0;S.active=true;
  cells.forEach((b,i)=>b.onclick=()=>{if(!S.active||b.disabled||blocked.includes(i))return;b.classList.add("filled");b.disabled=true;if(++count===need)complete()});
