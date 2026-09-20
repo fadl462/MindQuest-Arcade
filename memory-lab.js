@@ -132,6 +132,16 @@ function order(){begin((sp,t)=>{
  $('game-stage').innerHTML=`<div class="memory-wrap">${header('order')}<div class="memory-timer">Remember the left-to-right order for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="sequence-display">${a.map((x,i)=>`<span class="sequence-token">${i+1}. ${x}</span>`).join('')}</div></div>`;
  S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('order','Rebuild the order from first to last.')}<div id="order-options" class="memory-items"></div><div id="order-picked" class="picked-sequence"></div></div>`;const box=$('order-options'),picked=$('order-picked');let n=0;S.active=true;shuffle(a).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==a[n]){b.classList.add('bad');fail()}else{b.disabled=true;b.classList.add('good');picked.textContent+=(n?' → ':'')+x;if(++n===a.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)
 })}
+
+function reverse(){begin((sp,t)=>{
+ const len=clamp(3+Math.floor(S.level/5)+(S.memoryActivity||0),3,8);
+ const start=(S.level*3+S.age*4)%ICONS.length;
+ const seq=shuffle(ICONS.slice(start).concat(ICONS.slice(0,start))).slice(0,len);
+ const answer=[...seq].reverse();
+ $('game-stage').innerHTML=`<div class="memory-wrap">${header('reverse')}<div class="memory-timer">Study the sequence for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="sequence-display">${seq.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div></div>`;
+ S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('reverse','Tap the objects in reverse order.')}<div id="reverse-choices" class="memory-items"></div><div id="reverse-picked" class="picked-sequence"></div></div>`;const box=$('reverse-choices'),picked=$('reverse-picked');let n=0;S.active=true;shuffle([...new Set(seq)]).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==answer[n]){b.classList.add('bad');fail()}else{b.disabled=true;b.classList.add('good');picked.textContent+=(n?' ':'')+x;if(++n===answer.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)
+})}
+
 function direction(){begin((sp,t)=>{
  const len=clamp(3+Math.floor(S.level/5)+(S.memoryActivity||0),3,8);
  const seq=Array.from({length:len},(_,i)=>ARROWS[(S.level*2+S.age+i*2+(S.memoryActivity||0))%ARROWS.length]);
@@ -144,7 +154,7 @@ function count(){begin((sp,t)=>{
  $('game-stage').innerHTML=`<div class="memory-wrap">${header('count')}<div class="memory-timer">Remember how many times each object appears.</div><div class="memory-items">${shuffle(pool).map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;
  S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('count','Choose the number for each object.')}<div class="count-list" id="count-list"></div></div>`;const box=$('count-list');let done=0;S.active=true;types.forEach((icon,i)=>{const row=document.createElement('div');row.className='count-row';row.innerHTML=`<span>${icon}</span><div class="count-choices"></div>`;const cb=row.querySelector('.count-choices'),correct=counts[i],vals=[correct,1+(correct%4),2+(correct%4),3+(correct%4)].filter((v,j,a)=>a.indexOf(v)===j).slice(0,4);shuffle(vals).forEach(v=>{const b=document.createElement('button');b.className='word-option';b.textContent=v;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(v!==correct){b.classList.add('bad');fail()}else{b.classList.add('good');if(++done===types.length)complete()}};cb.appendChild(b)});box.appendChild(row)});deadline(sp.response*1.25)},sp.show)
 })}
-const START={visual,sequence,location,pairs,feature,working,change,category,order,count,direction};
+const START={visual,sequence,location,pairs,feature,working,change,category,order,count,direction,reverse};
 const RULES={
  visual:'Remember the objects you see, then select them from the choices.',
  sequence:'Watch the exact order, then tap the objects in the same order.',
@@ -156,7 +166,8 @@ const RULES={
  category:'Remember the named group, then select only objects that belonged to it.',
  order:'Remember the left-to-right order, then rebuild it from first to last.',
  count:'Remember how many times each object appeared, then choose each count.',
- direction:'Watch the arrow sequence, then tap the directions in the same order.'
+ direction:'Watch the arrow sequence, then tap the directions in the same order.',
+ reverse:'Remember the sequence, then reproduce it from last to first.'
 };
 function instructions(type){
  const i=INFO[type],sp=cfg();

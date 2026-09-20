@@ -10,7 +10,7 @@ const plans=[
  ['deduction','pattern','order','analogy'],['sequence','rule','clue','math'],['visual','odd','deduction','order'],['pattern','math','analogy','clue'],
  ['rule','deduction','sequence','visual'],['analogy','order','math','pattern'],['clue','rule','deduction','sequence'],['visual','math','order','analogy'],
  ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','estimate'],
- ['estimate','classify','compare','sequence'],['classify','estimate','deduction','math']
+ ['estimate','classify','compare','ranking'],['classify','estimate','deduction','math']
 ];
 const info={
  sequence:['Sequence Detective','Find what comes next in the sequence.','Look for the change between each item, then choose the item that continues the rule.'],
@@ -26,6 +26,7 @@ const info={
  estimate:['Estimate Detective','Estimate a quantity using the information given.','Use sensible rounding or comparison to choose the closest answer.'],
  classification:['Classification Detective','Identify which category or rule best describes the item.','Look for the defining property shared by the correct group.'],
  deduction:['Logic Detective','Combine clues to make one logical conclusion.','Use all the information. Do not choose an answer that conflicts with a clue.'],
+ ranking:['Ranking Detective','Arrange quantities from smallest to largest using the clues given.','Compare every value carefully, then choose the correct order.'],
  estimate:['Estimate Detective','Choose the closest sensible estimate.','Use the scale and information given. An estimate should be close, not exact.'],
  classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.']
 };
@@ -138,11 +139,20 @@ function classification(){
  const sets=[['Which belongs with fruits?',['Apple','Carrot','Potato','Onion'],'Apple'],['Which belongs with vehicles?',['Bus','Chair','Cup','Book'],'Bus'],['Which is a renewable energy source?',['Sunlight','Plastic','Glass','Concrete'],'Sunlight'],['Which is a geometric shape?',['Triangle','River','Cloud','Forest'],'Triangle'],['Which is used for measuring time?',['Clock','Ruler','Compass','Scale'],'Clock']];
  const q=sets[(S.level+S.age)%sets.length];begin('classification',`<div class="detective-prompt"><h3>${q[0]}</h3></div>`,q[1].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[2]);
 }
+
+function ranking(){
+ const base=5+(S.level%6),step=1+(S.level%4);
+ const nums=[base,base+step*2,base+step,base+step*3];
+ const correct=[...nums].sort((a,b)=>a-b).join(' < ');
+ const variants=[correct,[...nums].reverse().join(' < '),[nums[0],nums[2],nums[1],nums[3]].join(' < '),[nums[1],nums[0],nums[3],nums[2]].join(' < ')];
+ begin('ranking',`<div class="detective-prompt"><h3>Which order is smallest to largest?</h3><div class="logic-sequence">${nums.map(x=>`<span>${x}</span>`).join('')}</div></div>`,variants.map(x=>({value:x,label:`<strong>${x}</strong>`})),correct);
+}
+
 function deduction(){
  const sets=S.level<8?[['All red blocks are circles.','This block is red.','It must be a…','Circle',['Circle','Square','Triangle','Star']],['Every bird has wings.','Kofi is a bird.','Kofi has…','Wings',['Wings','Wheels','Fins','Roots']]]:[['All planners make lists.','Ama is a planner.','Ama makes…','Lists',['Lists','Cakes','Maps','Songs']],['Every triangle has three sides.','This shape is a triangle.','It has…','Three sides',['Three sides','Four sides','Five sides','No sides']]];
  const q=sets[(S.level-1)%sets.length];begin('deduction',`<div class="deduction-box">${q[0]}<br>${q[1]}<h3>${q[2]}</h3></div>`,q[4].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[3]);
 }
-function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'deduction':deduction();}}
+function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'deduction':deduction();}}
 function start(){S.detectiveActivity=0;S.detectiveCorrect=0;window.MQDetective={run:()=>{const type=plans[S.level-1][S.detectiveActivity]||'sequence';renderInstruction(type)}}}
 start();
 })();
