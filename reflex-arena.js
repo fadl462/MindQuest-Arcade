@@ -71,7 +71,7 @@ function delayedTap(){
 function rhythm(){
  const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+Math.floor(activity()/2),2,7),beats=Array.from({length:len},(_,i)=>(i+S.level+S.age)%2?'●':'○');
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('rhythm')}<div class="reflex-target">${beats.join(' ')}</div><p>Watch the pattern…</p></div>`;
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;let n=0;$('game-stage').innerHTML=`<div class="reflex-stage">${head('rhythm','Repeat the beat pattern.')}<div class="reflex-controls">${beats.map((_,i)=>`<button class="reflex-key" data-v="${i%2?'○':'●'}">${i%2?'○':'●'}</button>`).join('')}</div></div>`;S.active=true;document.querySelectorAll('.reflex-key').forEach(b=>b.onclick=()=>{if(!S.active)return;const expected=beats[n];if(b.dataset.v!==expected){b.classList.add('bad');fail();return}b.classList.add('good','selected');b.dataset.picks=String((Number(b.dataset.picks)||0)+1);if(++n===beats.length)complete()});S.timer=setTimeout(()=>fail(),responseWindow(1.1));},Math.max(450,signalDelay()));
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;let n=0;$('game-stage').innerHTML=`<div class="reflex-stage">${head('rhythm','Repeat the beat pattern.')}<div class="reflex-controls" id="rhythm-controls"><button class="reflex-key" data-v="●">●</button><button class="reflex-key" data-v="○">○</button></div></div>`;S.active=true;document.querySelectorAll('#rhythm-controls .reflex-key').forEach(b=>b.onclick=()=>{if(!S.active)return;const expected=beats[n];if(b.dataset.v!==expected){b.classList.add('bad');fail();return}b.classList.add('good');if(++n===beats.length)complete()});S.timer=setTimeout(()=>fail(),responseWindow(1.1)+len*140);},Math.max(450,signalDelay()));
 }
 function precision(){
  const token=begin(),size=clamp(70-Math.floor(S.level*1.8),32,70),x=12+((S.level*17+activity()*23+S.age*11)%70),y=15+((S.level*29+activity()*13+S.age*7)%62);
@@ -90,7 +90,7 @@ function combo(){
 function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else if(type==="double")doubleTarget();else if(type==="multitap")multiTap();else if(type==="switch")switchSignal();else if(type==="delay")delayedTap();else if(type==="rhythm")rhythm();else if(type==="precision")precision();else if(type==="chase")chase();else if(type==="alternate")alternate();else if(type==="combo")combo();else if(type==="mirror")mirror();else sequence()}
 function goNoGo(){
  const token=begin(),go=Math.random()>.38;
- $('game-stage').innerHTML=`<div class="reflex-stage">${head('go','Wait for the signal. Tap GO, but do not tap NO-GO.')}<div class="reflex-signal" id="go-signal">Get ready…</div><div id="go-button-wrap" class="reflex-options"><button id="go-button" class="reflex-target" disabled>GO</button></div></div>`;
+ $('game-stage').innerHTML=`<div class="reflex-stage">${head('go','Wait for the signal. Tap GO, but do not tap NO-GO.')}<div class="reflex-signal" id="go-signal">Get ready…</div><div id="go-button-wrap" class="reflex-options"><button id="go-button" class="reflex-target" disabled>RESPOND</button></div></div>`;
  const b=$('go-button');
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$('go-signal').textContent=go?'GO':'NO-GO';b.disabled=false;S.active=true;let responded=false;
  b.onclick=()=>{if(!S.active||responded)return;responded=true;if(go)complete();else fail()};
@@ -100,7 +100,7 @@ function goNoGo(){
 }
 
 function doubleTarget(){
- const token=begin(),count=clamp(4+Math.floor(S.level/5),4,8),first=(S.level+activity()*2+S.age)%count,second=(first+2+activity())%count;
+ const token=begin(),count=clamp(4+Math.floor(S.level/5),4,8),first=(S.level+activity()*2+S.age)%count,second=(first+2+activity())%count===first?(first+1)%count:(first+2+activity())%count;
  $('game-stage').innerHTML=`<div class=\"reflex-stage\">${head('double','Wait for the two targets. Tap them in the order they appear.')}<p class=\"reflex-count\">Get ready…</p><div id=\"double-board\" class=\"reflex-options\"></div></div>`;
  const board=$('double-board');for(let i=0;i<count;i++){const b=document.createElement('button');b.className='reflex-target';b.style.width='58px';b.style.height='58px';b.disabled=true;b.setAttribute('aria-label',`Target ${i+1}`);b.onclick=()=>{if(!S.active)return;if(i===((S.doubleStep||0)===0?first:second)){S.doubleStep=(S.doubleStep||0)+1;if(S.doubleStep===2){S.doubleStep=0;complete()}}else fail()};board.appendChild(b)}
  S.doubleStep=0;S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;S.active=true;const cells=[...board.querySelectorAll('button')];cells[first].textContent='🎯';S.timer=setTimeout(()=>{if(!S.active)return;cells[first].textContent='';cells[second].textContent='🎯';S.timer=setTimeout(()=>{if(S.active)fail()},responseWindow(.8))},Math.max(280,signalDelay()/2));},signalDelay());

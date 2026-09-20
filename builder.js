@@ -73,7 +73,17 @@ function packing(){
 }
 
 
-function tileMatch(){const n=size(),target=new Set();for(let i=0;i<n*n;i++){if((i*2+S.level+activity()*2)%Math.max(2,4-tier())===0)target.add(i)};const cells=Array.from({length:n*n},(_,i)=>`<button class="builder-cell" data-i="${i}"></button>`).join('');$('game-stage').innerHTML=`<div class="builder-stage">${head('tileMatch')}<p>Rebuild the highlighted pattern.</p><div class="builder-lab-grid" style="--n:${n}" id="tile-grid">${cells}</div></div>`;const picked=new Set();S.active=true;document.querySelectorAll('#tile-grid .builder-cell').forEach(b=>b.onclick=()=>{if(!S.active)return;const i=+b.dataset.i;if(picked.has(i)){picked.delete(i);b.classList.remove('selected')}else{picked.add(i);b.classList.add('selected')}if(picked.size===target.size&&[...picked].every(i=>target.has(i)))complete();else if(picked.size>target.size)fail()})}
+function tileMatch(){
+ const n=size(),target=new Set(),mod=Math.max(2,4-tier());
+ for(let i=0;i<n*n;i++){if((i*2+S.level+activity()*2)%mod===0)target.add(i)}
+ if(!target.size)target.add((S.level+activity())%(n*n));
+ const cells=Array.from({length:n*n},(_,i)=>`<button class="builder-cell" data-i="${i}"></button>`).join('');
+ $('game-stage').innerHTML=`<div class="builder-stage">${head('tileMatch')}<p>Memorize the highlighted pattern, then rebuild it exactly.</p><div class="builder-lab-grid" style="--n:${n}" id="tile-grid">${cells}</div></div>`;
+ const grid=document.querySelectorAll('#tile-grid .builder-cell');target.forEach(i=>grid[i].classList.add('filled'));
+ S.timer=setTimeout(()=>{if(!S.active)return;target.forEach(i=>grid[i].classList.remove('filled'));},Math.max(650,1000-S.level*18));
+ const picked=new Set();S.active=true;
+ grid.forEach(b=>b.onclick=()=>{if(!S.active)return;const i=+b.dataset.i;if(picked.has(i)){picked.delete(i);b.classList.remove('selected')}else{picked.add(i);b.classList.add('selected')}if(picked.size===target.size&&[...picked].every(i=>target.has(i)))complete();else if(picked.size>target.size)fail()})
+}
 function maze(){
  const n=size(),start=0,goal=n*n-1,blocked=new Set();
  for(let i=1;i<goal;i++){const onSafePath=(i<n)||((i%n)===n-1);if(!onSafePath && (i*7+S.level*3+activity()*5)%Math.max(3,6-tier())===0) blocked.add(i);}
@@ -122,7 +132,7 @@ function count(){
 }
 
 function rotate(){
- const variants=[["↑","→","↓","←"],["└","┌","┐","┘"],["▲","▶","▼","◀"]],v=variants[(S.level+activity())%variants.length],correct=v[(S.level+activity())%4];
+ const variants=[["↑","→","↓","←"],["└","┌","┐","┘"],["▲","▶","▼","◀"]],v=variants[(S.level+activity())%variants.length],correct=v[3];
  $("game-stage").innerHTML=`<div class="builder-stage">${head("rotate")}<p class="builder-task">The shape turns one quarter-turn at a time. Which direction comes next?</p><div class="rotation-display">${v.slice(0,3).map(x=>`<span>${x}</span>`).join("<b>→</b>")}<b>→</b><span>?</span></div><div class="builder-choice-row" id="rotation-options"></div></div>`;
  const box=$("rotation-options");S.active=true;shuffle(v).forEach(x=>{const b=document.createElement("button");b.className="word-option";b.textContent=x;b.onclick=()=>x===correct?complete():fail();box.appendChild(b)});
 }

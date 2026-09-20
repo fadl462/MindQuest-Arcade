@@ -15,4 +15,9 @@ ok('Money Mission exact change supports undo and clear',/change-undo/.test(money
 ok('Detective probability includes fraction reasoning',/probability of red\?','3\/5/.test(detective)&&/2\/5/.test(detective));
 ok('Reflex advanced mechanics are reachable',/\"mirror\".*\"chase\"/.test(reflex)&&/type===\"chase\"/.test(reflex));
 ok('Builder balance has a single defensible answer',/const left=4\+tier\(\)\+\(S\.level%5\),right=2\+/.test(builder)&&/data-v=\"\$\{v\}\"/.test(builder));
+
+ok('Reflex rhythm uses two response controls',/rhythm-controls/.test(reflex)&&/data-v=\"●\"/.test(reflex)&&/data-v=\"○\"/.test(reflex));
+ok('Reflex double target prevents identical positions',/second=\(first\+2\+activity\(\)\)%count===first/.test(reflex));
+ok('Builder rotation displays first three and expects fourth',/v\.slice\(0,3\)/.test(builder)&&/correct=v\[3\]/.test(builder));
+ok('Builder tile match always has at least one target cell',/if\(!target\.size\)target\.add/.test(builder));
 console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0);
