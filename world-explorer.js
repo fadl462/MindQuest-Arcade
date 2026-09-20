@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["place","landmark","clue","route","capital","culture","hemisphere","direction","climate","landform","compass","distance","timeZone"];
+const TYPES=["place","landmark","clue","route","capital","culture","hemisphere","direction","climate","landform","compass","distance","timeZone","coordinates"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const PLACES=[
  ["Ghana","Africa","Accra"],["Kenya","Africa","Nairobi"],["Egypt","Africa","Cairo"],["Nigeria","Africa","Abuja"],
@@ -107,7 +107,8 @@ function timeZone(){
  const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('timeZone'),q[0],q[2],q[1]);
 }
 
-function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else if(type==="capital")capital();else if(type==="culture")culture();else if(type==="continent")continent();else if(type==="hemisphere")hemisphere();else if(type==="direction")direction();else if(type==="climate")climate();else if(type==="landform")landform();else if(type==="compass")compass();else if(type==="distance")distance();else if(type==="timeZone")timeZone();else route()}
+function coordinates(){const bank=[['A3','Library'],['B2','Market'],['C4','School'],['D1','Park'],['B4','Museum'],['C2','Hospital']];const q=bank[(S.level+activity()+S.age)%bank.length];const others=shuffle(bank.filter(x=>x[0]!==q[0]).map(x=>x[1])).slice(0,3);choice(head('coordinates'),`Which place is at grid coordinate <b>${q[0]}</b>?`,[q[1],...others],q[1])}
+function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else if(type==="capital")capital();else if(type==="culture")culture();else if(type==="continent")continent();else if(type==="hemisphere")hemisphere();else if(type==="direction")direction();else if(type==="climate")climate();else if(type==="landform")landform();else if(type==="compass")compass();else if(type==="distance")distance();else if(type==="timeZone")timeZone();else if(type==="coordinates")coordinates();else route()}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$("game-stage").innerHTML=`<div class="team-stage world-stage">${title}<div class="team-question">${prompt}</div><div id="world-options" class="team-options"></div></div>`;const box=$("world-options");S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(x);b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
 function place(){const p=PLACES[levelIndex()];const mode=S.level<6?"country":S.level<13?"continent":"capital";if(mode==="country"){const others=shuffle(PLACES.filter(x=>x[1]===p[1]&&x[0]!==p[0]).map(x=>x[0])).slice(0,3);choice(head("place"),`Which country is in ${p[1]} and has ${p[2]} as its capital?`,[p[0],...others],p[0])}else if(mode==="continent"){const others=shuffle(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[1])).filter((x,i,a)=>a.indexOf(x)===i).slice(0,3);choice(head("place"),`Which continent is ${p[0]} in?`,[p[1],...others],p[1])}else{const others=shuffle([...new Set(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[2]))]).slice(0,3);choice(head("place"),`What is the capital of ${p[0]}?`,[p[2],...others],p[2])}}

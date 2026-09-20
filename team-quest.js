@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict","leadership","actionSequence","tradeoff","activeListening"];
+const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict","leadership","actionSequence","tradeoff","activeListening","perspective"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const BANK=[
  ["A friend drops their crayons. What could you do?",["Help pick them up","Laugh","Walk away"]],
@@ -135,7 +135,8 @@ function activeListening(){
  ];const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('activeListening'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'That is not my problem.','Just do what you were told.','Stop talking.'],q[1]);
 }
 
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else if(type==="leadership")leadership();else if(type==="actionSequence")actionSequence();else if(type==="tradeoff")tradeoff();else if(type==="activeListening")activeListening();else plan()}
+function perspective(){const qs=[['A teammate is quiet after an idea is rejected. What is most considerate?','Ask how they feel about the decision'],['A new player is struggling with the rules. What might they need?','A calm explanation and a chance to practise'],['A teammate made a mistake and looks embarrassed. What helps?','Give them space to recover and help fix it'],['Two teammates want different roles. What is fair?','Ask what each person prefers and find a workable split']];const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('perspective'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'Tell them to stop complaining','Choose for them without asking','Ignore the situation'],q[1])}
+function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else if(type==="leadership")leadership();else if(type==="actionSequence")actionSequence();else if(type==="tradeoff")tradeoff();else if(type==="activeListening")activeListening();else if(type==="perspective")perspective();else plan()}
 
 function negotiation(){
  const qs=[

@@ -4,7 +4,7 @@ const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["fill","pattern","path","mirror","count","rotate","balance","sequence","symmetry","packing","allocate","weight","maze"];
+const TYPES=["fill","pattern","path","mirror","count","rotate","balance","sequence","symmetry","packing","allocate","weight","maze","tileMatch"];
 const INFO={
  fill:["Block Builder","Fill the required spaces without using blocked cells.","Choose exactly the number of build cells requested."],
  pattern:["Pattern Builder","Complete the structure by following its visual rule.","Study the filled cells, then choose the missing cell."],
@@ -17,6 +17,7 @@ const INFO={
  symmetry:["Symmetry Builder","Complete the missing half of a symmetrical design.","Choose the cell that makes the pattern balanced across the centre."],
  packing:["Packing Builder","Choose how many items can fit without exceeding the available space.","Use the capacity and item size together; do not exceed the limit."],
 allocate:["Resource Allocation","Allocate a limited number of blocks to the structure.","Select exactly the required number of blocks before building."],
+tileMatch:['Tile Match','Build the exact target pattern by selecting the required cells.','Select every cell that belongs to the target pattern, and no others.'],
 maze:['Maze Builder','Find a route from the start to the goal without stepping on blocked cells.','Tap adjacent cells to build a valid path from START to GOAL.'],
 weight:["Weight Balance","Balance two sides using blocks with different weights.","Choose the added weight that makes both sides equal."]
 };
@@ -69,6 +70,7 @@ function packing(){
 }
 
 
+function tileMatch(){const n=size(),target=new Set();for(let i=0;i<n*n;i++){if((i+S.level+activity())%3===0)target.add(i)};const cells=Array.from({length:n*n},(_,i)=>`<button class="builder-cell" data-i="${i}"></button>`).join('');$('game-stage').innerHTML=`<div class="builder-stage">${head('tileMatch')}<p>Rebuild the highlighted pattern.</p><div class="builder-lab-grid" style="--n:${n}" id="tile-grid">${cells}</div></div>`;const picked=new Set();S.active=true;document.querySelectorAll('#tile-grid .builder-cell').forEach(b=>b.onclick=()=>{if(!S.active)return;const i=+b.dataset.i;if(picked.has(i)){picked.delete(i);b.classList.remove('selected')}else{picked.add(i);b.classList.add('selected')}if(picked.size===target.size&&[...picked].every(i=>target.has(i)))complete();else if(picked.size>target.size)fail()})}
 function maze(){
  const n=S.level<8?3:S.level<15?4:5,start=0,goal=n*n-1,blocked=new Set();
  for(let i=1;i<goal;i++){const onSafePath=(i<n)||((i%n)===n-1);if(!onSafePath && (i*7+S.level+activity())%5===0) blocked.add(i);}
@@ -78,7 +80,7 @@ function maze(){
  cells.forEach(b=>b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(!adjacent(pos,i)||blocked.has(i)){fail();return}pos=i;steps++;b.classList.add('good');$('maze-path').textContent=`${steps} steps`;if(pos===goal)complete()});
 }
 
-function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else if(type==="symmetry")symmetry();else if(type==="packing")packing();else if(type==="allocate")allocate();else if(type==="weight")weight();else if(type==="maze")maze();else mirror()}
+function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else if(type==="symmetry")symmetry();else if(type==="packing")packing();else if(type==="allocate")allocate();else if(type==="weight")weight();else if(type==="maze")maze();else if(type==="tileMatch")tileMatch();else mirror()}
 function makeGrid(n){return `<div class="builder-lab-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button type="button" class="builder-cell" data-i="${i}"></button>`).join("")}</div>`}
 function fill(){
  const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.5)+activity())*ageScale()),2,total-2),blockedCount=clamp(1+Math.floor(S.level/5),1,4),blocked=shuffle([...Array(total).keys()]).slice(0,blockedCount);

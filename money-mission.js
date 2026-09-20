@@ -2,7 +2,7 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$,shuffle=a=>[...a].sort(()=>Math.random()-.5),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan","compareShop","basketBuild","budgetMax","exactChange"];
+const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan","compareShop","basketBuild","budgetMax","exactChange","priceCeiling"];
 const INFO={
  count:["Money Match","Count Ghana cedi coins and notes.","Add the values carefully, then choose the total."],
  compare:["Price Detective","Compare prices and decide which amount is greater, smaller or equal.","Read both amounts before choosing."],
@@ -47,7 +47,7 @@ function exactChange(){
  const box=$('change-pieces');let total=0,selected=[];S.active=true;den.forEach(d=>{const b=document.createElement('button');b.className='team-option';b.textContent=money(d);b.onclick=()=>{if(!S.active)return;if(total+d>target)return;total+=d;selected.push(d);$('change-total').textContent=`${money(total)} / ${money(target)}`};box.appendChild(b)});$('change-check').onclick=()=>{if(total===target&&selected.length===correct.length)complete();else fail()};
 }
 
-function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else if(type==="compareShop")compareShop();else if(type==="basketBuild")basketBuild();else if(type==="budgetMax")budgetMax();else if(type==="exactChange")exactChange();else budget()}
+function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else if(type==="compareShop")compareShop();else if(type==="basketBuild")basketBuild();else if(type==="budgetMax")budgetMax();else if(type==="exactChange")exactChange();else if(type==="priceCeiling")priceCeiling();else budget()}
 function money(n){return `GH₵${Number(n).toFixed(n%1?2:0)}`}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$('game-stage').innerHTML=`<div class="team-stage money-stage">${title}<div class="team-question">${prompt}</div><div id="money-options" class="team-options"></div></div>`;const box=$('money-options');S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===String(correct)?complete():fail();box.appendChild(b)})}
@@ -112,6 +112,7 @@ function compareShop(){
  const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('compareShop'),`Which pack has the lower price per item?<div class="money-compare"><b>${q[0]}</b><span>vs</span><b>${q[1]}</b></div>`,['PACK A','PACK B'],q[2]);
 }
 
+function priceCeiling(){const limit=[12,18,25,35,50][(S.level+activity()+S.age)%5]+(S.level>12?10:0);const prices=[limit-6,limit-3,limit-1,limit+4];const correct=Math.max(...prices.filter(x=>x<=limit));choice(head('priceCeiling'),`Your spending limit is <b>${money(limit)}</b>. Which price is the highest you can afford?`,prices.map(money),money(correct))}
 function finishLevel(){ if(!S.active)return; S.active=false; MQ.levelComplete(); }
 
 window.MQMoneyMission={run:instruction};

@@ -10,7 +10,7 @@ const plans=[
  ['deduction','pattern','order','analogy'],['sequence','rule','clue','math'],['visual','odd','deduction','order'],['pattern','math','analogy','clue'],
  ['rule','deduction','sequence','visual'],['analogy','order','math','pattern'],['clue','rule','deduction','sequence'],['visual','math','order','analogy'],
  ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','elimination'],
- ['estimate','classify','elimination','ranking'],['classify','estimate','constraint','probability'],['chain','data','ranking','constraint']
+ ['estimate','classify','elimination','logicGrid'],['classify','estimate','constraint','probability'],['chain','data','ranking','constraint']
 ];
 const info={
  sequence:['Sequence Detective','Find what comes next in the sequence.','Look for the change between each item, then choose the item that continues the rule.'],
@@ -33,6 +33,7 @@ const info={
  classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.'],
  data:['Data Detective','Read a small table and identify the correct comparison.','Compare the values in the table before choosing the answer.'],
 chain:['Multi-Clue Chain','Solve two linked clues before choosing the final answer.','Use the first clue to narrow the options, then use the second clue to confirm the answer.'],
+logicGrid:['Logic Grid Detective','Use two clues to match people with objects or places.','Cross-check both clues. Only one pairing satisfies them both.'],
  elimination:['Elimination Detective','Cross out options that violate the clues, then choose the only one left.','Check each clue against every option before deciding.']
 };
 function age(){return S.age}
@@ -159,6 +160,7 @@ function ranking(){
  begin('ranking',`<div class="detective-prompt"><h3>Which order is smallest to largest?</h3><div class="logic-sequence">${nums.map(x=>`<span>${x}</span>`).join('')}</div></div>`,variants.map(x=>({value:x,label:`<strong>${x}</strong>`})),correct);
 }
 
+function logicGrid(){const q=[['Ama','Kofi','book','ball'],['Kojo','Esi','pencil','drum'],['Yaw','Mia','kite','camera'],['Nana','Kofi','map','guitar']][(S.level+age())%4];const correct=`${q[0]} → ${q[2]}`;const choices=[correct,`${q[0]} → ${q[3]}`,`${q[1]} → ${q[2]}`,`${q[1]} → ${q[3]}`];begin('logicGrid',`<b>${q[0]}</b> chose the item that comes before the second clue. <b>${q[1]}</b> chose the other item. Which pairing is correct?`,choices,correct)}
 function deduction(){
  const sets=S.level<8?[['All red blocks are circles.','This block is red.','It must be a…','Circle',['Circle','Square','Triangle','Star']],['Every bird has wings.','Kofi is a bird.','Kofi has…','Wings',['Wings','Wheels','Fins','Roots']]]:[['All planners make lists.','Ama is a planner.','Ama makes…','Lists',['Lists','Cakes','Maps','Songs']],['Every triangle has three sides.','This shape is a triangle.','It has…','Three sides',['Three sides','Four sides','Five sides','No sides']]];
  const q=sets[(S.level-1)%sets.length];begin('deduction',`<div class="deduction-box">${q[0]}<br>${q[1]}<h3>${q[2]}</h3></div>`,q[4].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[3]);
@@ -215,7 +217,7 @@ function elimination(){
  const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];begin('elimination',q[0],q[2],q[3],q[1]);
 }
 
-function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'rankOrder':rankOrder();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'chain':chain();break;case'elimination':elimination();break;case'deduction':deduction();}}
+function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'rankOrder':rankOrder();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'chain':chain();break;case'elimination':elimination();break;case'logicGrid':logicGrid();break;case'deduction':deduction();}}
 function start(){S.detectiveActivity=0;S.detectiveCorrect=0;window.MQDetective={run:()=>{const type=plans[S.level-1][S.detectiveActivity]||'sequence';renderInstruction(type)}}}
 start();
 })();

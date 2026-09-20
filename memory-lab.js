@@ -20,15 +20,15 @@ const PLANS=[
  ['sequence','location','feature','reverse','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
- ['working','count','visual','direction','pairs'],
+ ['working','count','visual','dual','pairs'],
  ['sequence','location','feature','reverse','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
- ['working','count','visual','direction','pairs'],
+ ['working','count','visual','dual','pairs'],
  ['sequence','location','feature','reverse','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
- ['working','count','visual','direction','pairs'],
+ ['working','count','visual','dual','pairs'],
  ['sequence','location','feature','temporal','direction'],
 ];
 const INFO={
@@ -41,6 +41,7 @@ const INFO={
  working:['Working Memory','Hold information in mind while part of it changes.','WORKING MEMORY'],
  change:['Change Detective','Remember the scene, then spot what changed.','CHANGE DETECTION'],
  category:['Category Recall','Remember which objects belonged to a named group.','CATEGORICAL MEMORY'],
+dual:['Dual-Sequence Recall','Remember two short sequences and reproduce them in alternating order.','DUAL WORKING MEMORY'],
  order:['Order Builder','Remember positions in an ordered set, then rebuild them.','ORDER MEMORY'],
  count:['Count & Recall','Remember how many times each object appeared.','QUANTITY MEMORY'],
  direction:['Direction Memory','Remember the direction sequence, then repeat it exactly.','DIRECTIONAL MEMORY'],
@@ -208,12 +209,13 @@ function filter(){
   const box=$('filter-cards');S.active=true;vals.forEach(v=>{const b=document.createElement('button');b.className='memory-card';b.textContent=v;b.onclick=()=>{if(!S.active)return;b.classList.toggle('selected');const picked=[...box.querySelectorAll('.selected')].map(x=>x.textContent);const ok=picked.every(x=>targetSet.has(x))&&picked.length===correct.length;if(ok)complete();};box.appendChild(b)});deadline(sp.response);
  },true);
 }
+function dual(){begin((sp,t)=>{const n=clamp(2+Math.floor(S.level/7),2,4),a=shuffle(ICONS).slice(0,n),b=shuffle(ICONS).filter(x=>!a.includes(x)).slice(0,n),seq=[];for(let i=0;i<n;i++){seq.push(a[i],b[i])}const show=seq.map(x=>`<span style="font-size:2rem;margin:4px">${x}</span>`).join('');$('game-stage').innerHTML=`<div class="memory-stage">${header('dual','Watch two streams, then alternate them.')}<div class="memory-display">${show}</div><p class="memory-prompt">Remember the alternating sequence.</p></div>`;S.active=false;setTimeout(()=>{if(t!==S.memoryRoundToken)return;const opts=shuffle(seq.map((x,i)=>({x,i})));$('game-stage').innerHTML=`<div class="memory-stage">${header('dual','Tap the sequence in the correct alternating order.')}<div class="memory-options" id="memory-options"></div></div>`;const box=$('memory-options');let k=0;opts.forEach(o=>{const b=document.createElement('button');b.className='memory-option';b.textContent=o.x;b.onclick=()=>{if(!S.active)return;if(o.x===seq[k]){k++;if(k===seq.length)complete()}else fail()};box.appendChild(b)});S.active=true;deadline(Math.max(3500,2600+n*700));},Math.max(1200,2200-n*120));});}
 function switchback(){
  begin((sp,t)=>{const pool=shuffle(ICONS).slice(0,10),a=pool.slice(0,4),b=pool.slice(5,9);const seq=Array.from({length:8},(_,i)=>i%2===0?a[Math.floor(i/2)%a.length]:b[Math.floor(i/2)%b.length]);
  $('game-stage').innerHTML=`<div class="memory-stage">${header('switchback','Remember the two streams, then alternate them.')}<div class="memory-sequence">${seq.join(' ')}</div></div>`;S.timer=setTimeout(()=>{const buttons=shuffle([...new Set(seq)]);$('game-stage').innerHTML=`<div class="memory-stage">${header('switchback','Rebuild the alternating sequence.')}<div id="switchback-options" class="memory-cards"></div><div id="switchback-picked" class="memory-sequence"></div></div>`;const box=$('switchback-options'),picked=$('switchback-picked');S.active=true;let i=0;buttons.forEach(v=>{const b=document.createElement('button');b.className='memory-card';b.textContent=v;b.onclick=()=>{if(!S.active)return;if(v!==seq[i]){fail();return}b.disabled=true;picked.textContent+=`${i?' ':''}${v}`;if(++i===seq.length)complete()};box.appendChild(b)});deadline(sp.response)},sp.show)},true)
 }
 
-function runType(type){if(type==='filter')filter();else if(type==='switchback')switchback();else if(type==='interference')interference();else if(type==='reverse')reverse();else if(type==='temporal')temporal();else if(type==='direction')direction();else if(type==='count')count();else if(type==='order')order();else if(type==='category')category();else if(type==='working')working();else if(type==='change')change();else if(type==='feature')feature();else if(type==='location')location();else if(type==='pairs')pairs();else if(type==='sequence')sequence();else if(type==='grid')grid();else visual();}
+function runType(type){if(type==='filter')filter();else if(type==='switchback')switchback();else if(type==='dual')dual();else if(type==='interference')interference();else if(type==='reverse')reverse();else if(type==='temporal')temporal();else if(type==='direction')direction();else if(type==='count')count();else if(type==='order')order();else if(type==='category')category();else if(type==='working')working();else if(type==='change')change();else if(type==='feature')feature();else if(type==='location')location();else if(type==='pairs')pairs();else if(type==='sequence')sequence();else if(type==='grid')grid();else visual();}
 function instructions(type){
  const i=INFO[type],sp=cfg();
  $('game-stage').innerHTML=`<div class="memory-instruction-screen"><div class="instruction-icon">🧠</div><span class="memory-kind">${i[2]}</span><div class="instruction-activity">Activity ${(S.memoryActivity||0)+1} of 4</div><h2>${i[0]}</h2><p class="instruction-purpose">${i[1]}</p><div class="instruction-rule"><strong>How to play</strong><p>${RULES[type]}</p></div><div class="instruction-timing"><span>⏱️ Study: ${(sp.show/1000).toFixed(1)} sec • Response: ${Math.round(sp.response/1000)} sec</span><span>🎯 Pass with no incorrect response</span></div><button id="start-memory-activity" type="button" class="primary-btn instruction-start">Start Activity →</button></div>`;
