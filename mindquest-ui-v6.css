@@ -447,3 +447,53 @@ body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom
 #game.active .logic-sequence span{color:#20243a !important;background:#fff}
 #game.active .order-sequence span{color:#20243a !important}
 #game.active .detective-choice{color:#20243a !important}
+
+/* v7.0 — Memory Lab dedicated gameplay system */
+#game.active .memory-wrap{width:min(860px,100%);padding:0 4px 10px}
+#game.active .memory-wrap .memory-lab-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+#game.active .memory-instruction-banner{margin:12px auto 10px;padding:10px 14px;border:1px solid #e5e8f0;border-radius:12px;background:#f7f8fc;color:#626b81;font-size:11px;font-weight:750;text-align:center}
+#game.active .memory-instruction-banner strong{color:#34375f}
+#game.active .memory-progress{margin:10px auto 0;padding:7px 10px;width:max-content;max-width:100%;border:1px solid #e2e5ef;border-radius:999px;background:#fafbfe;color:#68728a;font-size:10px;font-weight:850}
+#game.active .picked-sequence{margin:11px auto 0;min-height:36px;padding:8px 12px;border:1px solid #e4e7f0;border-radius:12px;background:#fafbfe;color:#68728a;font-size:10px;text-align:center}
+#game.active .picked-sequence span{color:#34375f;font-weight:900;letter-spacing:.08em}
+#game.active .direction-options{grid-template-columns:repeat(4,minmax(70px,1fr))}
+#game.active .direction-token{font-size:30px;font-weight:900}
+#game.active .memory-distractor{margin:10px auto;padding:9px 12px;border:1px dashed #e0b9bf;border-radius:12px;background:#fff8f9;color:#9a5c66;font-size:11px;text-align:center;opacity:.9}
+#game.active .memory-distractor span{display:block;margin-bottom:4px;font-size:8px;font-weight:900;letter-spacing:.1em}
+#game.active .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin:12px auto;max-width:760px}
+#game.active .feature-token,#game.active .feature-option{min-height:86px;padding:10px;border:1px solid #dfe3ec;border-radius:14px;background:#fff;box-shadow:0 3px 10px rgba(31,39,82,.035);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+#game.active .feature-token span,#game.active .feature-option span{font-size:28px;line-height:1}
+#game.active .feature-token small,#game.active .feature-option small{font-size:8px;font-weight:900;color:#70778c;letter-spacing:.05em}
+#game.active .feature-option{cursor:pointer;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease,background .14s ease}
+#game.active .feature-option:hover{transform:translateY(-2px);border-color:#c7c9eb;box-shadow:0 8px 18px rgba(31,39,82,.07)}
+#game.active .dual-streams{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px auto;max-width:700px}
+#game.active .dual-streams>div{padding:12px;border:1px solid #e1e4ed;border-radius:14px;background:#fafbfe;text-align:center;color:#30354d;font-size:21px;line-height:1.5}
+#game.active .dual-streams small{display:block;margin-bottom:5px;color:#737b91;font-size:8px;font-weight:900;letter-spacing:.1em}
+#game.active .change-scenes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px auto;max-width:760px}
+#game.active .change-scenes>div{padding:10px;border:1px solid #e2e5ef;border-radius:14px;background:#fafbfe}
+#game.active .change-scenes>div>small{display:block;margin-bottom:6px;color:#747c91;font-size:8px;font-weight:900;letter-spacing:.1em;text-align:center}
+#game.active .change-scenes .memory-items{margin:0;gap:6px}
+#game.active .change-scenes .memory-item{min-height:48px;font-size:22px}
+#game.active .count-list{display:grid;gap:8px;margin:12px auto;max-width:700px}
+#game.active .count-row{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:10px;padding:9px 11px;border:1px solid #e2e5ef;border-radius:14px;background:#fafbfe}
+#game.active .count-object{font-size:28px;text-align:center}
+#game.active .count-choices{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+#game.active .pair-card{min-height:72px;display:grid;place-items:center;font-size:28px;cursor:pointer;transition:transform .14s ease,background .14s ease,border-color .14s ease}
+#game.active .pair-card.pair-study{cursor:default}
+#game.active .pair-card.flipped{background:#f1f1ff;border-color:#7777e8;color:#35368b}
+#game.active .pair-card.matched{background:#effaf4;border-color:#7bc89e;color:#1f6b46}
+#game.active .location-icons{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:10px auto}
+#game.active .location-icon{min-width:54px;min-height:48px;padding:7px;border:1px solid #dfe3ec;border-radius:12px;background:#fff;font-size:23px;cursor:pointer}
+#game.active .location-icon:disabled{opacity:.55;cursor:default}
+#game.active .recall-cell{cursor:pointer;min-height:54px}
+#game.active .memory-board{width:min(520px,100%);grid-template-columns:repeat(var(--grid),minmax(0,1fr));}
+#game.active .memory-board .memory-cell{aspect-ratio:1/1;min-width:0;display:grid;place-items:center;font-size:22px}
+@media(max-width:700px){
+ #game.active .memory-wrap .memory-lab-head{gap:8px}
+ #game.active .memory-wrap .memory-lab-head h3{font-size:18px}
+ #game.active .direction-options{grid-template-columns:repeat(4,1fr)}
+ #game.active .dual-streams,#game.active .change-scenes{grid-template-columns:1fr}
+ #game.active .count-row{grid-template-columns:48px 1fr}
+ #game.active .count-choices{grid-template-columns:repeat(4,1fr)}
+ #game.active .feature-grid{grid-template-columns:repeat(2,1fr)}
+}
