@@ -4,7 +4,7 @@ const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["fill","pattern","path","mirror","count","rotate","balance"];
+const TYPES=["fill","pattern","path","mirror","count","rotate","balance","sequence"];
 const INFO={
  fill:["Block Builder","Fill the required spaces without using blocked cells.","Choose exactly the number of build cells requested."],
  pattern:["Pattern Builder","Complete the structure by following its visual rule.","Study the filled cells, then choose the missing cell."],
@@ -13,7 +13,8 @@ const INFO={
  rotate:["Rotation Builder","Complete the construction by matching the rotated target.","Mentally rotate the pattern and select the correct orientation."],
  count:["Count Builder","Read the construction target and select the grid with the correct number of filled cells.","Count carefully and choose the matching construction."],
  rotate:["Rotation Builder","Identify the cell pattern after a quarter-turn rotation.","Imagine rotating the shape 90 degrees clockwise, then choose the new position."],
- balance:["Balance Builder","Choose the structure that uses the correct total weight.","Compare the two sides and choose the option that balances the scale."]
+ balance:["Balance Builder","Choose the structure that uses the correct total weight.","Compare the two sides and choose the option that balances the scale."],
+ sequence:["Build Sequence","Choose the correct order for constructing a simple structure.","Follow the dependency: foundation before walls, walls before roof."]
 };
 function activity(){return Number.isInteger(S.builderActivity)?S.builderActivity:0}
 function ageScale(){return [0.72,0.88,1,1.12,1.24][S.age]||1}
@@ -22,7 +23,20 @@ function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head">
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four building challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next build…`;if(last){S.builderActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.builderActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🧩</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🧩 Plan before you place</span><span>✓ Four activities per level</span></div><button id="builder-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("builder-start").onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else mirror()}
+function buildSequence(){
+ const sets=[
+  ['Lay the foundation','Build the walls','Add the roof','Decorate'],
+  ['Choose the plan','Place the base','Add supports','Finish the details'],
+  ['Clear the site','Place the base','Add the structure','Inspect the build'],
+  ['Measure the space','Prepare materials','Assemble parts','Check stability']
+ ];
+ const seq=sets[(S.level+activity()+S.age)%sets.length];
+ const correct=seq.join(' → ');
+ const variants=[correct,[...seq].reverse().join(' → '),[seq[1],seq[0],seq[2],seq[3]].join(' → '),[seq[0],seq[2],seq[1],seq[3]].join(' → ')];
+ $('game-stage').innerHTML=`<div class="builder-stage">${head('sequence')}<div class="builder-prompt"><h3>Which construction order is correct?</h3><div class="builder-options">${shuffle(variants).map(v=>`<button class="builder-option" data-v="${v}">${v}</button>`).join('')}</div></div></div>`;
+ S.active=true;document.querySelectorAll('.builder-option').forEach(b=>b.onclick=()=>b.dataset.v===correct?complete():fail());
+}
+function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else mirror()}
 function makeGrid(n){return `<div class="builder-lab-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button type="button" class="builder-cell" data-i="${i}"></button>`).join("")}</div>`}
 function fill(){
  const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.5)+activity())*ageScale()),2,total-2),blockedCount=clamp(1+Math.floor(S.level/5),1,4),blocked=shuffle([...Array(total).keys()]).slice(0,blockedCount);

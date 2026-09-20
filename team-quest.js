@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["choice","order","match","plan","empathy","responsibility","communication"];
+const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const BANK=[
  ["A friend drops their crayons. What could you do?",["Help pick them up","Laugh","Walk away"]],
@@ -94,8 +94,19 @@ function ageText(text){
  return text;
 }
 function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🤝</div><span class="ui-skill">BEHAVIOURAL</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🤝 Think about others</span><span>✓ Four activities per level</span></div><button id="team-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("team-start").onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else plan()}
+function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else plan()}
 
+function negotiation(){
+ const qs=[
+  ['Two teammates want different roles. What is fair?','Discuss the strengths of each person and agree on roles together.'],
+  ['Two people want the same equipment. What helps?','Agree on a turn-taking plan so both can use it.'],
+  ['The team has two good ideas but time for one. What should happen?','Compare both ideas against the goal and agree on one.'],
+  ['A teammate cannot meet the original deadline. What is constructive?','Discuss a realistic new deadline and adjust the plan together.'],
+  ['Two teammates disagree about the rules. What should they do?','Check the agreed rules and talk through the disagreement calmly.']
+ ];
+ const q=qs[(S.level+activity()+S.age)%qs.length];
+ choice(head('negotiation'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'Let the loudest person decide.','Ignore the disagreement.','Blame the other teammate.'],q[1]);
+}
 function communication(){const qs=[['A teammate is late. What is the clearest message?','I am waiting. Are you able to arrive by 3 PM?'],['A task is unclear. What should you say?','Could you explain which part I should complete first?'],['A teammate made a mistake. What is constructive?','Let us check what happened and fix it together.'],['You need help. What is clear?','I have finished step one. Could you help me with step two?'],['Plans changed. What should you communicate?','The plan changed. Here is the new time and what we need to do.']];const q=qs[(S.level+activity()+S.age)%qs.length];const distract=['You always do this wrong.','Whatever, just fix it.','Nobody told me anything.'];choice(head('communication'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],...distract],q[1])}
 
 function responsibility(){

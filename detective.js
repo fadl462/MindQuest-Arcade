@@ -10,7 +10,7 @@ const plans=[
  ['deduction','pattern','order','analogy'],['sequence','rule','clue','math'],['visual','odd','deduction','order'],['pattern','math','analogy','clue'],
  ['rule','deduction','sequence','visual'],['analogy','order','math','pattern'],['clue','rule','deduction','sequence'],['visual','math','order','analogy'],
  ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','estimate'],
- ['estimate','classify','compare','ranking'],['classify','estimate','deduction','math']
+ ['estimate','classify','compare','ranking'],['classify','estimate','constraint','math']
 ];
 const info={
  sequence:['Sequence Detective','Find what comes next in the sequence.','Look for the change between each item, then choose the item that continues the rule.'],
@@ -27,6 +27,7 @@ const info={
  classification:['Classification Detective','Identify which category or rule best describes the item.','Look for the defining property shared by the correct group.'],
  deduction:['Logic Detective','Combine clues to make one logical conclusion.','Use all the information. Do not choose an answer that conflicts with a clue.'],
  ranking:['Ranking Detective','Arrange quantities from smallest to largest using the clues given.','Compare every value carefully, then choose the correct order.'],
+ constraint:['Constraint Detective','Use several rules at the same time to find the only option that fits.','Check every condition before choosing. One condition alone is not enough.'],
  estimate:['Estimate Detective','Choose the closest sensible estimate.','Use the scale and information given. An estimate should be close, not exact.'],
  classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.']
 };
@@ -152,7 +153,18 @@ function deduction(){
  const sets=S.level<8?[['All red blocks are circles.','This block is red.','It must be a…','Circle',['Circle','Square','Triangle','Star']],['Every bird has wings.','Kofi is a bird.','Kofi has…','Wings',['Wings','Wheels','Fins','Roots']]]:[['All planners make lists.','Ama is a planner.','Ama makes…','Lists',['Lists','Cakes','Maps','Songs']],['Every triangle has three sides.','This shape is a triangle.','It has…','Three sides',['Three sides','Four sides','Five sides','No sides']]];
  const q=sets[(S.level-1)%sets.length];begin('deduction',`<div class="deduction-box">${q[0]}<br>${q[1]}<h3>${q[2]}</h3></div>`,q[4].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[3]);
 }
-function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'deduction':deduction();}}
+function constraint(){
+ const sets=[
+  {q:'Which number is even, greater than 20, and less than 30?',a:'24',o:['15','27','31']},
+  {q:'Which shape has 4 equal sides and 4 corners?',a:'Square',o:['Triangle','Circle','Square','Oval']},
+  {q:'Which item is red, smaller than a ball, and used for writing?',a:'Pencil',o:['Pencil','Book','Shoe','Cup']},
+  {q:'Which number is a multiple of 5 and greater than 40?',a:'45',o:['42','43','45','48']},
+  {q:'Which choice is both a vehicle and used on water?',a:'Boat',o:['Boat','Bicycle','Train','Car']}
+ ];
+ const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];
+ begin('constraint',`<div class="detective-prompt"><h3>${q.q}</h3></div>`,q.o.map(x=>({value:x,label:`<strong>${x}</strong>`})),q.a);
+}
+function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'constraint':constraint();break;case'deduction':deduction();}}
 function start(){S.detectiveActivity=0;S.detectiveCorrect=0;window.MQDetective={run:()=>{const type=plans[S.level-1][S.detectiveActivity]||'sequence';renderInstruction(type)}}}
 start();
 })();
