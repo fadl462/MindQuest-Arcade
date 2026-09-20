@@ -22,4 +22,6 @@ ok('Reflex double target controls become playable',/cells\.forEach\(b=>b\.disabl
 ok('Builder rotation displays first three and expects fourth',/v\.slice\(0,3\)/.test(builder)&&/correct=v\[3\]/.test(builder));
 ok('Builder tile match always has at least one target cell',/if\(!target\.size\)target\.add/.test(builder));
 ok('Builder symmetry removes one mirrored target',/const source=candidates/.test(builder)&&/cells\[target\]=false/.test(builder));
+ok('Reflex multitap uses distinct positions',/positions=shuffle\(\[\.\.\.Array\(6\)\.keys\(\)\]\)\.slice\(0,len\)/.test(reflex));
+ok('Builder mirror guarantees a target',/if\(!left\.length\).*fallback/.test(builder));
 console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0);

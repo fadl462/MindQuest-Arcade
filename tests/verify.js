@@ -42,4 +42,6 @@ ok('Builder rotation expects the fourth clockwise position',/correct=v\[3\]/.tes
 ok('Builder tile match cannot generate an empty target',/if\(!target\.size\)target\.add/.test(builder)&&/highlighted pattern, then rebuild/.test(builder));
 ok('Builder symmetry creates a real missing mirrored cell',/const source=candidates/.test(builder)&&/cells\[target\]=false/.test(builder));
 ok('Builder numeric choices are unique',/const choices=\[\.\.\.new Set\(\[gap/.test(builder)&&/const options=\[\.\.\.new Set\(\[need/.test(builder));
+ok('Reflex multitap uses distinct positions',/positions=shuffle\(\[\.\.\.Array\(6\)\.keys\(\)\]\)\.slice\(0,len\)/.test(reflex));
+ok('Builder mirror guarantees a target',/if\(!left\.length\)\{const fallback=\(S\.level\+activity\(\)\)%n;left\.push\(fallback\*n\);targets\.push\(fallback\*n\+\(n-1\)\);\}/.test(builder));
 console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0);

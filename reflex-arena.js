@@ -128,7 +128,7 @@ function avoid(){
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("avoid-signal").textContent=`SAFE: ${safe}`;box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true;S.timer=setTimeout(fail,responseWindow(.95))},signalDelay());
 }
 function multiTap(){
- const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+activity(),2,5),positions=Array.from({length:len},(_,i)=>(S.level*3+i*2+S.age)%6);
+ const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+activity(),2,5),positions=shuffle([...Array(6).keys()]).slice(0,len);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("multitap","Watch the target order, then tap the same positions.")}<div id="multi-board" class="reflex-options"></div></div>`;
  const board=$("multi-board");for(let i=0;i<6;i++){const b=document.createElement("button");b.className="reflex-target";b.textContent="";b.dataset.i=i;b.disabled=true;board.appendChild(b)}
  let show=0;const reveal=()=>{if(token!==S.reflexToken)return;if(show<positions.length){board.querySelectorAll("button").forEach(b=>b.textContent="");board.querySelectorAll("button")[positions[show]].textContent="🎯";show++;S.timer=setTimeout(reveal,Math.max(210,680-S.level*18));}else{let n=0;board.querySelectorAll("button").forEach(b=>{b.disabled=false;b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(i!==positions[n])return fail();b.classList.add("good");if(++n===positions.length)complete()}});S.active=true;S.timer=setTimeout(fail,responseWindow(1.1)+positions.length*180)}};reveal();
