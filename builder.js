@@ -4,17 +4,17 @@ const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["fill","pattern","path","mirror","count","rotate","balance","sequence"];
+const TYPES=["fill","pattern","path","mirror","count","rotate","balance","sequence","symmetry"];
 const INFO={
  fill:["Block Builder","Fill the required spaces without using blocked cells.","Choose exactly the number of build cells requested."],
  pattern:["Pattern Builder","Complete the structure by following its visual rule.","Study the filled cells, then choose the missing cell."],
  path:["Path Builder","Connect the start to the finish while avoiding blocked cells.","Select the next correct cell in the path."],
  mirror:["Mirror Builder","Complete the reflected half of the structure.","Copy the pattern across the mirror line." ],
- rotate:["Rotation Builder","Complete the construction by matching the rotated target.","Mentally rotate the pattern and select the correct orientation."],
  count:["Count Builder","Read the construction target and select the grid with the correct number of filled cells.","Count carefully and choose the matching construction."],
  rotate:["Rotation Builder","Identify the cell pattern after a quarter-turn rotation.","Imagine rotating the shape 90 degrees clockwise, then choose the new position."],
  balance:["Balance Builder","Choose the structure that uses the correct total weight.","Compare the two sides and choose the option that balances the scale."],
- sequence:["Build Sequence","Choose the correct order for constructing a simple structure.","Follow the dependency: foundation before walls, walls before roof."]
+ sequence:["Build Sequence","Choose the correct order for constructing a simple structure.","Follow the dependency: foundation before walls, walls before roof."],
+ symmetry:["Symmetry Builder","Complete the missing half of a symmetrical design.","Choose the cell that makes the pattern balanced across the centre."]
 };
 function activity(){return Number.isInteger(S.builderActivity)?S.builderActivity:0}
 function ageScale(){return [0.72,0.88,1,1.12,1.24][S.age]||1}
@@ -36,7 +36,16 @@ function buildSequence(){
  $('game-stage').innerHTML=`<div class="builder-stage">${head('sequence')}<div class="builder-prompt"><h3>Which construction order is correct?</h3><div class="builder-options">${shuffle(variants).map(v=>`<button class="builder-option" data-v="${v}">${v}</button>`).join('')}</div></div></div>`;
  S.active=true;document.querySelectorAll('.builder-option').forEach(b=>b.onclick=()=>b.dataset.v===correct?complete():fail());
 }
-function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else mirror()}
+
+function symmetry(){
+ const n=S.level<8?3:S.level<15?4:5,center=Math.floor(n/2);
+ const cells=Array.from({length:n*n},()=>false);
+ for(let r=0;r<n;r++) for(let c=0;c<center;c++) if((r+c+S.level)%3===0){cells[r*n+c]=true;cells[r*n+(n-1-c)]=true;}
+ const missing=[];for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(c>=center && cells[r*n+c]!==cells[r*n+(n-1-c)]) missing.push(r*n+c);
+ const target=missing[0]??center*n+center; const distract=[(target+n-1)%(n*n),(target+1)%(n*n),(target+n)%(n*n)];
+ $('game-stage').innerHTML=`<div class="builder-stage">${head('symmetry')}<div class="builder-prompt"><h3>Which cell should be filled?</h3><div class="builder-lab-grid" style="--n:${n}">${cells.map((v,i)=>`<button class="builder-cell ${v?'filled':''}" data-i="${i}">${i===target?'?':''}</button>`).join('')}</div></div></div>`;S.active=true;document.querySelectorAll('.builder-cell').forEach(b=>b.onclick=()=>b.dataset.i===String(target)?complete():fail());
+}
+function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else if(type==="symmetry")symmetry();else mirror()}
 function makeGrid(n){return `<div class="builder-lab-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button type="button" class="builder-cell" data-i="${i}"></button>`).join("")}</div>`}
 function fill(){
  const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.5)+activity())*ageScale()),2,total-2),blockedCount=clamp(1+Math.floor(S.level/5),1,4),blocked=shuffle([...Array(total).keys()]).slice(0,blockedCount);

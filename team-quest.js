@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation"];
+const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const BANK=[
  ["A friend drops their crayons. What could you do?",["Help pick them up","Laugh","Walk away"]],
@@ -81,7 +81,9 @@ const INFO={
  plan:["Team Plan","Select actions that create a strong team plan.","Choose useful actions and avoid actions that create conflict or confusion."],
  responsibility:["Responsibility Check","Choose the action that shows ownership and reliability.","Think about honesty, following through and taking responsibility for shared work."],
  empathy:["Perspective Check","Choose the response that best recognises another person's perspective.","Think about how the other person may feel and what response would help."],
- responsibility:["Responsibility Check","Choose the action that shows ownership of a shared task.","Look for actions that are honest, dependable and considerate of the group."]
+ communication:["Communication Check","Choose a clear and respectful message for the situation.","Be specific, calm and constructive."],
+ negotiation:["Negotiation Check","Choose a fair way to reach agreement when people want different things.","Listen, compare options and agree on a workable next step."],
+ conflict:["Conflict Resolution","Choose a calm response that helps a disagreement move forward.","Focus on the problem, listen to both sides and look for a fair next step."]
 };
 function activity(){return Number.isInteger(S.teamActivity)?S.teamActivity:0}
 function levelIndex(){return (S.level-1)%20}
@@ -94,7 +96,17 @@ function ageText(text){
  return text;
 }
 function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🤝</div><span class="ui-skill">BEHAVIOURAL</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🤝 Think about others</span><span>✓ Four activities per level</span></div><button id="team-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("team-start").onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else plan()}
+
+function conflict(){
+ const qs=[
+ ['Two teammates disagree about whose idea to use. What should happen?','Let both explain their ideas, then compare them against the goal.'],
+ ['A teammate feels left out of a decision. What helps?','Invite them to share their view before the group decides.'],
+ ['A disagreement is becoming heated. What is a constructive next step?','Pause, listen and return to the shared goal.'],
+ ['Two people misunderstand each other. What should the team do?','Ask questions and clarify what each person meant.'],
+ ['The group cannot agree immediately. What is fair?','Use the agreed team rules to decide the next step.']
+ ]; const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('conflict'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'Interrupt and decide for everyone.','Blame one person.','Stop listening.'],q[1]);
+}
+function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else plan()}
 
 function negotiation(){
  const qs=[

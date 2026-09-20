@@ -2,7 +2,7 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$,shuffle=a=>[...a].sort(()=>Math.random()-.5),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["count","compare","change","budget","discount","unit","savings","needs"];
+const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan"];
 const INFO={
  count:["Money Match","Count Ghana cedi coins and notes.","Add the values carefully, then choose the total."],
  compare:["Price Detective","Compare prices and decide which amount is greater, smaller or equal.","Read both amounts before choosing."],
@@ -11,7 +11,8 @@ const INFO={
  unit:["Unit Price Detective","Compare the cost per item to find the better value.","Divide the total price by the number of items."],
  discount:["Sale Detective","Work out the sale price after a simple discount.","Find the discount amount, then subtract it from the original price."],
  savings:["Savings Mission","Calculate how much more you need to reach a savings goal.","Compare your current savings with the target."],
- needs:["Needs & Wants","Choose the purchase that best matches a stated need and budget.","Think about the purpose of the money before choosing a purchase."]
+ needs:["Needs & Wants","Choose the purchase that best matches a stated need and budget.","Think about the purpose of the money before choosing a purchase."],
+ savingPlan:["Savings Planner","Choose the plan that reaches a goal while leaving a realistic amount to save each time.","Compare the goal, starting amount and regular saving amount."]
 };
 const VALUES=[1,2,5,10,20,50,100];
 function activity(){return Number.isInteger(S.moneyActivity)?S.moneyActivity:0}
@@ -22,7 +23,13 @@ function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head">
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$('game-message').textContent=last?'✓ Four money challenges complete!':`✓ Activity ${activity()+1} complete. Loading the next money challenge…`;if(last){S.moneyActivity=0;S.timer=setTimeout(()=>finishLevel(),650)}else{S.moneyActivity=activity()+1;S.timer=setTimeout(()=>{$('game-message').textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$('game-stage').innerHTML=`<div class="universal-instruction"><div class="ui-icon">💰</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>💵 Use Ghana cedis</span><span>✓ 4 activities per level</span></div><button id="money-start" class="primary-btn ui-start">Start Activity →</button></div>`;$('money-start').onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else budget()}
+
+function savingPlan(){
+ const start=S.level<7?10:25+(S.level%4)*5, goal=start+20+(S.level%5)*10, weekly=S.level<8?5:10+(S.level%3)*5;
+ const weeks=Math.ceil((goal-start)/weekly); const correct=`${weeks} weeks`;
+ choice(head('savingPlan'),`You have <b>${money(start)}</b> and want <b>${money(goal)}</b>. If you save <b>${money(weekly)}</b> each week, about how long will it take?`,[correct,`${Math.max(1,weeks-1)} weeks`,`${weeks+1} weeks`,`${weeks+2} weeks`],correct);
+}
+function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else budget()}
 function money(n){return `GH₵${Number(n).toFixed(n%1?2:0)}`}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$('game-stage').innerHTML=`<div class="team-stage money-stage">${title}<div class="team-question">${prompt}</div><div id="money-options" class="team-options"></div></div>`;const box=$('money-options');S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===String(correct)?complete():fail();box.appendChild(b)})}

@@ -13,23 +13,23 @@ const PLANS=[
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
  ['working','count','visual','direction','pairs'],
- ['sequence','location','feature','category','direction'],
+ ['sequence','location','feature','temporal','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
  ['working','count','visual','direction','pairs'],
- ['sequence','location','feature','category','direction'],
+ ['sequence','location','feature','temporal','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
  ['working','count','visual','direction','pairs'],
- ['sequence','location','feature','category','direction'],
+ ['sequence','location','feature','temporal','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
  ['working','count','visual','direction','pairs'],
- ['sequence','location','feature','category','direction'],
+ ['sequence','location','feature','temporal','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
  ['working','count','visual','direction','pairs'],
- ['sequence','location','feature','category','direction']
+ ['sequence','location','feature','temporal','direction'],
 ];
 const INFO={
  visual:['Visual Recall','Remember the objects, then find every object you saw.','VISUAL MEMORY'],
@@ -42,7 +42,8 @@ const INFO={
  category:['Category Recall','Remember which objects belonged to a named group.','CATEGORICAL MEMORY'],
  order:['Order Builder','Remember positions in an ordered set, then rebuild them.','ORDER MEMORY'],
  count:['Count & Recall','Remember how many times each object appeared.','QUANTITY MEMORY'],
- direction:['Direction Memory','Remember the direction sequence, then repeat it exactly.','DIRECTIONAL MEMORY']
+ direction:['Direction Memory','Remember the direction sequence, then repeat it exactly.','DIRECTIONAL MEMORY'],
+ temporal:['Temporal Recall','Remember the order and timing of events, then rebuild the sequence.','TIME-ORDER MEMORY']
 };
 function cfg(){
  const base=[{show:5200,response:18000,count:3},{show:4300,response:15000,count:4},{show:3600,response:12500,count:5},{show:3200,response:10500,count:6},{show:2900,response:9500,count:6}][S.age];
@@ -149,12 +150,19 @@ function direction(){begin((sp,t)=>{
  S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('direction','Repeat the direction sequence exactly.')}<div id="direction-choices" class="memory-items"></div><div id="direction-picked" class="picked-sequence"></div></div>`;const box=$('direction-choices'),picked=$('direction-picked');let n=0;S.active=true;shuffle([...new Set(seq.concat(ARROWS))].slice(0,Math.min(ARROWS.length,5+Math.floor(S.level/7)+2))).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==seq[n]){b.classList.add('bad');fail()}else{b.disabled=true;b.classList.add('good');picked.textContent+=(n?' ':'')+x;if(++n===seq.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)
 })}
 
+function temporal(){begin((sp,t)=>{
+ const pool=['Wake up','Breakfast','School','Play','Lunch','Study','Dinner','Sleep'];
+ const len=clamp(3+Math.floor(S.level/6)+activity(),3,6);
+ const a=shuffle(pool).slice(0,len);
+ $('game-stage').innerHTML=`<div class="memory-wrap">${header('temporal')}<div class="memory-timer">Remember the event order.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div></div>`;
+ S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('temporal','Tap the events in the same order.')}<div id="temporal-choices" class="memory-items"></div><div id="temporal-picked" class="picked-sequence"></div></div>`;const box=$('temporal-choices'),picked=$('temporal-picked');let n=0;S.active=true;shuffle(a).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==a[n]){b.classList.add('bad');fail()}else{b.disabled=true;b.classList.add('good');picked.textContent+=(n?' ':'')+x;if(++n===a.length)complete()}};box.appendChild(b)});deadline(sp.response*1.1)},sp.show);
+})}
 function count(){begin((sp,t)=>{
  const n=clamp(sp.count,3,7),start=(S.level*2+S.age*5)%ICONS.length,types=shuffle(ICONS.slice(start).concat(ICONS.slice(0,start))).slice(0,n),counts=types.map((x,i)=>2+((S.level+i+S.age)%3)),pool=types.flatMap((x,i)=>Array(counts[i]).fill(x));
  $('game-stage').innerHTML=`<div class="memory-wrap">${header('count')}<div class="memory-timer">Remember how many times each object appears.</div><div class="memory-items">${shuffle(pool).map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;
  S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('count','Choose the number for each object.')}<div class="count-list" id="count-list"></div></div>`;const box=$('count-list');let done=0;S.active=true;types.forEach((icon,i)=>{const row=document.createElement('div');row.className='count-row';row.innerHTML=`<span>${icon}</span><div class="count-choices"></div>`;const cb=row.querySelector('.count-choices'),correct=counts[i],vals=[correct,1+(correct%4),2+(correct%4),3+(correct%4)].filter((v,j,a)=>a.indexOf(v)===j).slice(0,4);shuffle(vals).forEach(v=>{const b=document.createElement('button');b.className='word-option';b.textContent=v;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(v!==correct){b.classList.add('bad');fail()}else{b.classList.add('good');if(++done===types.length)complete()}};cb.appendChild(b)});box.appendChild(row)});deadline(sp.response*1.25)},sp.show)
 })}
-const START={visual,sequence,location,pairs,feature,working,change,category,order,count,direction,reverse};
+const START={visual,sequence,location,pairs,feature,working,change,category,order,count,direction,reverse,temporal};
 const RULES={
  visual:'Remember the objects you see, then select them from the choices.',
  sequence:'Watch the exact order, then tap the objects in the same order.',
@@ -167,7 +175,8 @@ const RULES={
  order:'Remember the left-to-right order, then rebuild it from first to last.',
  count:'Remember how many times each object appeared, then choose each count.',
  direction:'Watch the arrow sequence, then tap the directions in the same order.',
- reverse:'Remember the sequence, then reproduce it from last to first.'
+ reverse:'Remember the sequence, then reproduce it from last to first.',
+ temporal:'Remember the event order, then reproduce the sequence from first to last.'
 };
 function instructions(type){
  const i=INFO[type],sp=cfg();

@@ -10,7 +10,7 @@ const plans=[
  ['deduction','pattern','order','analogy'],['sequence','rule','clue','math'],['visual','odd','deduction','order'],['pattern','math','analogy','clue'],
  ['rule','deduction','sequence','visual'],['analogy','order','math','pattern'],['clue','rule','deduction','sequence'],['visual','math','order','analogy'],
  ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','estimate'],
- ['estimate','classify','compare','ranking'],['classify','estimate','constraint','math']
+ ['estimate','classify','compare','ranking'],['classify','estimate','constraint','probability']
 ];
 const info={
  sequence:['Sequence Detective','Find what comes next in the sequence.','Look for the change between each item, then choose the item that continues the rule.'],
@@ -28,6 +28,7 @@ const info={
  deduction:['Logic Detective','Combine clues to make one logical conclusion.','Use all the information. Do not choose an answer that conflicts with a clue.'],
  ranking:['Ranking Detective','Arrange quantities from smallest to largest using the clues given.','Compare every value carefully, then choose the correct order.'],
  constraint:['Constraint Detective','Use several rules at the same time to find the only option that fits.','Check every condition before choosing. One condition alone is not enough.'],
+ probability:['Probability Detective','Compare simple chances and choose the outcome that is most likely.','Count the possible outcomes and compare how often each can occur.'],
  estimate:['Estimate Detective','Choose the closest sensible estimate.','Use the scale and information given. An estimate should be close, not exact.'],
  classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.']
 };
@@ -164,7 +165,18 @@ function constraint(){
  const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];
  begin('constraint',`<div class="detective-prompt"><h3>${q.q}</h3></div>`,q.o.map(x=>({value:x,label:`<strong>${x}</strong>`})),q.a);
 }
-function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'constraint':constraint();break;case'deduction':deduction();}}
+
+function probability(){
+ const sets=[
+  ['A bag has 3 red balls and 1 blue ball. Which colour is more likely?', 'Red', ['Red','Blue','Equal','Neither']],
+  ['A spinner has 2 green sections and 6 yellow sections. Which colour is more likely?', 'Yellow', ['Green','Yellow','Equal','Neither']],
+  ['There are 5 sunny days and 2 rainy days in a set of 7 cards. Which card is more likely?', 'Sunny', ['Sunny','Rainy','Equal','Cannot tell']],
+  ['A box has 4 large blocks and 4 small blocks. Which size is more likely?', 'Equal', ['Large','Small','Equal','Neither']]
+ ];
+ const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];
+ begin('probability',`<div class="detective-prompt"><h3>${q[0]}</h3></div>`,q[2].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[1]);
+}
+function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'constraint':constraint();break;case'probability':probability();break;case'deduction':deduction();}}
 function start(){S.detectiveActivity=0;S.detectiveCorrect=0;window.MQDetective={run:()=>{const type=plans[S.level-1][S.detectiveActivity]||'sequence';renderInstruction(type)}}}
 start();
 })();
