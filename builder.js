@@ -4,7 +4,7 @@ const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["fill","pattern","path","mirror","count","rotate","balance","sequence","symmetry"];
+const TYPES=["fill","pattern","path","mirror","count","rotate","balance","sequence","symmetry","packing"];
 const INFO={
  fill:["Block Builder","Fill the required spaces without using blocked cells.","Choose exactly the number of build cells requested."],
  pattern:["Pattern Builder","Complete the structure by following its visual rule.","Study the filled cells, then choose the missing cell."],
@@ -14,7 +14,8 @@ const INFO={
  rotate:["Rotation Builder","Identify the cell pattern after a quarter-turn rotation.","Imagine rotating the shape 90 degrees clockwise, then choose the new position."],
  balance:["Balance Builder","Choose the structure that uses the correct total weight.","Compare the two sides and choose the option that balances the scale."],
  sequence:["Build Sequence","Choose the correct order for constructing a simple structure.","Follow the dependency: foundation before walls, walls before roof."],
- symmetry:["Symmetry Builder","Complete the missing half of a symmetrical design.","Choose the cell that makes the pattern balanced across the centre."]
+ symmetry:["Symmetry Builder","Complete the missing half of a symmetrical design.","Choose the cell that makes the pattern balanced across the centre."],
+ packing:["Packing Builder","Choose how many items can fit without exceeding the available space.","Use the capacity and item size together; do not exceed the limit."]
 };
 function activity(){return Number.isInteger(S.builderActivity)?S.builderActivity:0}
 function ageScale(){return [0.72,0.88,1,1.12,1.24][S.age]||1}
@@ -45,7 +46,13 @@ function symmetry(){
  const target=missing[0]??center*n+center; const distract=[(target+n-1)%(n*n),(target+1)%(n*n),(target+n)%(n*n)];
  $('game-stage').innerHTML=`<div class="builder-stage">${head('symmetry')}<div class="builder-prompt"><h3>Which cell should be filled?</h3><div class="builder-lab-grid" style="--n:${n}">${cells.map((v,i)=>`<button class="builder-cell ${v?'filled':''}" data-i="${i}">${i===target?'?':''}</button>`).join('')}</div></div></div>`;S.active=true;document.querySelectorAll('.builder-cell').forEach(b=>b.onclick=()=>b.dataset.i===String(target)?complete():fail());
 }
-function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else if(type==="symmetry")symmetry();else mirror()}
+function packing(){
+ const capacity=6+Math.floor(S.level/4)+activity(),item=1+(S.level+S.age+activity())%3,correct=Math.floor(capacity/item),choices=[correct,Math.max(1,correct-1),correct+1,correct+2];
+ $("game-stage").innerHTML=`<div class="builder-stage">${head('packing')}<div class="builder-prompt"><h3>How many items fit?</h3><p>Space available: <b>${capacity}</b> units. Each item uses <b>${item}</b> units.</p><div class="builder-options">${shuffle(choices).map(v=>`<button class="builder-option" data-v="${v}">${v} items</button>`).join('')}</div></div></div>`;
+ S.active=true;document.querySelectorAll('.builder-option').forEach(b=>b.onclick=()=>b.dataset.v===String(correct)?complete():fail());
+}
+
+function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else if(type==="symmetry")symmetry();else if(type==="packing")packing();else mirror()}
 function makeGrid(n){return `<div class="builder-lab-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button type="button" class="builder-cell" data-i="${i}"></button>`).join("")}</div>`}
 function fill(){
  const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.5)+activity())*ageScale()),2,total-2),blockedCount=clamp(1+Math.floor(S.level/5),1,4),blocked=shuffle([...Array(total).keys()]).slice(0,blockedCount);

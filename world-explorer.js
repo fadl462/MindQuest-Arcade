@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["place","landmark","clue","route","capital","culture","hemisphere","direction","climate"];
+const TYPES=["place","landmark","clue","route","capital","culture","hemisphere","direction","climate","landform"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const PLACES=[
  ["Ghana","Africa","Accra"],["Kenya","Africa","Nairobi"],["Egypt","Africa","Cairo"],["Nigeria","Africa","Abuja"],
@@ -50,6 +50,7 @@ const INFO={
  culture:["Culture & Nature","Connect places with a simple cultural or environmental clue.","Use the clue to identify the country, region or natural feature."],
  direction:["Map Direction","Use relative location clues to identify a cardinal direction.","Think about where one place is compared with the other."],
  climate:["Climate Detective","Identify a broad climate pattern from a place and its clues.","Use the location and climate clues together; choose the broad pattern that fits."],
+ landform:["Landform Explorer","Identify a broad natural landform from its description.","Use the physical clues to distinguish mountains, rivers, valleys and plains."],
  continent:["Continent Challenge","Connect countries with their correct continents.","Use the country location to identify its continent."],
  capital:["Capital Challenge","Match a country with its capital city.","Use the country clue and choose the correct capital."]
 };
@@ -78,7 +79,17 @@ function climate(){
  const BANK=[['Ghana','warm and tropical',['warm and tropical','polar and icy','very cold all year','desert everywhere']],['Canada','cold winters in many regions',['cold winters in many regions','tropical rainforest everywhere','hot all year everywhere','polar desert everywhere']],['Egypt','hot and dry in much of the country',['hot and dry in much of the country','cold and wet all year','tropical snow climate','cool rainforest climate']],['Brazil','many regions are warm, with tropical climates',['many regions are warm, with tropical climates','polar climate everywhere','cold tundra everywhere','snow all year']]];
  const q=BANK[(S.level+activity()+S.age)%BANK.length];choice(head('climate'),`Which broad climate clue fits <b>${q[0]}</b>?`,q[2],q[1]);
 }
-function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else if(type==="capital")capital();else if(type==="culture")culture();else if(type==="continent")continent();else if(type==="hemisphere")hemisphere();else if(type==="direction")direction();else if(type==="climate")climate();else route()}
+function landform(){
+ const BANK=[
+  ['A high area of land with steep sides and a summit.','Mountain',['Mountain','River','Plain','Island']],
+  ['A long natural flow of water moving toward a sea or lake.','River',['River','Valley','Desert','Mountain']],
+  ['A broad, mostly level area of land.','Plain',['Plain','Volcano','River','Island']],
+  ['Low land between hills or mountains.','Valley',['Valley','Ocean','Plateau','Forest']]
+ ];
+ const q=BANK[(S.level+activity()+S.age)%BANK.length];choice(head('landform'),`Which landform matches this clue?<br><b>${q[0]}</b>`,q[2],q[1]);
+}
+
+function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else if(type==="capital")capital();else if(type==="culture")culture();else if(type==="continent")continent();else if(type==="hemisphere")hemisphere();else if(type==="direction")direction();else if(type==="climate")climate();else if(type==="landform")landform();else route()}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$("game-stage").innerHTML=`<div class="team-stage world-stage">${title}<div class="team-question">${prompt}</div><div id="world-options" class="team-options"></div></div>`;const box=$("world-options");S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(x);b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
 function place(){const p=PLACES[levelIndex()];const mode=S.level<6?"country":S.level<13?"continent":"capital";if(mode==="country"){const others=shuffle(PLACES.filter(x=>x[1]===p[1]&&x[0]!==p[0]).map(x=>x[0])).slice(0,3);choice(head("place"),`Which country is in ${p[1]} and has ${p[2]} as its capital?`,[p[0],...others],p[0])}else if(mode==="continent"){const others=shuffle(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[1])).filter((x,i,a)=>a.indexOf(x)===i).slice(0,3);choice(head("place"),`Which continent is ${p[0]} in?`,[p[1],...others],p[1])}else{const others=shuffle([...new Set(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[2]))]).slice(0,3);choice(head("place"),`What is the capital of ${p[0]}?`,[p[2],...others],p[2])}}

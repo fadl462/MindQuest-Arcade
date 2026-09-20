@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict"];
+const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict","leadership"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const BANK=[
  ["A friend drops their crayons. What could you do?",["Help pick them up","Laugh","Walk away"]],
@@ -83,7 +83,8 @@ const INFO={
  empathy:["Perspective Check","Choose the response that best recognises another person's perspective.","Think about how the other person may feel and what response would help."],
  communication:["Communication Check","Choose a clear and respectful message for the situation.","Be specific, calm and constructive."],
  negotiation:["Negotiation Check","Choose a fair way to reach agreement when people want different things.","Listen, compare options and agree on a workable next step."],
- conflict:["Conflict Resolution","Choose a calm response that helps a disagreement move forward.","Focus on the problem, listen to both sides and look for a fair next step."]
+ conflict:["Conflict Resolution","Choose a calm response that helps a disagreement move forward.","Focus on the problem, listen to both sides and look for a fair next step."],
+ leadership:["Leadership Check","Match tasks to people and help a team use its strengths.","Good delegation considers skills, fairness and the shared goal."]
 };
 function activity(){return Number.isInteger(S.teamActivity)?S.teamActivity:0}
 function levelIndex(){return (S.level-1)%20}
@@ -106,7 +107,16 @@ function conflict(){
  ['The group cannot agree immediately. What is fair?','Use the agreed team rules to decide the next step.']
  ]; const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('conflict'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'Interrupt and decide for everyone.','Blame one person.','Stop listening.'],q[1]);
 }
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else plan()}
+function leadership(){
+ const qs=[
+  ['A teammate is good at drawing. Which task fits best?','Ask them to create the poster',['Ask them to create the poster','Give them every task','Tell them to do nothing','Hide the task']],
+  ['Your group has one speaker and one writer. What is a sensible plan?','Let the speaker present and the writer record ideas',['Let the speaker present and the writer record ideas','Make both people do both jobs at once','Let one person do everything','Skip the presentation']],
+  ['A teammate finishes early. What is a helpful next step?','Offer help to someone who is still working',['Offer help to someone who is still working','Take their work away','Leave the team immediately','Change the goal without telling anyone']]
+ ];
+ const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('leadership'),q[0],q[2],q[1]);
+}
+
+function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else if(type==="leadership")leadership();else plan()}
 
 function negotiation(){
  const qs=[

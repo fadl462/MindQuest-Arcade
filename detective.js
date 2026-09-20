@@ -9,7 +9,7 @@ const plans=[
  ['clue','pattern','analogy','odd'],['rule','sequence','math','clue'],['order','analogy','pattern','deduction'],['math','clue','sequence','rule'],
  ['deduction','pattern','order','analogy'],['sequence','rule','clue','math'],['visual','odd','deduction','order'],['pattern','math','analogy','clue'],
  ['rule','deduction','sequence','visual'],['analogy','order','math','pattern'],['clue','rule','deduction','sequence'],['visual','math','order','analogy'],
- ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','estimate'],
+ ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','data'],
  ['estimate','classify','compare','ranking'],['classify','estimate','constraint','probability']
 ];
 const info={
@@ -30,7 +30,8 @@ const info={
  constraint:['Constraint Detective','Use several rules at the same time to find the only option that fits.','Check every condition before choosing. One condition alone is not enough.'],
  probability:['Probability Detective','Compare simple chances and choose the outcome that is most likely.','Count the possible outcomes and compare how often each can occur.'],
  estimate:['Estimate Detective','Choose the closest sensible estimate.','Use the scale and information given. An estimate should be close, not exact.'],
- classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.']
+ classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.'],
+ data:['Data Detective','Read a small table and identify the correct comparison.','Compare the values in the table before choosing the answer.']
 };
 function age(){return S.age}
 function difficulty(){return S.level + age()*.7}
@@ -176,7 +177,17 @@ function probability(){
  const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];
  begin('probability',`<div class="detective-prompt"><h3>${q[0]}</h3></div>`,q[2].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[1]);
 }
-function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'constraint':constraint();break;case'probability':probability();break;case'deduction':deduction();}}
+function data(){
+ const sets=[
+  {title:'Weekly Reading',rows:[['Ama',4],['Kojo',6],['Esi',5]],q:'Who read the most pages?',a:'Kojo',o:['Ama','Kojo','Esi','They were equal']},
+  {title:'Seeds Planted',rows:[['Team A',12],['Team B',9],['Team C',15]],q:'Which team planted the most seeds?',a:'Team C',o:['Team A','Team B','Team C','They were equal']},
+  {title:'Water Collected',rows:[['Monday',8],['Tuesday',11],['Wednesday',7]],q:'Which day had the highest amount?',a:'Tuesday',o:['Monday','Tuesday','Wednesday','All equal']}
+ ];
+ const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];
+ begin('data',`<div class="detective-prompt"><h3>${q.q}</h3><div class="logic-sequence">${q.rows.map(r=>`<span>${r[0]}: ${r[1]}</span>`).join('')}</div></div>`,q.o.map(x=>({value:x,label:`<strong>${x}</strong>`})),q.a);
+}
+
+function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'deduction':deduction();}}
 function start(){S.detectiveActivity=0;S.detectiveCorrect=0;window.MQDetective={run:()=>{const type=plans[S.level-1][S.detectiveActivity]||'sequence';renderInstruction(type)}}}
 start();
 })();

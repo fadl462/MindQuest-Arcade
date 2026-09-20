@@ -2,7 +2,7 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$,shuffle=a=>[...a].sort(()=>Math.random()-.5),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan"];
+const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan","compareShop"];
 const INFO={
  count:["Money Match","Count Ghana cedi coins and notes.","Add the values carefully, then choose the total."],
  compare:["Price Detective","Compare prices and decide which amount is greater, smaller or equal.","Read both amounts before choosing."],
@@ -12,7 +12,8 @@ const INFO={
  discount:["Sale Detective","Work out the sale price after a simple discount.","Find the discount amount, then subtract it from the original price."],
  savings:["Savings Mission","Calculate how much more you need to reach a savings goal.","Compare your current savings with the target."],
  needs:["Needs & Wants","Choose the purchase that best matches a stated need and budget.","Think about the purpose of the money before choosing a purchase."],
- savingPlan:["Savings Planner","Choose the plan that reaches a goal while leaving a realistic amount to save each time.","Compare the goal, starting amount and regular saving amount."]
+ savingPlan:["Savings Planner","Choose the plan that reaches a goal while leaving a realistic amount to save each time.","Compare the goal, starting amount and regular saving amount."],
+ compareShop:["Smart Price Compare","Compare two products using both price and quantity.","Check the total price and how many items you receive before deciding."]
 };
 const VALUES=[1,2,5,10,20,50,100];
 function activity(){return Number.isInteger(S.moneyActivity)?S.moneyActivity:0}
@@ -29,7 +30,7 @@ function savingPlan(){
  const weeks=Math.ceil((goal-start)/weekly); const correct=`${weeks} weeks`;
  choice(head('savingPlan'),`You have <b>${money(start)}</b> and want <b>${money(goal)}</b>. If you save <b>${money(weekly)}</b> each week, about how long will it take?`,[correct,`${Math.max(1,weeks-1)} weeks`,`${weeks+1} weeks`,`${weeks+2} weeks`],correct);
 }
-function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else budget()}
+function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else if(type==="compareShop")compareShop();else budget()}
 function money(n){return `GH₵${Number(n).toFixed(n%1?2:0)}`}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$('game-stage').innerHTML=`<div class="team-stage money-stage">${title}<div class="team-question">${prompt}</div><div id="money-options" class="team-options"></div></div>`;const box=$('money-options');S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===String(correct)?complete():fail();box.appendChild(b)})}
@@ -77,6 +78,16 @@ function needs(){
  choice(head('needs'),q[0],q[2],q[1]);
 }
 function savings(){const have=5+(S.level%8)*5,goal=have+10+((S.level+activity())%5)*5,need=goal-have;choice(head('savings'),`Your savings goal is <b>${money(goal)}</b>. You already have <b>${money(have)}</b>. How much more do you need?`,[money(need),money(need+5),money(Math.max(0,need-5)),money(goal)],money(need));}
+
+function compareShop(){
+ const qs=[
+  ['Pack A: 4 pencils for GH₵12','Pack B: 6 pencils for GH₵15','PACK B'],
+  ['Pack A: 5 notebooks for GH₵25','Pack B: 4 notebooks for GH₵16','PACK B'],
+  ['Pack A: 3 juice boxes for GH₵9','Pack B: 5 juice boxes for GH₵20','PACK A'],
+  ['Pack A: 8 stickers for GH₵16','Pack B: 10 stickers for GH₵25','PACK A']
+ ];
+ const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('compareShop'),`Which pack has the lower price per item?<div class="money-compare"><b>${q[0]}</b><span>vs</span><b>${q[1]}</b></div>`,['PACK A','PACK B'],q[2]);
+}
 
 function finishLevel(){ if(!S.active)return; S.active=false; MQ.levelComplete(); }
 

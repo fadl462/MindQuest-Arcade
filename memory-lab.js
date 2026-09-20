@@ -13,19 +13,19 @@ const PLANS=[
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
  ['working','count','visual','direction','pairs'],
- ['sequence','location','feature','temporal','direction'],
+ ['sequence','location','feature','reverse','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
  ['working','count','visual','direction','pairs'],
- ['sequence','location','feature','temporal','direction'],
+ ['sequence','location','feature','reverse','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
  ['working','count','visual','direction','pairs'],
- ['sequence','location','feature','temporal','direction'],
+ ['sequence','location','feature','reverse','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
  ['working','count','visual','direction','pairs'],
- ['sequence','location','feature','temporal','direction'],
+ ['sequence','location','feature','reverse','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
  ['working','count','visual','direction','pairs'],
@@ -43,7 +43,8 @@ const INFO={
  order:['Order Builder','Remember positions in an ordered set, then rebuild them.','ORDER MEMORY'],
  count:['Count & Recall','Remember how many times each object appeared.','QUANTITY MEMORY'],
  direction:['Direction Memory','Remember the direction sequence, then repeat it exactly.','DIRECTIONAL MEMORY'],
- temporal:['Temporal Recall','Remember the order and timing of events, then rebuild the sequence.','TIME-ORDER MEMORY']
+ temporal:['Temporal Recall','Remember the order and timing of events, then rebuild the sequence.','TIME-ORDER MEMORY'],
+ reverse:['Reverse Recall','Remember a sequence, then reproduce it from last to first.','REVERSE MEMORY']
 };
 function cfg(){
  const base=[{show:5200,response:18000,count:3},{show:4300,response:15000,count:4},{show:3600,response:12500,count:5},{show:3200,response:10500,count:6},{show:2900,response:9500,count:6}][S.age];
