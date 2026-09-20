@@ -77,11 +77,76 @@ function classification(){const sets=[['Which belongs with fruits?',['Apple','Ca
 function deduction(){const sets=[['All red blocks are circles.','This block is red.','What must it be?','Circle',['Circle','Square','Triangle','Star']],['Every bird has wings.','Kofi is a bird.','Kofi has…','Wings',['Wings','Wheels','Fins','Roots']],['All planners make lists.','Ama is a planner.','Ama makes…','Lists',['Lists','Cakes','Maps','Songs']],['Every triangle has three sides.','This shape is a triangle.','It has…','Three sides',['Three sides','Four sides','Five sides','No sides']]];const q=sets[(level()+age()-1)%sets.length];begin('deduction',`<div class="deduction-box">${q[0]}<br>${q[1]}<h3>${q[2]}</h3></div>`,choices(q[3],q[4].filter(x=>x!==q[3])),q[3])}
 function ranking(){const base=5+(level()%6),step=1+(level()%4);const nums=[base,base+step*2,base+step,base+step*3];const correct=[...nums].sort((a,b)=>a-b).join(' < ');const variants=[[...nums].reverse().join(' < '),[nums[0],nums[2],nums[1],nums[3]].join(' < '),[nums[1],nums[0],nums[3],nums[2]].join(' < ')];begin('ranking',`<h3>Which order is smallest to largest?</h3><div class="logic-sequence">${nums.map(x=>`<span>${x}</span>`).join('')}</div>`,choices(correct,variants),correct)}
 function constraint(){const sets=[['Which number is even, greater than 20, and less than 30?','24',['15','27','31']],['Which shape has 4 equal sides and 4 corners?','Square',['Triangle','Circle','Oval']],['Which number is a multiple of 5 and greater than 40?','45',['42','43','48']],['Which choice is both a vehicle and used on water?','Boat',['Bicycle','Train','Car']],['Which number is odd, greater than 10 and less than 20?','15',['12','18','20']]];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('constraint',`<h3>${q[0]}</h3><p>Check every condition before choosing.</p>`,choices(q[1],q[2]),q[1])}
-function probability(){const sets=[['A bag has 3 red balls and 1 blue ball. Which colour is more likely?','Red',['Blue','Equal','Neither']],['A spinner has 2 green sections and 6 yellow sections. Which colour is more likely?','Yellow',['Green','Equal','Neither']],['There are 5 sunny cards and 2 rainy cards. Which is more likely?','Sunny',['Rainy','Equal','Cannot tell']],['A box has 4 large blocks and 4 small blocks. Which size is more likely?','Equal',['Large','Small','Neither']]];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('probability',`<h3>${q[0]}</h3>`,choices(q[1],q[2]),q[1])}
+function probability(){
+ const a=age(),l=level(),idx=(l+S.detectiveActivity+a-1)%4;
+ const banks=[
+  [
+   ['A bag has 3 red blocks and 1 blue block. Which colour are you more likely to pick?','Red',['Blue','Equal','Not sure']],
+   ['A box has 5 big balls and 2 small balls. Which size are you more likely to pick?','Big',['Small','Equal','Not sure']],
+   ['There are 4 apples and 1 banana in a basket. Which fruit are you more likely to pick?','Apple',['Banana','Equal','Not sure']],
+   ['A jar has 2 green counters and 6 yellow counters. Which colour are you more likely to pick?','Yellow',['Green','Equal','Not sure']]
+  ],
+  [
+   ['A bag has 6 red counters and 2 blue counters. Which colour is more likely?','Red',['Blue','Equal','Impossible to tell']],
+   ['A spinner has 5 green sections and 3 yellow sections. Which colour is more likely?','Green',['Yellow','Equal','Impossible to tell']],
+   ['A box has 7 square tiles and 4 circle tiles. Which shape is more likely?','Square',['Circle','Equal','Impossible to tell']],
+   ['A basket has 3 mangoes and 8 oranges. Which fruit is more likely?','Orange',['Mango','Equal','Impossible to tell']]
+  ],
+  [
+   ['A bag has 8 red counters and 4 blue counters. Which colour has the greater chance of being picked?','Red',['Blue','They are equal','Cannot tell']],
+   ['A spinner has 3 yellow sections and 9 green sections. Which colour has the greater chance?','Green',['Yellow','They are equal','Cannot tell']],
+   ['A box has 5 triangle cards and 10 circle cards. Which shape has the greater chance?','Circle',['Triangle','They are equal','Cannot tell']],
+   ['A jar has 6 black beads and 6 white beads. What is the chance comparison?','They are equal',['Black is greater','White is greater','Cannot tell']]
+  ],
+  [
+   ['A bag contains 12 red tokens and 4 blue tokens. Which colour is more likely to be drawn?','Red',['Blue','They are equally likely','There is not enough information']],
+   ['A spinner has 2 yellow sections and 8 green sections of equal size. Which outcome is more likely?','Green',['Yellow','They are equally likely','It cannot be determined']],
+   ['A box contains 9 triangle cards and 3 square cards. Which shape has the greater probability?','Triangle',['Square','They are equally likely','It cannot be determined']],
+   ['A jar contains 7 black beads and 7 white beads. How do their chances compare?','They are equally likely',['Black is more likely','White is more likely','It cannot be determined']]
+  ]
+ ];
+ const q=banks[Math.min(a,3)][idx];
+ begin('probability',`<h3>${q[0]}</h3><p>Compare the number of possible outcomes before choosing.</p>`,choices(q[1],q[2]),q[1]);
+}
 function data(){const sets=[{title:'Weekly Reading',rows:[['Ama',4],['Kojo',6],['Esi',5]],q:'Who read the most pages?',a:'Kojo',o:['Ama','Esi','They were equal']},{title:'Seeds Planted',rows:[['Team A',12],['Team B',9],['Team C',15]],q:'Which team planted the most?',a:'Team C',o:['Team A','Team B','They were equal']},{title:'Water Collected',rows:[['Monday',8],['Tuesday',11],['Wednesday',7]],q:'Which day had the highest amount?',a:'Tuesday',o:['Monday','Wednesday','All equal']}];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('data',`<h3>${q.title}</h3><div class="logic-sequence">${q.rows.map(r=>`<span>${r[0]}: ${r[1]}</span>`).join('')}</div><p>${q.q}</p>`,choices(q.a,q.o),q.a)}
 function chain(){const sets=[['Ama has more books than Kojo. Esi has fewer than Kojo. Who must have the most?','Ama',['Kojo','Esi','They are equal']],['A number is greater than 20 and less than 30. It is even and divisible by 4. Which fits?','24',['22','26','28']],['Blue comes before Green. Red is not first. Which order works?','Blue → Green → Red',['Red → Blue → Green','Green → Blue → Red','Blue → Red → Green']],['A trip is longer than 2 hours but shorter than 5 hours. It is not 3. How long?','4 hours',['2 hours','3 hours','5 hours']]];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('chain',`<span class="detective-task-label">LINKED CLUES</span><h3>${q[0]}</h3><p>Use every part of the clue before choosing.</p>`,choices(q[1],q[2]),q[1])}
 function logicGrid(){const sets=[['Ama','book','Kofi','ball'],['Kojo','pencil','Esi','drum'],['Yaw','kite','Mia','camera'],['Nana','map','Kofi','guitar']];const q=sets[(level()+age()-1)%sets.length];const correct=`${q[0]} → ${q[1]}`;begin('logicGrid',`<div class="clue-box"><b>${q[0]}</b> chose the first item. <b>${q[2]}</b> chose the other item. Which pairing is correct?</div>`,choices(correct,[`${q[0]} → ${q[3]}`,`${q[2]} → ${q[1]}`,`${q[2]} → ${q[3]}`]),correct)}
-function elimination(){const sets=[['Which item fits all three clues?','It is larger than 5, even, and less than 10.','6',['4','8','11']],['Which animal can fly, has feathers, and is not a penguin?','Eagle','', ['Dog','Cat','Turtle']],['Which number is odd, greater than 7, and less than 12?','9','',['6','8','12']],['Which shape has 3 sides and no curved edges?','Triangle','',['Circle','Square','Oval']]];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('elimination',`<span class="detective-task-label">ELIMINATION CLUES</span><h3>${q[0]}</h3><div class="clue-box"><p>${q[1]}</p></div><p>Eliminate every option that breaks a clue.</p>`,choices(q[2]||q[1],q[3]),q[2]||q[1])}
+function elimination(){
+ const a=age(),l=level(),idx=(l+S.detectiveActivity+a-1)%5;
+ const banks=[
+  [
+   ['Which item fits all three clues?','It is larger than 5, even, and less than 10.','6',['4','8','11']],
+   ['Which animal fits every clue?','It can fly, has feathers, and is not a penguin.','Eagle',['Dog','Cat','Turtle']],
+   ['Which number fits every clue?','It is odd, greater than 7, and less than 12.','9',['6','8','12']],
+   ['Which shape fits every clue?','It has 3 sides and no curved edges.','Triangle',['Circle','Square','Oval']],
+   ['Which object fits every clue?','It is used to tell time, has hands, and has a face.','Clock',['Ruler','Cup','Spoon']]
+  ],
+  [
+   ['Which number satisfies every condition?','It is even, greater than 20, and less than 30.','24',['21','27','31']],
+   ['Which animal satisfies every clue?','It can fly, has feathers, and is not a penguin.','Eagle',['Dog','Fish','Turtle']],
+   ['Which number satisfies every condition?','It is odd, greater than 10, and less than 20.','15',['12','18','20']],
+   ['Which shape satisfies every clue?','It has 3 sides and no curved edges.','Triangle',['Circle','Square','Oval']],
+   ['Which object satisfies every clue?','It measures time and has numbers on its face.','Clock',['Ruler','Scale','Compass']]
+  ],
+  [
+   ['Which number satisfies all the constraints?','It is even, a multiple of 3, and between 20 and 30.','24',['21','25','28']],
+   ['Which animal satisfies all the clues?','It can fly, has feathers, and is not a penguin.','Eagle',['Bat','Dog','Turtle']],
+   ['Which number satisfies all the constraints?','It is odd, greater than 20, and divisible by 3.','21',['22','24','27']],
+   ['Which shape satisfies all the clues?','It has 4 equal sides and 4 right angles.','Square',['Triangle','Circle','Oval']],
+   ['Which object satisfies all the clues?','It shows direction, has a needle, and is used for navigation.','Compass',['Clock','Ruler','Scale']]
+  ],
+  [
+   ['Which number satisfies every condition?','It is even, divisible by 4, and greater than 30 but less than 40.','32',['33','34','38']],
+   ['Which number satisfies every condition?','It is odd, divisible by 5, and between 30 and 50.','35',['32','40','45']],
+   ['Which shape satisfies every condition?','It has 4 equal sides, 4 right angles, and no curved edges.','Square',['Rectangle','Triangle','Circle']],
+   ['Which vehicle satisfies every condition?','It travels on water, carries people, and has no wheels.','Boat',['Car','Bus','Bicycle']],
+   ['Which object satisfies every condition?','It measures temperature and contains a numbered scale.','Thermometer',['Clock','Ruler','Compass']]
+  ]
+ ];
+ const bank=banks[Math.min(a,3)];
+ const q=bank[idx%bank.length];
+ begin('elimination',`<h3>${q[0]}</h3><div class="clue-box"><p>${q[1]}</p></div><p>Eliminate every option that breaks the clue.</p>`,choices(q[2],q[3]),q[2]);
+}
 function estimate(){const l=level(),a=age(),base=18+l*7+a*5,step=l<8?10:l<15?25:50,correct=Math.round(base/step)*step;begin('estimate',`<div class="logic-sequence"><span>${base}</span><b>≈</b><span>?</span></div><p>Which value is the closest sensible estimate?</p>`,choices(correct,[correct-step,correct+step,correct+step*2].filter(x=>x>0)),correct)}
 function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'classification':classification();break;case'deduction':deduction();break;case'ranking':ranking();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'chain':chain();break;case'logicGrid':logicGrid();break;case'elimination':elimination();break;case'estimate':estimate();break;default:sequence()}}
 function start(){S.detectiveActivity=Number(S.detectiveActivity)||0;S.detectiveCorrect=Number(S.detectiveCorrect)||0;window.MQDetective={run:()=>{const type=plans[level()-1]?.[S.detectiveActivity]||'sequence';instruction(type)}}}
