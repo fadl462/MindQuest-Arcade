@@ -21,6 +21,13 @@ const INFO={
  double:["Double Target","React to two targets in the correct order.","Tap the first target, then the second target without tapping a decoy."],
  delay:["Delayed Tap","Wait for the signal, then respond during a short timing window.","Do not tap during the countdown. Tap only when the signal appears."]
 };
+function chase(){
+ const token=begin(),size=S.level<8?170:S.level<15?140:115,steps=2+Math.floor((S.level-1)/7)+activity();let hit=0;
+ $('game-stage').innerHTML=`<div class="reflex-stage">${head('precision','Follow the moving target. Tap it before it moves again.')}<div id="chase-area" style="position:relative;width:min(100%,620px);height:${size}px;margin:20px auto;border:1px solid rgba(255,255,255,.14);border-radius:20px;overflow:hidden"></div><div id="chase-count" class="reflex-target">0 / ${steps}</div></div>`;
+ const area=$('chase-area');S.active=true;
+ const spawn=()=>{if(!S.active||token!==S.reflexToken)return;area.innerHTML='';const b=document.createElement('button');b.className='reflex-target';b.textContent='●';b.style.cssText=`position:absolute;left:${8+Math.random()*76}%;top:${10+Math.random()*65}%;transform:translate(-50%,-50%);width:${Math.max(38,62-S.level)}px;height:${Math.max(38,62-S.level)}px;border-radius:50%;cursor:pointer`;b.onclick=()=>{if(!S.active)return;hit++;$('chase-count').textContent=`${hit} / ${steps}`;if(hit>=steps){complete();return}spawn()};area.appendChild(b);S.timer=setTimeout(()=>fail(),Math.max(700,responseWindow()))};
+ spawn();
+}
 function activity(){return Number.isInteger(S.reflexActivity)?S.reflexActivity:0}
 function ageFactor(){return [1.35,1.15,1,.88,.78][S.age]||1}
 function difficulty(){return S.level+activity()*.55}
@@ -55,7 +62,7 @@ function precision(){
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;b.disabled=false;S.active=true;S.timer=setTimeout(fail,responseWindow(.85))},signalDelay());
 }
 
-function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else if(type==="double")doubleTarget();else if(type==="multitap")multiTap();else if(type==="switch")switchSignal();else if(type==="delay")delayedTap();else if(type==="rhythm")rhythm();else if(type==="precision")precision();else sequence()}
+function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else if(type==="double")doubleTarget();else if(type==="multitap")multiTap();else if(type==="switch")switchSignal();else if(type==="delay")delayedTap();else if(type==="rhythm")rhythm();else if(type==="precision")precision();else if(type==="chase")chase();else sequence()}
 function goNoGo(){
  const token=begin(),go=Math.random()>.38;
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('go','Wait for the signal. Tap GO, but do not tap NO-GO.')}<div class="reflex-signal" id="go-signal">Get ready…</div><div id="go-button-wrap" class="reflex-options"><button id="go-button" class="reflex-target" disabled>GO</button></div></div>`;

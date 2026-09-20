@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["place","landmark","clue","route","capital","culture","hemisphere","direction","climate","landform"];
+const TYPES=["place","landmark","clue","route","capital","culture","hemisphere","direction","climate","landform","compass"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const PLACES=[
  ["Ghana","Africa","Accra"],["Kenya","Africa","Nairobi"],["Egypt","Africa","Cairo"],["Nigeria","Africa","Abuja"],
@@ -62,6 +62,11 @@ function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);con
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function ageText(t){if(S.age===0)return t.replace(/continent/g,"place area").replace(/capital/g,"main city").replace(/landmark/g,"famous place");return t}
 function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🌍</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🌍 Explore places</span><span>✓ Four activities per level</span></div><button id="world-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("world-start").onclick=()=>runActivity(type)}
+function compass(){
+ const routes=[['Start at the market.','Move east, then north.','EAST','NORTH'],['Start at the school.','Move south, then east.','SOUTH','EAST'],['Start at the park.','Move west, then north.','WEST','NORTH']];
+ const q=routes[(S.level+activity()+S.age)%routes.length],answer=[q[2],q[3]];let step=0;
+ $('game-stage').innerHTML=`<div class="team-stage world-stage">${head('direction',q[0]+' '+q[1])}<div class="team-question">Choose the directions in order.</div><div id="compass-options" class="team-options"></div><div id="compass-picked" class="picked-sequence"></div></div>`;const box=$('compass-options'),picked=$('compass-picked');S.active=true;['NORTH','EAST','SOUTH','WEST'].forEach(d=>{const b=document.createElement('button');b.className='team-option';b.textContent=d;b.onclick=()=>{if(!S.active)return;if(d!==answer[step]){b.classList.add('bad');fail();return}b.classList.add('good');b.disabled=true;picked.textContent+=(step?' → ':'')+d;step++;if(step===answer.length)complete()};box.appendChild(b)})
+}
 function direction(){
  const BANK=[
   ['Accra is west of Kumasi. From Kumasi, which direction is Accra?','West'],
@@ -89,7 +94,7 @@ function landform(){
  const q=BANK[(S.level+activity()+S.age)%BANK.length];choice(head('landform'),`Which landform matches this clue?<br><b>${q[0]}</b>`,q[2],q[1]);
 }
 
-function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else if(type==="capital")capital();else if(type==="culture")culture();else if(type==="continent")continent();else if(type==="hemisphere")hemisphere();else if(type==="direction")direction();else if(type==="climate")climate();else if(type==="landform")landform();else route()}
+function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else if(type==="capital")capital();else if(type==="culture")culture();else if(type==="continent")continent();else if(type==="hemisphere")hemisphere();else if(type==="direction")direction();else if(type==="climate")climate();else if(type==="landform")landform();else if(type==="compass")compass();else route()}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$("game-stage").innerHTML=`<div class="team-stage world-stage">${title}<div class="team-question">${prompt}</div><div id="world-options" class="team-options"></div></div>`;const box=$("world-options");S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(x);b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
 function place(){const p=PLACES[levelIndex()];const mode=S.level<6?"country":S.level<13?"continent":"capital";if(mode==="country"){const others=shuffle(PLACES.filter(x=>x[1]===p[1]&&x[0]!==p[0]).map(x=>x[0])).slice(0,3);choice(head("place"),`Which country is in ${p[1]} and has ${p[2]} as its capital?`,[p[0],...others],p[0])}else if(mode==="continent"){const others=shuffle(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[1])).filter((x,i,a)=>a.indexOf(x)===i).slice(0,3);choice(head("place"),`Which continent is ${p[0]} in?`,[p[1],...others],p[1])}else{const others=shuffle([...new Set(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[2]))]).slice(0,3);choice(head("place"),`What is the capital of ${p[0]}?`,[p[2],...others],p[2])}}

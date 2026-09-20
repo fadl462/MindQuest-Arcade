@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict","leadership"];
+const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict","leadership","actionSequence"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const BANK=[
  ["A friend drops their crayons. What could you do?",["Help pick them up","Laugh","Walk away"]],
@@ -116,7 +116,7 @@ function leadership(){
  const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('leadership'),q[0],q[2],q[1]);
 }
 
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else if(type==="leadership")leadership();else plan()}
+function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else if(type==="leadership")leadership();else if(type==="actionSequence")actionSequence();else plan()}
 
 function negotiation(){
  const qs=[
@@ -128,6 +128,11 @@ function negotiation(){
  ];
  const q=qs[(S.level+activity()+S.age)%qs.length];
  choice(head('negotiation'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'Let the loudest person decide.','Ignore the disagreement.','Blame the other teammate.'],q[1]);
+}
+function actionSequence(){
+ const scenarios=[['A teammate is upset after a mistake.','Listen','Blame','Ignore','Support'],['Your group is running late.','Plan','Argue','Hide','Quit'],['You discover an error in shared work.','Tell the team','Hide it','Mock someone','Leave']];
+ const q=scenarios[(S.level+activity()+S.age)%scenarios.length],answer=q[1];
+ choice(head('communication'),q[0]+` <b>What is the most constructive first action?</b>`,q.slice(1),answer)
 }
 function communication(){const qs=[['A teammate is late. What is the clearest message?','I am waiting. Are you able to arrive by 3 PM?'],['A task is unclear. What should you say?','Could you explain which part I should complete first?'],['A teammate made a mistake. What is constructive?','Let us check what happened and fix it together.'],['You need help. What is clear?','I have finished step one. Could you help me with step two?'],['Plans changed. What should you communicate?','The plan changed. Here is the new time and what we need to do.']];const q=qs[(S.level+activity()+S.age)%qs.length];const distract=['You always do this wrong.','Whatever, just fix it.','Nobody told me anything.'];choice(head('communication'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],...distract],q[1])}
 

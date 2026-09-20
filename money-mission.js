@@ -2,7 +2,7 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$,shuffle=a=>[...a].sort(()=>Math.random()-.5),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan","compareShop"];
+const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan","compareShop","basketBuild"];
 const INFO={
  count:["Money Match","Count Ghana cedi coins and notes.","Add the values carefully, then choose the total."],
  compare:["Price Detective","Compare prices and decide which amount is greater, smaller or equal.","Read both amounts before choosing."],
@@ -30,7 +30,7 @@ function savingPlan(){
  const weeks=Math.ceil((goal-start)/weekly); const correct=`${weeks} weeks`;
  choice(head('savingPlan'),`You have <b>${money(start)}</b> and want <b>${money(goal)}</b>. If you save <b>${money(weekly)}</b> each week, about how long will it take?`,[correct,`${Math.max(1,weeks-1)} weeks`,`${weeks+1} weeks`,`${weeks+2} weeks`],correct);
 }
-function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else if(type==="compareShop")compareShop();else budget()}
+function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else if(type==="compareShop")compareShop();else if(type==="basketBuild")basketBuild();else budget()}
 function money(n){return `GH₵${Number(n).toFixed(n%1?2:0)}`}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$('game-stage').innerHTML=`<div class="team-stage money-stage">${title}<div class="team-question">${prompt}</div><div id="money-options" class="team-options"></div></div>`;const box=$('money-options');S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===String(correct)?complete():fail();box.appendChild(b)})}
@@ -76,6 +76,12 @@ function needs(){
  ];
  const q=qs[(S.level+activity()+S.age)%qs.length];
  choice(head('needs'),q[0],q[2],q[1]);
+}
+function basketBuild(){
+ const budget=S.level<8?15:S.level<15?30:50, pool=[['Bread',5],['Fruit',3],['Book',10],['Toy',12],['Pencil',2],['Juice',4]],needCount=S.level<8?2:3;
+ const shuffled=shuffle(pool).slice(0,5);let total=0,chosen=0;
+ $('game-stage').innerHTML=`<div class="team-stage money-stage">${head('budget',`Build a useful basket with ${needCount} items and stay within ${money(budget)}.`)}<div id="basket-items" class="team-options"></div><div id="basket-total" style="margin:12px 0;font-weight:700">0 / ${money(budget)} • 0 items</div><button id="basket-done" class="primary-btn">Check Basket →</button></div>`;
+ const box=$('basket-items');S.active=true;shuffled.forEach(([name,price])=>{const b=document.createElement('button');b.className='team-option';b.textContent=`${name} • ${money(price)}`;b.onclick=()=>{if(!S.active)return;if(b.classList.contains('good')){b.classList.remove('good');total-=price;chosen--}else{if(total+price>budget)return; b.classList.add('good');total+=price;chosen++}$('basket-total').textContent=`${money(total)} / ${money(budget)} • ${chosen} items`};box.appendChild(b)});$('basket-done').onclick=()=>chosen===needCount&&total<=budget?complete():fail();
 }
 function savings(){const have=5+(S.level%8)*5,goal=have+10+((S.level+activity())%5)*5,need=goal-have;choice(head('savings'),`Your savings goal is <b>${money(goal)}</b>. You already have <b>${money(have)}</b>. How much more do you need?`,[money(need),money(need+5),money(Math.max(0,need-5)),money(goal)],money(need));}
 

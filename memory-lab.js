@@ -37,6 +37,7 @@ const INFO={
  location:['Location Memory','Remember where each object appeared.','SPATIAL MEMORY'],
  pairs:['Pair Memory','Remember which cards belong together.','ASSOCIATION'],
  feature:['Feature Memory','Remember the exact shape and colour together.','DETAIL MEMORY'],
+ grid:['Grid Recall','Remember the locations of highlighted cells, then reproduce them.','SPATIAL WORKING MEMORY'],
  working:['Working Memory','Hold information in mind while part of it changes.','WORKING MEMORY'],
  change:['Change Detective','Remember the scene, then spot what changed.','CHANGE DETECTION'],
  category:['Category Recall','Remember which objects belonged to a named group.','CATEGORICAL MEMORY'],
@@ -70,6 +71,12 @@ function visual(){begin((sp,t)=>{
  const a=shuffle(pool).slice(0,sp.count),d=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,Math.min(9,3+Math.floor(S.level/2)));
  $('game-stage').innerHTML=`<div class="memory-wrap">${header('visual')}<div class="memory-timer">Study for <b>${(sp.show/1000).toFixed(1)} seconds</b></div><div class="memory-items memory-study">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;
  S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('visual','Select every object you remember.')}<div id="choices" class="memory-items"></div></div>`;const box=$('choices');let n=0;S.active=true;shuffle(a.concat(d)).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(!a.includes(x)){b.classList.add('bad');fail()}else{b.classList.add('good');if(++n===a.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)
+})}
+function grid(){begin((sp,t)=>{
+ const size=S.level<8?3:S.level<15?4:5, slots=size*size, count=clamp(2+Math.floor((S.level-1)/4)+activity(),2,Math.min(9,slots-1));
+ const cells=shuffle([...Array(slots).keys()]).slice(0,count);
+ $('game-stage').innerHTML=`<div class="memory-wrap">${header('grid')}<div class="memory-timer">Memorize the highlighted locations for <b>${(sp.show/1000).toFixed(1)} seconds</b></div><div class="memory-board" style="--grid:${size}">${[...Array(slots)].map((_,i)=>`<div class="memory-cell ${cells.includes(i)?'placed':''}">${cells.includes(i)?'●':''}</div>`).join('')}</div></div>`;
+ S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('grid','Tap every location that was highlighted.')}<div id="grid-recall" class="memory-board" style="--grid:${size}"></div></div>`;const b=$('grid-recall');let hit=0;S.active=true;for(let i=0;i<slots;i++){const cell=document.createElement('button');cell.className='memory-cell recall-cell';cell.onclick=()=>{if(!S.active||cell.disabled)return;if(!cells.includes(i)){cell.classList.add('bad');fail();return}cell.disabled=true;cell.classList.add('placed');cell.textContent='●';if(++hit===cells.length)complete()};b.appendChild(cell)}deadline(sp.response)},sp.show)
 })}
 function sequence(){begin((sp,t)=>{
  const offset=(S.level*5+S.age*11)%ICONS.length,a=shuffle(ICONS.slice(offset).concat(ICONS.slice(0,offset))).slice(0,clamp(sp.count,3,10));
@@ -185,6 +192,6 @@ function instructions(type){
  S.active=false;clearTimeout(S.timer);
  $('start-memory-activity').onclick=()=>{START[type]();};
 }
-function run(){S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;instructions(PLANS[S.level-1]?.[S.memoryActivity]||'visual')}
+function run(){S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;let type=PLANS[S.level-1]?.[S.memoryActivity]||'visual';if(S.level>=10 && S.memoryActivity===3) type='grid';instructions(type)}
 window.MQMemoryLab={run};
 })();

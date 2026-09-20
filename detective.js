@@ -143,6 +143,12 @@ function classification(){
  const q=sets[(S.level+S.age)%sets.length];begin('classification',`<div class="detective-prompt"><h3>${q[0]}</h3></div>`,q[1].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[2]);
 }
 
+function rankOrder(){
+ const items=[['Ama',2],['Kojo',4],['Esi',1],['Yaw',3]].map(x=>x); const shift=(S.level+S.age)%items.length;const rotated=items.slice(shift).concat(items.slice(0,shift));
+ const answer=[...rotated].sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
+ $('game-stage').innerHTML=`<div class="team-stage detective-stage"><div class="arcade-lab-head"><div><span class="lab-kind">DETECTIVE • RANK ORDER</span><h3>Ranking Detective</h3><p>Tap the names from lowest rank to highest rank.</p></div><span class="activity-chip">Activity ${(S.detectiveActivity||0)+1}/4</span></div><div class="team-question">Clues: ${rotated.map(x=>`<b>${x[0]}</b> has position ${x[1]}`).join(' • ')}</div><div id="rank-options" class="team-options"></div><div id="rank-picked" class="picked-sequence"></div></div>`;
+ const box=$('rank-options'),picked=$('rank-picked');let n=0;S.active=true;shuffle(rotated).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x[0];b.onclick=()=>{if(!S.active||b.disabled)return;if(x[0]!==answer[n]){b.classList.add('bad');fail();return}b.disabled=true;b.classList.add('good');picked.textContent+=(n?' → ':'')+x[0];n++;if(n===answer.length)complete()};box.appendChild(b)})
+}
 function ranking(){
  const base=5+(S.level%6),step=1+(S.level%4);
  const nums=[base,base+step*2,base+step,base+step*3];
@@ -187,7 +193,7 @@ function data(){
  begin('data',`<div class="detective-prompt"><h3>${q.q}</h3><div class="logic-sequence">${q.rows.map(r=>`<span>${r[0]}: ${r[1]}</span>`).join('')}</div></div>`,q.o.map(x=>({value:x,label:`<strong>${x}</strong>`})),q.a);
 }
 
-function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'deduction':deduction();}}
+function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'rankOrder':rankOrder();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'deduction':deduction();}}
 function start(){S.detectiveActivity=0;S.detectiveCorrect=0;window.MQDetective={run:()=>{const type=plans[S.level-1][S.detectiveActivity]||'sequence';renderInstruction(type)}}}
 start();
 })();
