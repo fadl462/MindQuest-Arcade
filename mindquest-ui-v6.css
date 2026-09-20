@@ -136,3 +136,219 @@ body.mq-premium-mode .topbar{background:rgba(11,13,28,.9)!important;border-color
 @media(max-width:900px){#home,#game{width:min(100% - 24px,760px)}#home>.hero h1{font-size:34px!important}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:620px){main{padding-bottom:30px}#home{width:calc(100% - 20px);padding-top:10px}#home>.hero{min-height:126px!important;padding:20px!important;border-radius:20px!important}.hero-orb{width:58px!important;height:58px!important;font-size:30px!important;border-radius:19px!important}#home>.hero h1{font-size:29px!important}.hero .lead{font-size:12px!important}.topbar{height:62px!important;padding:0 10px!important}.stat-pill{min-width:47px!important;height:34px!important}.player-identity{min-width:82px!important;height:34px!important}.player-identity .player-avatar{width:24px!important;height:24px!important}.player-identity b{max-width:58px!important}.game-grid{grid-template-columns:1fr!important}.mq-console-grid{grid-template-columns:repeat(2,1fr)!important}.mq-console-head{align-items:flex-start!important}.mq-console-state{margin-top:2px}.section-heading{align-items:flex-start!important}}
 @media(max-width:430px){.topbar-right{gap:4px!important}.player-stats{gap:3px!important}.stat-pill{min-width:42px!important;padding:4px 6px!important}.stat-pill .stat-icon{font-size:12px!important}.player-identity{min-width:76px!important;padding-right:6px!important}.player-identity small{font-size:7px!important}.player-identity b{font-size:10px!important}.mq-mode-badge{display:none!important}}
+
+/* v6.5 — Gameplay Canvas Polish
+   Clean, crisp activity surfaces with consistent hierarchy across all seven games. */
+#game.active .game-head{
+  align-items:center;
+  padding:2px 2px 8px;
+}
+#game.active .game-title{min-width:0}
+#game.active .game-title>span{
+  width:46px;height:46px;display:grid;place-items:center;
+  border:1px solid #e2e5f2;border-radius:15px;
+  background:linear-gradient(145deg,#f4f3ff,#eef1ff);
+  box-shadow:0 6px 16px rgba(37,43,88,.06);
+}
+#game.active .game-title .eyebrow{font-size:9px;letter-spacing:.14em}
+#game.active .game-title h2{font-size:23px;letter-spacing:-.45px}
+#game.active .level-box{
+  display:flex;align-items:baseline;gap:4px;
+  background:#fff;border-radius:12px;box-shadow:0 3px 12px rgba(32,39,80,.04);
+}
+#game.active .level-box span{font-size:9px;letter-spacing:.1em;color:#68718a;font-weight:900}
+#game.active .level-box b{font-size:17px;color:#5b5ce2}
+#game.active .progress-line{height:6px;background:#eceef5}
+#game.active .progress-line span{background:linear-gradient(90deg,#5b5ce2,#7a7bed)}
+#game.active .progress-meta{font-size:10px;color:#7b8499}
+#game.active .game-card{
+  background:linear-gradient(180deg,#fff 0%,#fcfcff 100%);
+  border:1px solid #dfe3ee;
+  border-radius:22px;
+  padding:14px 16px 12px;
+  box-shadow:0 18px 55px rgba(29,36,78,.075);
+}
+#game.active .hud{
+  width:max-content;max-width:100%;margin:0 auto 8px;
+  padding:5px 10px;border:1px solid #e7e9f1;border-radius:999px;
+  background:#fbfbfe;gap:18px;font-size:11px;
+}
+#game.active .hud span{display:flex;align-items:center;gap:3px}
+#game.active #game-stage{
+  width:100%;
+  align-items:flex-start;
+  justify-content:center;
+  overflow:auto;
+  overflow-x:hidden;
+  scrollbar-width:thin;
+  scrollbar-color:#d8dbea transparent;
+  padding:8px 10px 12px;
+}
+#game.active #game-stage::-webkit-scrollbar{width:6px}
+#game.active #game-stage::-webkit-scrollbar-thumb{background:#d8dbea;border-radius:99px}
+#game.active #game-stage>div{width:min(820px,100%)}
+#game.active .activity-chip{
+  border:1px solid #dedff6;
+  background:#f2f1ff;color:#4547a6;
+  padding:6px 10px;font-size:9px;letter-spacing:.05em;
+}
+
+/* Universal instruction screen */
+#game.active .universal-instruction,
+#game.active .detective-instruction,
+#game.active .memory-instruction-screen{
+  width:min(720px,100%);
+  padding:14px 18px 18px;
+  border:1px solid #e4e7f0;
+  border-radius:20px;
+  background:linear-gradient(180deg,#fff,#fbfbfe);
+  box-shadow:0 10px 28px rgba(32,39,80,.045);
+}
+#game.active .ui-icon,
+#game.active .instruction-icon{
+  width:56px;height:56px;border-radius:17px;
+  border:1px solid #e1e4f1;
+  box-shadow:none;
+  margin-bottom:8px;
+}
+#game.active .universal-instruction h2,
+#game.active .detective-instruction h2,
+#game.active .memory-instruction-screen h2{
+  font-size:25px;line-height:1.15;letter-spacing:-.35px;margin:7px 0 5px;
+}
+#game.active .ui-purpose,
+#game.active .detective-instruction .ui-purpose,
+#game.active .instruction-purpose{
+  max-width:590px;font-size:12px;line-height:1.45;color:#6d768b;margin:0 auto 12px;
+}
+#game.active .ui-rule,
+#game.active .instruction-rule{
+  max-width:590px;background:#f7f8fc;border:1px solid #e5e8f0;
+  padding:10px 13px;border-radius:13px;
+}
+#game.active .ui-meta,
+#game.active .instruction-timing{margin:9px auto 11px}
+
+/* Consistent activity canvas */
+#game.active .memory-wrap,
+#game.active .detective-stage,
+#game.active .reflex-stage,
+#game.active .builder-stage,
+#game.active .team-stage,
+#game.active .world-stage,
+#game.active .money-stage{
+  width:min(820px,100%);margin:0 auto;
+}
+#game.active .memory-lab-head,
+#game.active .detective-title{
+  padding:0 2px 9px;margin:0 0 10px;border-bottom:1px solid #eceef4;
+}
+#game.active .memory-lab-head h3{font-size:20px;letter-spacing:-.25px}
+#game.active .memory-sub{font-size:11px;max-width:560px}
+#game.active .memory-kind{font-size:8px;color:#747ca0}
+#game.active .memory-timer{margin:7px auto;color:#697289;font-size:10px}
+
+/* Prompts */
+#game.active .detective-prompt,
+#game.active .builder-prompt,
+#game.active .builder-task,
+#game.active .team-question,
+#game.active .team-match-situation,
+#game.active .world-question,
+#game.active .money-compare,
+#game.active .money-basket,
+#game.active .money-stage>div[class*="prompt"]{
+  background:#f9faff;border:1px solid #e4e7f0;border-radius:16px;
+  box-shadow:0 5px 16px rgba(31,39,82,.035);
+}
+#game.active .detective-prompt{padding:16px;margin:8px auto 12px}
+#game.active .detective-prompt h3{font-size:19px;margin:0 0 9px;letter-spacing:-.2px}
+#game.active .detective-prompt p{font-size:11px;margin:8px 0 0}
+#game.active .logic-sequence span,
+#game.active .shape-sequence span,
+#game.active .visual-rule span{
+  min-width:54px;padding:10px 9px;border-radius:11px;font-size:20px;
+  box-shadow:0 2px 8px rgba(30,38,78,.035);
+}
+#game.active .odd-grid{gap:8px}
+#game.active .odd-grid span{padding:15px 9px;font-size:20px;border-radius:12px}
+#game.active .analogy>div{padding:13px;font-size:18px;border-radius:12px}
+
+/* Answer controls — large, crisp, tactile */
+#game.active .detective-choices,
+#game.active .builder-options,
+#game.active .builder-choice-row,
+#game.active .team-options,
+#game.active .reflex-options{
+  gap:8px;
+}
+#game.active .detective-choice,
+#game.active .builder-option,
+#game.active .team-option,
+#game.active .scenario-option{
+  min-height:52px;padding:10px 13px;border:1px solid #dfe3ec;border-radius:12px;
+  background:#fff;box-shadow:0 2px 7px rgba(31,39,82,.025);
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease,background .15s ease;
+}
+#game.active .detective-choice:hover,
+#game.active .builder-option:hover,
+#game.active .team-option:hover,
+#game.active .scenario-option:hover{transform:translateY(-2px);border-color:#c7c9eb;box-shadow:0 8px 18px rgba(31,39,82,.07)}
+#game.active .detective-choice.good,
+#game.active .builder-option.good,
+#game.active .team-option.good{border-color:#86c9a8;background:#effaf4}
+#game.active .detective-choice.bad,
+#game.active .builder-option.bad,
+#game.active .team-option.bad{border-color:#e6a0aa;background:#fff4f5}
+
+/* Memory activities */
+#game.active .memory-items{gap:8px;margin:12px auto}
+#game.active .memory-item,
+#game.active .choice{
+  min-height:62px;border:1px solid #dfe3ec;border-radius:14px;background:#fff;
+  box-shadow:0 3px 10px rgba(31,39,82,.035);font-size:27px;
+}
+#game.active .choice{cursor:pointer;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
+#game.active .choice:hover{transform:translateY(-2px);border-color:#c7c9eb;box-shadow:0 8px 18px rgba(31,39,82,.07)}
+#game.active .sequence-display{margin:13px auto;gap:7px}
+#game.active .sequence-token{min-width:60px;min-height:60px;border-radius:14px;font-size:28px;background:#fff}
+#game.active .memory-board{margin:12px auto;gap:6px}
+#game.active .memory-cell{border-color:#dfe3ec;background:#fff;border-radius:10px}
+#game.active .pair-grid{margin:12px auto;gap:7px}
+#game.active .pair-card{border-color:#dfe3ec;background:#fff;border-radius:13px}
+
+/* Reflex / Builder / Team / World / Money controls */
+#game.active .reflex-signal{font-size:clamp(42px,7vw,72px);margin:8px auto}
+#game.active .reflex-target{box-shadow:0 8px 20px rgba(91,92,226,.16);border:6px solid #eeefff}
+#game.active .builder-stage,.builder-stage{text-align:center}
+#game.active .builder-lab-grid{filter:drop-shadow(0 5px 10px rgba(31,39,82,.04))}
+#game.active .builder-cell{border-radius:9px}
+#game.active .team-question h3,#game.active .world-question h3{font-size:19px;letter-spacing:-.2px}
+#game.active .team-option{font-weight:750}
+#game.active .world-question{padding:15px}
+#game.active .money-stage{font-variant-numeric:tabular-nums}
+#game.active .money-stage button{transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
+#game.active .money-stage button:hover{transform:translateY(-2px)}
+
+/* Success/failure feedback stays visible and calm */
+#game.active .game-message{
+  min-height:22px;margin-top:3px;font-size:11px;color:#626c82;
+}
+#game.active .game-message:not(:empty){padding:4px 10px;border-radius:999px;background:#f7f8fc}
+
+@media(max-width:700px){
+  #game.active .game-card{padding:11px 10px 9px}
+  #game.active #game-stage{padding:6px 4px 10px}
+  #game.active .game-title>span{width:40px;height:40px;font-size:23px}
+  #game.active .game-title h2{font-size:19px}
+  #game.active .hud{gap:11px;padding:4px 8px}
+  #game.active .universal-instruction,
+  #game.active .detective-instruction,
+  #game.active .memory-instruction-screen{padding:12px 10px 14px;border-radius:17px}
+  #game.active .detective-choices{grid-template-columns:1fr}
+  #game.active .memory-items{grid-template-columns:repeat(2,1fr)}
+  #game.active .memory-item,#game.active .choice{min-height:58px}
+}
+@media(prefers-reduced-motion:reduce){
+  #game.active .detective-choice,#game.active .builder-option,#game.active .team-option,#game.active .scenario-option,#game.active .choice{transition:none}
+}
