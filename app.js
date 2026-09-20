@@ -10,7 +10,7 @@ const games=[
 {id:"world",icon:"🌍",name:"World Explorer",skill:"COGNITIVE",desc:"Explore countries, landmarks, maps and journeys."},
 {id:"money",icon:"💰",name:"Money Mission",skill:"COGNITIVE",desc:"Count, compare, budget and make change with Ghana cedis."}
 ];
-const state={age:0,game:"memory",level:1,lives:3,streak:0,bestStreak:0,xp:0,score:0,earnedThisRun:0,active:false,timer:null,skills:{cognitive:0,behavioural:0,psychomotor:0},skillStats:{memory:0,attention:0,logic:0,problemSolving:0,reaction:0,precision:0,teamwork:0,empathy:0,responsibility:0,financialLiteracy:0,geography:0},milestonePending:false,account:null,premium:false};
+const state={age:0,game:"memory",level:1,lives:3,streak:0,bestStreak:0,xp:0,score:0,earnedThisRun:0,active:false,timer:null,skills:{cognitive:0,behavioural:0,psychomotor:0},skillStats:{memory:0,attention:0,logic:0,problemSolving:0,reaction:0,precision:0,teamwork:0,empathy:0,responsibility:0,financialLiteracy:0,geography:0},milestonePending:false,account:null,premium:false,premiumPlan:"",premiumTrialUntil:0};
 const $=id=>document.getElementById(id); const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');}
 function difficulty(){return (1+(state.level-1)*.11)*ages[state.age].factor;}
@@ -34,7 +34,7 @@ function builder(){window.MQBuilder?.run?.()}
 function team(){window.MQTeamQuest?.run?.()}
 function world(){window.MQWorldExplorer?.run?.()}
 function money(){window.MQMoneyMission?.run?.()}
-function showMilestone(completed){clearTimeout(state.timer);state.active=false;state.milestonePending=true;state.milestoneLevel=completed;const next=completed<20?completed+1:null;const report=buildReport(completed);$("milestone-title").textContent=completed===20?'20-Level Mastery Complete!':`Level ${completed} Complete!`;$("milestone-subtitle").textContent=completed===20?'You have completed the core MindQuest pathway.':'Great work — here is what your play is building so far.';$("milestone-body").innerHTML=report;const btn=$("milestone-continue");btn.textContent=completed===10?'Continue to Account Setup →':completed===20?'Enter Premium Vault →':`Continue to Level ${next} →`;btn.onclick=()=>{if(completed===10)showAccountGate();else if(completed===20)showPremiumVault();else continueAfterMilestone()};show('milestone');}
+function showMilestone(completed){clearTimeout(state.timer);state.active=false;state.milestonePending=true;state.milestoneLevel=completed;const next=completed<20?completed+1:null;const report=buildReport(completed);$("milestone-title").textContent=completed===20?'20-Level Mastery Complete!':`Level ${completed} Complete!`;$("milestone-subtitle").textContent=completed===20?'You have completed the core MindQuest pathway.':'Great work — here is what your play is building so far.';$("milestone-body").innerHTML=report;const btn=$("milestone-continue");btn.textContent=completed===10?'Continue to Account Setup →':completed===20?'Explore Premium Options →':`Continue to Level ${next} →`;btn.onclick=()=>{if(completed===10)showAccountGate();else if(completed===20)showPremiumVault();else continueAfterMilestone()};show('milestone');}
 function buildReport(level){const s=state.skillStats||{};const items=[['🧠 Memory & attention',s.memory+s.attention,'Remembering information, staying focused and handling more than one piece of information at a time.'],['🔎 Logic & problem solving',s.logic+s.problemSolving,'Looking for patterns, testing ideas and working through a challenge before choosing an answer.'],['⚡ Reaction & precision',s.reaction+s.precision,'Responding at the right moment and coordinating what you see with what you do.'],['🤝 Social & emotional skills',s.teamwork+s.empathy+s.responsibility,'Practising cooperation, perspective-taking, patience and responsible choices.'],['🌍 Knowledge & financial thinking',s.geography+s.financialLiteracy,'Using real-world knowledge, quantities and practical information to make sensible decisions.']];return `<div class="performance-grid">${items.map(x=>`<article class="performance-card"><div class="performance-top"><strong>${x[0]}</strong><span>${x[1]} practice points</span></div><p>${x[2]}</p><div class="performance-bar"><span style="width:${clamp(x[1]*6,4,100)}%"></span></div></article>`).join('')}</div><div class="performance-note"><strong>What this means</strong><p>These practice points are indicators of the skills exercised through gameplay. They are not a clinical, academic or intelligence assessment.</p></div>`;}
 function continueAfterMilestone(){state.milestonePending=false;state.milestoneLevel=0;state.level++;updateGlobal();show('game');state.timer=setTimeout(nextChallenge,250);}
 function showAccountGate(){clearTimeout(state.timer);state.active=false;const hasAccount=!!state.account;$("account-gate").querySelector('h1').textContent=hasAccount?'Your MindQuest account is ready':'Create your MindQuest account';$("account-gate").querySelector('.lead').textContent=hasAccount?'Your player profile is already active on this device. Confirm below to unlock Level 11 and continue your journey.':'You have reached the point where MindQuest begins keeping a longer-term player profile. Create your account before continuing to Level 11.';$("account-submit").textContent=hasAccount?'Continue to Level 11 →':'Create Account & Continue →';if(hasAccount){$("account-name").value=state.account.displayName||'';$("account-username").value=state.account.username||'';$("account-name").disabled=true;$("account-username").disabled=true;$("account-consent").checked=true;$("account-consent").disabled=true;$("account-error").textContent='';}else{$("account-name").disabled=false;$("account-username").disabled=false;$("account-consent").disabled=false;}show('account-gate');}
@@ -42,9 +42,43 @@ function continueAfterAccount(){state.account=loadAccount()||state.account;if(!s
 function loadAccount(){try{return JSON.parse(localStorage.getItem('mindquest-account-v1')||'null')}catch{return null}}
 function saveAccount(account){try{localStorage.setItem('mindquest-account-v1',JSON.stringify(account))}catch{}state.account=account;}
 function createAccount(){const name=$("account-name").value.trim(),username=$("account-username").value.trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');const consent=$("account-consent").checked;if(name.length<2||username.length<3||!consent){$("account-error").textContent='Please enter a display name, a username of at least 3 characters, and confirm the account notice.';return}saveAccount({displayName:name,username,agePath:ages[state.age].range,createdAt:new Date().toISOString()});$("account-error").textContent='';const status=$("account-status");if(status)status.textContent='Account created';continueAfterAccount();}
-function showPremiumVault(){state.milestonePending=false;show('premium');renderPremium();}
-function renderPremium(){const locked=!state.premium;$("premium-status").textContent=locked?'PREMIUM ACCESS REQUIRED':'PREMIUM ACTIVE';$("premium-grid").innerHTML=[['🧠','Adaptive Intelligence Engine','Difficulty adapts to performance patterns across the full skill profile.'],['📊','Deep Performance Lab','Longitudinal skill trends, mastery maps and milestone history.'],['🎯','Daily Mastery Missions','Personalised daily challenges with streaks and rotating objectives.'],['🧭','Mastery Worlds','Advanced game worlds with multi-stage missions and branching challenges.'],['👨‍👩‍👧','Parent / Guardian Insights','A separate progress view focused on practice patterns, not labels or diagnoses.'],['🏆','Elite Badges & Certificates','Milestone certificates, mastery badges and achievement collections.'],['⚙️','Advanced Accessibility','Expanded timing, motion, contrast and text-size controls.']].map(x=>`<article class="premium-card ${locked?'locked':''}"><div class="premium-icon">${x[0]}</div><h3>${x[1]}</h3><p>${x[2]}</p><span>${locked?'🔒 Premium':'✓ Available'}</span></article>`).join('');}
+function premiumTrialActive(){
+ const until=Number(localStorage.getItem('mindquest-premium-trial-until')||state.premiumTrialUntil||0);
+ if(until>Date.now()){state.premium=true;state.premiumTrialUntil=until;state.premiumPlan='7-day-preview';return true;}
+ if(until){state.premium=false;state.premiumTrialUntil=0;localStorage.removeItem('mindquest-premium-trial-until');}
+ return false;
+}
+function showPremiumVault(){state.milestonePending=false;premiumTrialActive();show('premium');renderPremium();}
+function startPremiumTrial(){
+ const until=Date.now()+7*24*60*60*1000;
+ state.premium=true;state.premiumPlan='7-day-preview';state.premiumTrialUntil=until;
+ try{localStorage.setItem('mindquest-premium-trial-until',String(until));localStorage.setItem('mindquest-premium-plan','7-day-preview')}catch{}
+ renderPremium();
+}
+function choosePremiumPlan(plan){
+ state.premiumPlan=plan;
+ try{localStorage.setItem('mindquest-premium-plan',plan)}catch{}
+ const notice=$("premium-checkout-note");
+ if(notice)notice.innerHTML='<strong>Plan selected:</strong> '+plan+'. The payment gateway is not connected in this GitHub build yet. Your selection is saved locally so the production checkout can be connected without changing the pricing model.';
+}
+function renderPremium(){
+ premiumTrialActive();
+ const active=!!state.premium;
+ const trialDays=active&&state.premiumTrialUntil?Math.max(1,Math.ceil((state.premiumTrialUntil-Date.now())/86400000)):0;
+ const status=$("premium-status");
+ if(status)status.textContent=active?(state.premiumPlan==='7-day-preview'?'7-DAY PREVIEW ACTIVE':'PREMIUM ACTIVE'):'PREMIUM PREVIEW AVAILABLE';
+ const banner=$("premium-banner-copy");
+ if(banner)banner.innerHTML=active
+  ? '<strong>Your premium preview is active.</strong><p>'+(trialDays?'You have about '+trialDays+' day'+(trialDays===1?'':'s')+' remaining. Explore the full Infinity Layer before choosing a plan.':'Premium access is active.')+'</p>'
+  : '<strong>Complete the core journey without a paywall.</strong><p>Start a 7-day full-access preview at no cost. You can keep using the free 20-level pathway even if you do not subscribe.</p>';
+ const cta=$("premium-trial-btn");
+ if(cta){cta.textContent=active?'Preview Active ✓':'Start 7-Day Premium Preview →';cta.disabled=active;cta.onclick=active?null:startPremiumTrial;}
+ const grid=$("premium-grid");
+ if(grid)grid.innerHTML=[['🧠','Adaptive Intelligence Engine','Difficulty adapts to performance patterns across the full skill profile.'],['📊','Deep Performance Lab','Longitudinal skill trends, mastery maps and milestone history.'],['🎯','Daily Mastery Missions','Personalised daily challenges with streaks and rotating objectives.'],['🧭','Mastery Worlds','Advanced game worlds with multi-stage missions and branching challenges.'],['👨‍👩‍👧','Parent / Guardian Insights','A separate progress view focused on practice patterns, not labels or diagnoses.'],['🏆','Elite Badges & Certificates','Milestone certificates, mastery badges and achievement collections.'],['⚙️','Advanced Accessibility','Expanded timing, motion, contrast and text-size controls.']].map(x=>`<article class="premium-card ${active?'premium-unlocked':'locked'}"><div class="premium-icon">${x[0]}</div><h3>${x[1]}</h3><p>${x[2]}</p><span>${active?'✓ Preview unlocked':'🔒 Included with Plus / Family'}</span></article>`).join('');
+ const note=$("premium-checkout-note");
+ if(note&&!note.innerHTML)note.textContent='Choose a plan to save your preference. Payment processing will be connected separately.';
+}
 function goHome(){clearTimeout(state.timer);state.active=false;state.level=1;state.lives=3;state.streak=0;state.score=0;state.earnedThisRun=0;show('home');updateGlobal();}
 function leaveGame(){if(state.active||document.querySelector('#game.screen.active')){const ok=window.confirm('Save your checkpoint and return to the Game Arcade? You can resume it later.');if(!ok)return}goHome()}
-window.MQ={state,$,ages,updateGlobal,levelComplete,levelFailed,nextChallenge,showMilestone,showAccountGate,showPremiumVault,createAccount};renderAges();renderGames();document.addEventListener("click",e=>{const b=e.target.closest("#account-submit");if(b){e.preventDefault();createAccount();}});
+window.MQ={state,$,ages,updateGlobal,levelComplete,levelFailed,nextChallenge,showMilestone,showAccountGate,showPremiumVault,createAccount,startPremiumTrial,choosePremiumPlan,renderPremium};renderAges();renderGames();document.addEventListener("click",e=>{const b=e.target.closest("#account-submit");if(b){e.preventDefault();createAccount();}});
 })();
