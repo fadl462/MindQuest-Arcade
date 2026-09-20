@@ -14,5 +14,5 @@ ok('Money Mission guarantees four savings options',/\[correct,wk\(weeks\+1\),wk\
 ok('Money Mission exact change supports undo and clear',/change-undo/.test(money)&&/change-clear/.test(money));
 ok('Detective probability includes fraction reasoning',/probability of red\?','3\/5/.test(detective)&&/2\/5/.test(detective));
 ok('Reflex advanced mechanics are reachable',/\"mirror\".*\"chase\"/.test(reflex)&&/type===\"chase\"/.test(reflex));
-ok('Builder balance has a single defensible answer',/const left=4\+\(S\.level%4\),right=2\+/.test(builder)&&/data-v=\"\$\{v\}\"/.test(builder));
+ok('Builder balance has a single defensible answer',/const left=4\+tier\(\)\+\(S\.level%5\),right=2\+/.test(builder)&&/data-v=\"\$\{v\}\"/.test(builder));
 console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0);

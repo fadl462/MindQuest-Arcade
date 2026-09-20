@@ -23,13 +23,16 @@ weight:["Weight Balance","Balance two sides using blocks with different weights.
 };
 function activity(){return Number.isInteger(S.builderActivity)?S.builderActivity:0}
 function ageScale(){return [0.72,0.88,1,1.12,1.24][S.age]||1}
-function size(){return S.level<6?3:S.level<13?4:5}
+function size(){return S.level<5?3:S.level<10?4:5}
+function tier(){return S.level<5?0:S.level<9?1:S.level<13?2:S.level<17?3:4}
+function buildComplexity(){return tier()+Math.min(3,activity())}
+
 function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">BUILDER</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four building challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next build…`;if(last){S.builderActivity=0;S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}else{S.builderActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🧩</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🧩 Plan before you place</span><span>✓ Four activities per level</span></div><button id="builder-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("builder-start").onclick=()=>runActivity(type)}
 function weight(){
- const left=6+(S.level%5),right=2+((S.level+activity()+S.age)%3),need=left-right;
+ const left=6+tier()+(S.level%6),right=2+((S.level+activity()+S.age)%4),need=left-right;
  const options=[need,Math.max(1,need-1),need+1,need+2];
  choiceBuilder('weight',`The left side weighs <b>${left}</b> units and the right side weighs <b>${right}</b> units. How much weight must you add to the right side to balance the structure?`,options,need);
 }
@@ -70,10 +73,10 @@ function packing(){
 }
 
 
-function tileMatch(){const n=size(),target=new Set();for(let i=0;i<n*n;i++){if((i+S.level+activity())%3===0)target.add(i)};const cells=Array.from({length:n*n},(_,i)=>`<button class="builder-cell" data-i="${i}"></button>`).join('');$('game-stage').innerHTML=`<div class="builder-stage">${head('tileMatch')}<p>Rebuild the highlighted pattern.</p><div class="builder-lab-grid" style="--n:${n}" id="tile-grid">${cells}</div></div>`;const picked=new Set();S.active=true;document.querySelectorAll('#tile-grid .builder-cell').forEach(b=>b.onclick=()=>{if(!S.active)return;const i=+b.dataset.i;if(picked.has(i)){picked.delete(i);b.classList.remove('selected')}else{picked.add(i);b.classList.add('selected')}if(picked.size===target.size&&[...picked].every(i=>target.has(i)))complete();else if(picked.size>target.size)fail()})}
+function tileMatch(){const n=size(),target=new Set();for(let i=0;i<n*n;i++){if((i*2+S.level+activity()*2)%Math.max(2,4-tier())===0)target.add(i)};const cells=Array.from({length:n*n},(_,i)=>`<button class="builder-cell" data-i="${i}"></button>`).join('');$('game-stage').innerHTML=`<div class="builder-stage">${head('tileMatch')}<p>Rebuild the highlighted pattern.</p><div class="builder-lab-grid" style="--n:${n}" id="tile-grid">${cells}</div></div>`;const picked=new Set();S.active=true;document.querySelectorAll('#tile-grid .builder-cell').forEach(b=>b.onclick=()=>{if(!S.active)return;const i=+b.dataset.i;if(picked.has(i)){picked.delete(i);b.classList.remove('selected')}else{picked.add(i);b.classList.add('selected')}if(picked.size===target.size&&[...picked].every(i=>target.has(i)))complete();else if(picked.size>target.size)fail()})}
 function maze(){
- const n=S.level<8?3:S.level<15?4:5,start=0,goal=n*n-1,blocked=new Set();
- for(let i=1;i<goal;i++){const onSafePath=(i<n)||((i%n)===n-1);if(!onSafePath && (i*7+S.level+activity())%5===0) blocked.add(i);}
+ const n=size(),start=0,goal=n*n-1,blocked=new Set();
+ for(let i=1;i<goal;i++){const onSafePath=(i<n)||((i%n)===n-1);if(!onSafePath && (i*7+S.level*3+activity()*5)%Math.max(3,6-tier())===0) blocked.add(i);}
  blocked.delete(1);blocked.delete(goal-1);
  $('game-stage').innerHTML=`<div class="builder-stage">${head('maze','Build a route from START to GOAL.')}<div class="builder-lab-grid" id="maze-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button class="builder-cell" data-i="${i}" ${blocked.has(i)?'disabled':''}>${i===start?'START':i===goal?'GOAL':''}</button>`).join('')}</div><p id="maze-path">0 steps</p></div>`;
  let pos=start,steps=0;S.active=true;const cells=[...document.querySelectorAll('#maze-grid .builder-cell')];const adjacent=(a,b)=>{const ar=Math.floor(a/n),ac=a%n,br=Math.floor(b/n),bc=b%n;return Math.abs(ar-br)+Math.abs(ac-bc)===1};
@@ -83,7 +86,7 @@ function maze(){
 function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else if(type==="symmetry")symmetry();else if(type==="packing")packing();else if(type==="allocate")allocate();else if(type==="weight")weight();else if(type==="maze")maze();else if(type==="tileMatch")tileMatch();else mirror()}
 function makeGrid(n){return `<div class="builder-lab-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button type="button" class="builder-cell" data-i="${i}"></button>`).join("")}</div>`}
 function fill(){
- const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.5)+activity())*ageScale()),2,total-2),blockedCount=clamp(1+Math.floor(S.level/5),1,4),blocked=shuffle([...Array(total).keys()]).slice(0,blockedCount);
+ const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.55)+activity()+tier())*ageScale()),2,total-2),blockedCount=clamp(1+tier(),1,6),blocked=shuffle([...Array(total).keys()]).slice(0,blockedCount);
  $("game-stage").innerHTML=`<div class="builder-stage">${head("fill")}<p class="builder-task">Build with <b>${need}</b> blocks. Avoid the blocked cells.</p>${makeGrid(n)}</div>`;
  const cells=[...document.querySelectorAll(".builder-cell")];blocked.forEach(i=>cells[i].classList.add("blocked"));let count=0;S.active=true;
  cells.forEach((b,i)=>b.onclick=()=>{if(!S.active||b.disabled||blocked.includes(i))return;b.classList.add("filled");b.disabled=true;if(++count===need)complete()});
@@ -125,7 +128,7 @@ function rotate(){
 }
 
 function balance(){
- const left=4+(S.level%4),right=2+((S.level+activity()+S.age)%3),gap=left-right;
+ const left=4+tier()+(S.level%5),right=2+((S.level+activity()+S.age)%4),gap=left-right;
  const choices=[gap,Math.max(1,gap-1),gap+1,gap+2];
  $('game-stage').innerHTML=`<div class="builder-stage">${head('balance','Balance the structure by adding blocks to the lighter side.')}<div class="builder-prompt"><h3>How many blocks are needed?</h3><div class="builder-balance-visual" style="display:flex;align-items:center;justify-content:center;gap:18px;margin:18px auto;max-width:620px"><div class="builder-balance-side" style="flex:1;display:grid;gap:6px;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:16px"><strong>LEFT</strong><span>${left} blocks</span></div><div class="builder-balance-scale" aria-hidden="true" style="font-size:32px">⚖️</div><div class="builder-balance-side" style="flex:1;display:grid;gap:6px;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:16px"><strong>RIGHT</strong><span>${right} blocks</span></div></div><p>How many blocks should be added to the right side so both sides are equal?</p><div class="builder-options">${shuffle(choices).map(v=>`<button class="builder-option" data-v="${v}">${v} block${v===1?'':'s'}</button>`).join('')}</div></div></div>`;
  S.active=true;document.querySelectorAll('.builder-option').forEach(b=>b.onclick=()=>b.dataset.v===String(gap)?complete():fail());

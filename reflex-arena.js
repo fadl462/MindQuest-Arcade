@@ -32,12 +32,15 @@ function chase(){
  const token=begin(),size=S.level<8?170:S.level<15?140:115,steps=2+Math.floor((S.level-1)/7)+activity();let hit=0;
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('chase','Follow the moving target. Tap it before it moves again.')}<div id="chase-area" style="position:relative;width:min(100%,620px);height:${size}px;margin:20px auto;border:1px solid rgba(255,255,255,.14);border-radius:20px;overflow:hidden"></div><div id="chase-count" class="reflex-target">0 / ${steps}</div></div>`;
  const area=$('chase-area');S.active=true;
- const spawn=()=>{if(!S.active||token!==S.reflexToken)return;area.innerHTML='';const b=document.createElement('button');b.className='reflex-target';b.textContent='●';b.style.cssText=`position:absolute;left:${8+Math.random()*76}%;top:${10+Math.random()*65}%;transform:translate(-50%,-50%);width:${Math.max(38,62-S.level)}px;height:${Math.max(38,62-S.level)}px;border-radius:50%;cursor:pointer`;b.onclick=()=>{if(!S.active)return;hit++;$('chase-count').textContent=`${hit} / ${steps}`;if(hit>=steps){complete();return}spawn()};area.appendChild(b);S.timer=setTimeout(()=>fail(),Math.max(700,responseWindow()))};
+ const spawn=()=>{if(!S.active||token!==S.reflexToken)return;area.innerHTML='';const b=document.createElement('button');b.className='reflex-target';b.textContent='●';b.style.cssText=`position:absolute;left:${8+Math.random()*76}%;top:${10+Math.random()*65}%;transform:translate(-50%,-50%);width:${Math.max(34,62-Math.floor(S.level*1.35))}px;height:${Math.max(34,62-Math.floor(S.level*1.35))}px;border-radius:50%;cursor:pointer`;b.onclick=()=>{if(!S.active)return;hit++;$('chase-count').textContent=`${hit} / ${steps}`;if(hit>=steps){complete();return}spawn()};area.appendChild(b);S.timer=setTimeout(()=>fail(),Math.max(700,responseWindow()))};
  spawn();
 }
 function activity(){return Number.isInteger(S.reflexActivity)?S.reflexActivity:0}
 function ageFactor(){return [1.35,1.15,1,.88,.78][S.age]||1}
 function difficulty(){return S.level+activity()*.55}
+function tier(){return S.level<5?0:S.level<9?1:S.level<13?2:S.level<17?3:4}
+function complexity(){return tier()+Math.min(3,activity())}
+
 function responseWindow(mult=1){return clamp(Math.round((1750-difficulty()*42)*ageFactor()*mult),520,1750)}
 function signalDelay(){return clamp(Math.round((980-difficulty()*18)*ageFactor()),330,980)}
 function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">REFLEX ARENA</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
@@ -50,7 +53,7 @@ function instruction(){
  $("reflex-start").onclick=()=>runActivity(type);
 }
 function alternate(){
- const token=begin(),steps=clamp(4+Math.floor(S.level/5)+activity(),4,8);let hit=0,side=0;
+ const token=begin(),steps=clamp(4+Math.floor(S.level/4)+Math.floor(activity()/2),4,10);let hit=0,side=0;
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('alternate','Hit the highlighted side, then alternate sides.')}<div id="alt-area" style="display:flex;justify-content:center;gap:24px;margin:22px auto;max-width:520px"><button class="reflex-target" id="alt-left">LEFT</button><button class="reflex-target" id="alt-right">RIGHT</button></div><div id="alt-count" class="reflex-target">0 / ${steps}</div></div>`;
  const left=$('alt-left'),right=$('alt-right'),count=$('alt-count');S.active=true;
  const arm=()=>{if(!S.active||token!==S.reflexToken)return;left.classList.toggle('good',side===0);right.classList.toggle('good',side===1);S.timer=setTimeout(fail,responseWindow(1.05))};
@@ -61,12 +64,12 @@ function switchSignal(){const dirs=[['←','LEFT'],['→','RIGHT'],['↑','UP'],
 function delayedTap(){
  const token=begin();
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('delay','Wait for the signal.')}<div class="reflex-signal" id="delay-signal">WAIT…</div><button class="reflex-target" id="delay-button" disabled>TAP</button></div>`;
- const wait=clamp(Math.round(900+activity()*70-difficulty()*8),420,1050);
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const start=performance.now();const b=$('delay-button');$('delay-signal').textContent='NOW';b.disabled=false;S.active=true;S.timer=setTimeout(()=>fail(),responseWindow(1.1));b.onclick=()=>{if(!S.active)return;const rt=performance.now()-start;clearTimeout(S.timer);const window=clamp(180-difficulty()*3,70,180);Math.abs(rt-(responseWindow(.65)))<=window?complete():fail();};},wait);
+ const wait=clamp(Math.round(980+activity()*70-difficulty()*9),360,1100);
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const start=performance.now();const b=$('delay-button');$('delay-signal').textContent='NOW';b.disabled=false;S.active=true;S.timer=setTimeout(()=>fail(),responseWindow(1.1));b.onclick=()=>{if(!S.active)return;const rt=performance.now()-start;clearTimeout(S.timer);const window=clamp(175-difficulty()*3.2,55,175);Math.abs(rt-(responseWindow(.65)))<=window?complete():fail();};},wait);
 }
 
 function rhythm(){
- const token=begin(),len=clamp(2+Math.floor(S.level/7)+activity(),2,5),beats=Array.from({length:len},(_,i)=>(i+S.level+S.age)%2?'●':'○');
+ const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+Math.floor(activity()/2),2,7),beats=Array.from({length:len},(_,i)=>(i+S.level+S.age)%2?'●':'○');
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('rhythm')}<div class="reflex-target">${beats.join(' ')}</div><p>Watch the pattern…</p></div>`;
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;let n=0;$('game-stage').innerHTML=`<div class="reflex-stage">${head('rhythm','Repeat the beat pattern.')}<div class="reflex-controls">${beats.map((_,i)=>`<button class="reflex-key" data-v="${i%2?'○':'●'}">${i%2?'○':'●'}</button>`).join('')}</div></div>`;S.active=true;document.querySelectorAll('.reflex-key').forEach(b=>b.onclick=()=>{if(!S.active)return;const expected=beats[n];if(b.dataset.v!==expected){b.classList.add('bad');fail();return}b.classList.add('good','selected');b.dataset.picks=String((Number(b.dataset.picks)||0)+1);if(++n===beats.length)complete()});S.timer=setTimeout(()=>fail(),responseWindow(1.1));},Math.max(450,signalDelay()));
 }
@@ -79,7 +82,7 @@ function precision(){
 
 
 function combo(){
- const token=begin(),n=clamp(3+Math.floor(S.level/6)+activity(),3,7),pool=shuffle(['●','▲','■','◆','★']).slice(0,3),seq=Array.from({length:n},(_,i)=>pool[(i+S.level+S.age)%pool.length]);
+ const token=begin(),n=clamp(3+Math.floor((S.level-1)/4)+Math.floor(activity()/2),3,9),pool=shuffle(['●','▲','■','◆','★']).slice(0,3),seq=Array.from({length:n},(_,i)=>pool[(i+S.level+S.age)%pool.length]);
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('combo','Memorize the target sequence.')}<div class="reflex-target">${seq.join(' ')}</div></div>`;
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$('game-stage').innerHTML=`<div class="reflex-stage">${head('combo','Hit the targets in order.')}<div class="reflex-controls">${pool.map(x=>`<button class="reflex-key" data-v="${x}">${x}</button>`).join('')}</div></div>`;let i=0;S.active=true;document.querySelectorAll('.reflex-key').forEach(b=>b.onclick=()=>{if(!S.active)return;if(b.dataset.v!==seq[i]){b.classList.add('bad');fail();return}b.classList.add('good','selected');b.dataset.picks=String((Number(b.dataset.picks)||0)+1);if(++i===seq.length)complete()});S.timer=setTimeout(fail,responseWindow(1.1));},Math.max(500,signalDelay()+150));
 }
@@ -128,7 +131,7 @@ function multiTap(){
  const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+activity(),2,5),positions=Array.from({length:len},(_,i)=>(S.level*3+i*2+S.age)%6);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("multitap","Watch the target order, then tap the same positions.")}<div id="multi-board" class="reflex-options"></div></div>`;
  const board=$("multi-board");for(let i=0;i<6;i++){const b=document.createElement("button");b.className="reflex-target";b.textContent="";b.dataset.i=i;b.disabled=true;board.appendChild(b)}
- let show=0;const reveal=()=>{if(token!==S.reflexToken)return;if(show<positions.length){board.querySelectorAll("button").forEach(b=>b.textContent="");board.querySelectorAll("button")[positions[show]].textContent="🎯";show++;S.timer=setTimeout(reveal,Math.max(280,650-S.level*12));}else{let n=0;board.querySelectorAll("button").forEach(b=>{b.disabled=false;b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(i!==positions[n])return fail();b.classList.add("good");if(++n===positions.length)complete()}});S.active=true;S.timer=setTimeout(fail,responseWindow(1.1)+positions.length*180)}};reveal();
+ let show=0;const reveal=()=>{if(token!==S.reflexToken)return;if(show<positions.length){board.querySelectorAll("button").forEach(b=>b.textContent="");board.querySelectorAll("button")[positions[show]].textContent="🎯";show++;S.timer=setTimeout(reveal,Math.max(210,680-S.level*18));}else{let n=0;board.querySelectorAll("button").forEach(b=>{b.disabled=false;b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(i!==positions[n])return fail();b.classList.add("good");if(++n===positions.length)complete()}});S.active=true;S.timer=setTimeout(fail,responseWindow(1.1)+positions.length*180)}};reveal();
 }
 function sequence(){
  const token=begin(),len=clamp(3+Math.floor((S.level-1)/4)+activity(),3,8),mode=S.level%4;
