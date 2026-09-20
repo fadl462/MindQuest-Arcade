@@ -352,3 +352,19 @@ body.mq-premium-mode .topbar{background:rgba(11,13,28,.9)!important;border-color
 @media(prefers-reduced-motion:reduce){
   #game.active .detective-choice,#game.active .builder-option,#game.active .team-option,#game.active .scenario-option,#game.active .choice{transition:none}
 }
+/* v6.6 — intelligent console refinement */
+.mq-console-grid-6{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+.mq-console-insight-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.mq-console-insight{padding:11px 12px;border:1px solid var(--line,#e7e8f1);border-radius:14px;background:rgba(255,255,255,.7)}
+.mq-console-insight small{display:block;font-size:8px;font-weight:900;letter-spacing:.1em;color:var(--muted,#6d7185)}
+.mq-console-insight strong{display:block;font-size:12px;margin-top:4px}
+.mq-console-insight span{display:block;margin-top:3px;font-size:9px;color:var(--muted,#6d7185)}
+.mq-console-bottom{display:grid;grid-template-columns:1.25fr .75fr;gap:8px;margin-top:8px}
+.mq-console-bottom>div{border:1px solid var(--line,#e7e8f1);border-radius:14px;padding:11px 12px;background:rgba(255,255,255,.68)}
+.mq-console-subhead{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:10px}.mq-console-subhead span{color:var(--muted,#6d7185);font-weight:800}
+.mq-console-mission{margin-top:8px}.mq-console-mission b{display:block;font-size:11px}.mq-console-mission span{display:block;margin-top:3px;font-size:9px;color:var(--muted,#6d7185)}
+.mq-mission-bar{height:5px;background:#eceef5;border-radius:99px;overflow:hidden;margin-top:8px}.mq-mission-bar i{display:block;height:100%;background:var(--accent,#5b5ce2);border-radius:99px}
+.mq-console-worlds{min-width:0}.mq-console-game{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(220,223,235,.7);font-size:9px}.mq-console-game:last-child{border-bottom:0}.mq-console-game b{font-size:10px}.mq-empty{display:block;margin-top:8px;font-size:9px;color:var(--muted,#6d7185)}
+body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom>div{background:rgba(255,255,255,.05);border-color:#353a60}.mq-premium-mode .mq-console-insight span,.mq-premium-mode .mq-console-insight small,.mq-premium-mode .mq-console-subhead span,.mq-premium-mode .mq-console-mission span,.mq-premium-mode .mq-empty{color:#bfc5ea}
+@media(max-width:1050px){.mq-console-grid-6{grid-template-columns:repeat(3,1fr)!important}}
+@media(max-width:720px){.mq-console-grid-6{grid-template-columns:repeat(2,1fr)!important}.mq-console-insight-row,.mq-console-bottom{grid-template-columns:1fr}.mq-console-insight-row{gap:7px}}
