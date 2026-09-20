@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["choice","order","match","plan"];
+const TYPES=["choice","order","match","plan","empathy"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const BANK=[
  ["A friend drops their crayons. What could you do?",["Help pick them up","Laugh","Walk away"]],
@@ -78,7 +78,8 @@ const INFO={
  choice:["Team Decision","Choose the response that helps the group work well.","Look for cooperation, communication, fairness and responsibility."],
  order:["Team Order","Put the teamwork steps in the most useful order.","Think about what must happen first, what follows, and what should be checked at the end."],
  match:["Team Match","Match the situation with the helpful response.","Choose the response that best fits the situation."],
- plan:["Team Plan","Select actions that create a strong team plan.","Choose useful actions and avoid actions that create conflict or confusion."]
+ plan:["Team Plan","Select actions that create a strong team plan.","Choose useful actions and avoid actions that create conflict or confusion."],
+ empathy:["Perspective Check","Choose the response that best recognises another person's perspective.","Think about how the other person may feel and what response would help."]
 };
 function activity(){return Number.isInteger(S.teamActivity)?S.teamActivity:0}
 function levelIndex(){return (S.level-1)%20}
@@ -90,8 +91,8 @@ function ageText(text){
  if(S.age<=1)return text.replace(/deadline/g,"time").replace(/trade-offs/g,"differences").replace(/clarification/g,"help");
  return text;
 }
-function instruction(){const type=TYPES[(S.level-1+activity())%4],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🤝</div><span class="ui-skill">BEHAVIOURAL</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🤝 Think about others</span><span>✓ Four activities per level</span></div><button id="team-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("team-start").onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else plan()}
+function instruction(){const type=TYPES[(S.level-1+activity())%5],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🤝</div><span class="ui-skill">BEHAVIOURAL</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🤝 Think about others</span><span>✓ Four activities per level</span></div><button id="team-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("team-start").onclick=()=>runActivity(type)}
+function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else plan()}
 function choice(){
  const q=BANK[levelIndex()];$("game-stage").innerHTML=`<div class="team-stage">${head("choice")}<div class="team-question">${ageText(q[0])}</div><div id="team-options" class="team-options"></div></div>`;
  const box=$("team-options");S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});
@@ -104,6 +105,19 @@ function match(){
  const pair=MATCH[(levelIndex()+activity()*5)%MATCH.length],wrong=["Ignore the situation","Make it worse","Do it alone"];const options=shuffle([pair[1],...wrong]);$("game-stage").innerHTML=`<div class="team-stage">${head("match")}<div class="team-match-situation">${ageText(pair[0])}</div><p class="team-question">Which response matches?</p><div id="team-options" class="team-options"></div></div>`;
  const box=$("team-options");S.active=true;options.forEach(x=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(x);b.onclick=()=>x===pair[1]?complete():fail();box.appendChild(b)});
 }
+function empathy(){
+ const cases=[
+  ["A teammate makes a mistake and looks embarrassed.",["Encourage them and help fix it","Laugh at them","Tell everyone about the mistake"]],
+  ["Someone is quiet during a group discussion.",["Invite them to share if they want","Ignore them","Speak for them without asking"]],
+  ["A teammate says they are confused.",["Ask what part needs explaining","Tell them to figure it out alone","Move on without checking"]],
+  ["A new player is struggling to join the activity.",["Explain the rules and include them","Tell them to watch only","Give them the hardest task immediately"]],
+  ["Two teammates disagree about an idea.",["Listen to both views and look for common ground","Choose the louder person","Stop the discussion"]]
+ ];
+ const q=cases[(S.level+activity()+S.age)%cases.length];
+ $('game-stage').innerHTML=`<div class="team-stage">${head('empathy')}<div class="team-match-situation">${ageText(q[0])}</div><p class="team-question">Which response shows understanding?</p><div id="team-options" class="team-options"></div></div>`;
+ const box=$('team-options');S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement('button');b.className='team-option';b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});
+}
+
 function plan(){
  const base=PLANS[(levelIndex()+activity()*2)%PLANS.length],need=S.level<6?Math.min(2,base.length):S.level<13?Math.min(3,base.length):Math.min(4,base.length);const correct=shuffle(base).slice(0,need),distractors=["Hide information","Blame a teammate","Ignore the plan","Interrupt everyone","Keep the goal secret","Change roles without telling anyone"];const options=shuffle(correct.concat(shuffle(distractors).slice(0,4)));
  $("game-stage").innerHTML=`<div class="team-stage">${head("plan",`Choose ${need} actions that belong in a strong team plan.`)}<div id="team-plan" class="team-plan"></div><button id="team-submit" class="primary-btn ui-start">Check Plan ✓</button></div>`;

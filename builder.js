@@ -4,12 +4,13 @@ const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["fill","pattern","path","mirror"];
+const TYPES=["fill","pattern","path","mirror","count"];
 const INFO={
  fill:["Block Builder","Fill the required spaces without using blocked cells.","Choose exactly the number of build cells requested."],
  pattern:["Pattern Builder","Complete the structure by following its visual rule.","Study the filled cells, then choose the missing cell."],
  path:["Path Builder","Connect the start to the finish while avoiding blocked cells.","Select the next correct cell in the path."],
- mirror:["Mirror Builder","Complete the reflected half of the structure.","Copy the pattern across the mirror line." ]
+ mirror:["Mirror Builder","Complete the reflected half of the structure.","Copy the pattern across the mirror line." ],
+ count:["Count Builder","Read the construction target and select the grid with the correct number of filled cells.","Count carefully and choose the matching construction."]
 };
 function activity(){return Number.isInteger(S.builderActivity)?S.builderActivity:0}
 function ageScale(){return [0.72,0.88,1,1.12,1.24][S.age]||1}
@@ -17,8 +18,8 @@ function size(){return S.level<6?3:S.level<13?4:5}
 function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">BUILDER</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four building challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next build…`;if(last){S.builderActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.builderActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
-function instruction(){const type=TYPES[(S.level-1+activity())%4],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🧩</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🧩 Plan before you place</span><span>✓ Four activities per level</span></div><button id="builder-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("builder-start").onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else mirror()}
+function instruction(){const type=TYPES[(S.level-1+activity())%5],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🧩</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🧩 Plan before you place</span><span>✓ Four activities per level</span></div><button id="builder-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("builder-start").onclick=()=>runActivity(type)}
+function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else mirror()}
 function makeGrid(n){return `<div class="builder-lab-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button type="button" class="builder-cell" data-i="${i}"></button>`).join("")}</div>`}
 function fill(){
  const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.5)+activity())*ageScale()),2,total-2),blockedCount=clamp(1+Math.floor(S.level/5),1,4),blocked=shuffle([...Array(total).keys()]).slice(0,blockedCount);
@@ -49,17 +50,20 @@ function path(){
  const cells=[...document.querySelectorAll(".builder-cell")];cells[path[0]].textContent="🚀";cells[path[path.length-1]].textContent="🏁";blocked.forEach(i=>cells[i].classList.add("blocked"));let step=1;S.active=true;
  cells.forEach((b,i)=>b.onclick=()=>{if(!S.active||b.disabled||blocked.includes(i))return;if(i===path[step]){b.classList.add("filled");b.disabled=true;step++;if(step===path.length)complete()}else fail()});
 }
+function count(){
+ const n=size(),target=clamp(2+Math.floor(S.level/3)+activity(),2,n*n-1);
+ const choices=[target,target+1,target+2,Math.max(1,target-1)].filter((v,i,a)=>v<=n*n&&a.indexOf(v)===i);
+ $('game-stage').innerHTML=`<div class="builder-stage">${head('count',`Build count ${target}: choose the option containing exactly the requested number of blocks.`)}<p class="builder-task">How many blocks should the finished structure contain?</p><div class="builder-count-options">${shuffle(choices).map(v=>`<button class="word-option" data-count="${v}">${v} blocks</button>`).join('')}</div></div>`;
+ S.active=true;document.querySelectorAll('.builder-count-options [data-count]').forEach(b=>b.onclick=()=>Number(b.dataset.count)===target?complete():fail());
+}
+
 function mirror(){
  const n=size(),axis=Math.floor(n/2),mode=S.level%3,left=[];
  for(let r=0;r<n;r++)for(let c=0;c<=axis;c++){
    const yes=mode===0?((r+c+S.level)%3===0):mode===1?((r*2+c+S.level)%4===0):((r===c)||(r+c===n-1));
    if(yes&&c<axis)left.push(r*n+c);
  }
- let targets=[...new Set(left.map(i=>{const r=Math.floor(i/n),c=i%n;return r*n+(n-1-c)}))];
- if(!targets.length){
-   const fallback=(S.level+S.age+mode)%n;
-   targets=[fallback*n+(n-1)];
- }
+ const targets=[...new Set(left.map(i=>{const r=Math.floor(i/n),c=i%n;return r*n+(n-1-c)}))];
  $("game-stage").innerHTML=`<div class="builder-stage">${head("mirror",`Mirror pattern ${mode+1}: complete the reflected side.`)}<p class="builder-task">Tap the cells that mirror the left side.</p>${makeGrid(n)}</div>`;
  const cells=[...document.querySelectorAll(".builder-cell")];left.forEach(i=>{cells[i].classList.add("filled");cells[i].disabled=true});let done=0;S.active=true;
  cells.forEach((b,i)=>b.onclick=()=>{if(!S.active||b.disabled)return;if(targets.includes(i)){b.classList.add("filled");b.disabled=true;if(++done===targets.length)complete()}else fail()});

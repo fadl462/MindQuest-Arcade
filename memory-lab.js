@@ -6,13 +6,30 @@ const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const ICONS=['🐶','🐱','🐰','🐼','🦊','🐸','🐵','🐯','🐨','🐷','🐮','🐙','🐳','🦋','🐝','🐢','🍎','🍌','🍊','🍉','🍓','🍇','🥕','🌽','🍪','🍕','🧁','🥭','🍍','🥝','🍋','🍒','🚗','🚌','🚲','🚀','✈️','🚁','🚂','⛵','🎈','🪁','⚽','🎸','🎨','🎁','🧸','🛴','⭐','🌙','☀️','☁️','🌈','🌳','🌻','🌊','🔥','❄️','🌟','🍀','🌺','🌴','⛰️','🌋'];
 const COLORS=['RED','BLUE','GREEN','YELLOW','PURPLE','ORANGE','PINK','BROWN'];
+const ARROWS=['↑','→','↓','←','↗','↘','↙','↖'];
 const SHAPES=['●','▲','■','◆','★','⬟','♥','✚'];
 const WORDS=['apple','river','garden','rocket','pencil','window','tiger','banana','castle','planet','school','market','forest','camera','bridge','orange','rabbit','ocean','circle','music','flower','bottle','village','train','cloud','button','family','basket','guitar','sun','moon','star'];
 const PLANS=[
- ['visual','sequence','location','feature'],['pairs','change','category','order'],['working','count','visual','location'],['sequence','pairs','feature','change'],['category','order','working','visual'],
- ['location','change','count','pairs'],['feature','sequence','category','order'],['visual','working','location','change'],['count','pairs','feature','sequence'],['order','category','change','visual'],
- ['working','location','pairs','count'],['sequence','feature','order','category'],['visual','change','working','pairs'],['category','count','sequence','location'],['order','feature','change','working'],
- ['pairs','visual','category','count'],['location','sequence','feature','change'],['working','order','pairs','category'],['count','visual','location','feature'],['change','sequence','order','working']
+ ['visual','sequence','direction','pairs','location'],
+ ['feature','change','category','direction','order'],
+ ['working','count','visual','direction','pairs'],
+ ['sequence','location','feature','category','direction'],
+ ['visual','sequence','direction','pairs','location'],
+ ['feature','change','category','direction','order'],
+ ['working','count','visual','direction','pairs'],
+ ['sequence','location','feature','category','direction'],
+ ['visual','sequence','direction','pairs','location'],
+ ['feature','change','category','direction','order'],
+ ['working','count','visual','direction','pairs'],
+ ['sequence','location','feature','category','direction'],
+ ['visual','sequence','direction','pairs','location'],
+ ['feature','change','category','direction','order'],
+ ['working','count','visual','direction','pairs'],
+ ['sequence','location','feature','category','direction'],
+ ['visual','sequence','direction','pairs','location'],
+ ['feature','change','category','direction','order'],
+ ['working','count','visual','direction','pairs'],
+ ['sequence','location','feature','category','direction']
 ];
 const INFO={
  visual:['Visual Recall','Remember the objects, then find every object you saw.','VISUAL MEMORY'],
@@ -24,7 +41,8 @@ const INFO={
  change:['Change Detective','Remember the scene, then spot what changed.','CHANGE DETECTION'],
  category:['Category Recall','Remember which objects belonged to a named group.','CATEGORICAL MEMORY'],
  order:['Order Builder','Remember positions in an ordered set, then rebuild them.','ORDER MEMORY'],
- count:['Count & Recall','Remember how many times each object appeared.','QUANTITY MEMORY']
+ count:['Count & Recall','Remember how many times each object appeared.','QUANTITY MEMORY'],
+ direction:['Direction Memory','Remember the direction sequence, then repeat it exactly.','DIRECTIONAL MEMORY']
 };
 function cfg(){
  const base=[{show:5200,response:18000,count:3},{show:4300,response:15000,count:4},{show:3600,response:12500,count:5},{show:3200,response:10500,count:6},{show:2900,response:9500,count:6}][S.age];
@@ -114,12 +132,19 @@ function order(){begin((sp,t)=>{
  $('game-stage').innerHTML=`<div class="memory-wrap">${header('order')}<div class="memory-timer">Remember the left-to-right order for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="sequence-display">${a.map((x,i)=>`<span class="sequence-token">${i+1}. ${x}</span>`).join('')}</div></div>`;
  S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('order','Rebuild the order from first to last.')}<div id="order-options" class="memory-items"></div><div id="order-picked" class="picked-sequence"></div></div>`;const box=$('order-options'),picked=$('order-picked');let n=0;S.active=true;shuffle(a).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==a[n]){b.classList.add('bad');fail()}else{b.disabled=true;b.classList.add('good');picked.textContent+=(n?' → ':'')+x;if(++n===a.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)
 })}
+function direction(){begin((sp,t)=>{
+ const len=clamp(3+Math.floor(S.level/5)+(S.memoryActivity||0),3,8);
+ const seq=Array.from({length:len},(_,i)=>ARROWS[(S.level*2+S.age+i*2+(S.memoryActivity||0))%ARROWS.length]);
+ $('game-stage').innerHTML=`<div class="memory-wrap">${header('direction')}<div class="memory-timer">Watch the directions for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="sequence-display">${seq.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div></div>`;
+ S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('direction','Repeat the direction sequence exactly.')}<div id="direction-choices" class="memory-items"></div><div id="direction-picked" class="picked-sequence"></div></div>`;const box=$('direction-choices'),picked=$('direction-picked');let n=0;S.active=true;shuffle([...new Set(seq.concat(ARROWS))].slice(0,Math.min(ARROWS.length,5+Math.floor(S.level/7)+2))).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==seq[n]){b.classList.add('bad');fail()}else{b.disabled=true;b.classList.add('good');picked.textContent+=(n?' ':'')+x;if(++n===seq.length)complete()}};box.appendChild(b)});deadline(sp.response)},sp.show)
+})}
+
 function count(){begin((sp,t)=>{
  const n=clamp(sp.count,3,7),start=(S.level*2+S.age*5)%ICONS.length,types=shuffle(ICONS.slice(start).concat(ICONS.slice(0,start))).slice(0,n),counts=types.map((x,i)=>2+((S.level+i+S.age)%3)),pool=types.flatMap((x,i)=>Array(counts[i]).fill(x));
  $('game-stage').innerHTML=`<div class="memory-wrap">${header('count')}<div class="memory-timer">Remember how many times each object appears.</div><div class="memory-items">${shuffle(pool).map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;
  S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('count','Choose the number for each object.')}<div class="count-list" id="count-list"></div></div>`;const box=$('count-list');let done=0;S.active=true;types.forEach((icon,i)=>{const row=document.createElement('div');row.className='count-row';row.innerHTML=`<span>${icon}</span><div class="count-choices"></div>`;const cb=row.querySelector('.count-choices'),correct=counts[i],vals=[correct,1+(correct%4),2+(correct%4),3+(correct%4)].filter((v,j,a)=>a.indexOf(v)===j).slice(0,4);shuffle(vals).forEach(v=>{const b=document.createElement('button');b.className='word-option';b.textContent=v;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(v!==correct){b.classList.add('bad');fail()}else{b.classList.add('good');if(++done===types.length)complete()}};cb.appendChild(b)});box.appendChild(row)});deadline(sp.response*1.25)},sp.show)
 })}
-const START={visual,sequence,location,pairs,feature,working,change,category,order,count};
+const START={visual,sequence,location,pairs,feature,working,change,category,order,count,direction};
 const RULES={
  visual:'Remember the objects you see, then select them from the choices.',
  sequence:'Watch the exact order, then tap the objects in the same order.',
@@ -130,7 +155,8 @@ const RULES={
  change:'Compare Scene A and Scene B carefully, then identify the change.',
  category:'Remember the named group, then select only objects that belonged to it.',
  order:'Remember the left-to-right order, then rebuild it from first to last.',
- count:'Remember how many times each object appeared, then choose each count.'
+ count:'Remember how many times each object appeared, then choose each count.',
+ direction:'Watch the arrow sequence, then tap the directions in the same order.'
 };
 function instructions(type){
  const i=INFO[type],sp=cfg();

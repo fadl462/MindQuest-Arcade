@@ -11,6 +11,7 @@ const COLORS=[
 ];
 const SHAPES=["●","▲","■","◆","★","⬟","✚","✦"];
 const INFO={
+ go:["Go / No-Go","React to the GO signal but do nothing for NO-GO.","Tap only when the signal says GO."],
  target:["Target Rush","Wait for the target, then tap it as quickly as possible.","Tap the target only after it appears."],
  color:["Color Flash","Watch the signal and tap the matching color.","Ignore the decoys and react to the target color."],
  avoid:["Safe Tap","Find the safe symbol among the hazards.","Tap only the safe symbol."],
@@ -26,11 +27,22 @@ function begin(){S.active=false;clearTimeout(S.timer);S.reflexToken=(S.reflexTok
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four reflex challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next challenge…`;if(last){S.reflexActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.reflexActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){
- const type=["target","color","avoid","sequence"][(S.level-1+activity())%4],i=INFO[type];S.active=false;clearTimeout(S.timer);
+ const type=["target","color","avoid","sequence","go"][(S.level-1+activity())%5],i=INFO[type];S.active=false;clearTimeout(S.timer);
  $("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">⚡</div><span class="ui-skill">PSYCHOMOTOR</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>⚡ Faster as you advance</span><span>✓ Four activities per level</span></div><button id="reflex-start" class="primary-btn ui-start">Start Activity →</button></div>`;
  $("reflex-start").onclick=()=>runActivity(type);
 }
-function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else sequence()}
+function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else sequence()}
+function goNoGo(){
+ const token=begin(),go=Math.random()>.38;
+ $('game-stage').innerHTML=`<div class="reflex-stage">${head('go','Wait for the signal. Tap GO, but do not tap NO-GO.')}<div class="reflex-signal" id="go-signal">Get ready…</div><div id="go-button-wrap" class="reflex-options"><button id="go-button" class="reflex-target" disabled>GO</button></div></div>`;
+ const b=$('go-button');
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$('go-signal').textContent=go?'GO':'NO-GO';b.disabled=false;S.active=true;let responded=false;
+ b.onclick=()=>{if(!S.active||responded)return;responded=true;if(go)complete();else fail()};
+ if(!go)S.timer=setTimeout(()=>{if(S.active&&!responded)complete()},responseWindow(1.15));
+ else S.timer=setTimeout(()=>{if(S.active&&!responded)fail()},responseWindow(.85));
+ },signalDelay());
+}
+
 function target(){
  const token=begin(),count=clamp(3+Math.floor((S.level-1)/4)+activity(),3,8),size=clamp(76-Math.floor(S.level/4)*4,48,76);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("target","Wait for the target. Then tap it before time runs out.")}<p class="reflex-count">Get ready…</p><div id="target-board" class="reflex-options"></div></div>`;
@@ -55,7 +67,7 @@ function avoid(){
 }
 function sequence(){
  const token=begin(),len=clamp(3+Math.floor((S.level-1)/4)+activity(),3,8),mode=S.level%4;
- const seq=shuffle(SHAPES.slice()).slice(0,len);
+ const seq=Array.from({length:len},(_,i)=>SHAPES[(S.level*2+i*(mode+1)+activity()*2+S.age)%SHAPES.length]);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("sequence","Memorize the sequence. It will disappear, then repeat it.")}<div class="reflex-sequence">${seq.map(x=>`<span>${x}</span>`).join("")}</div><p class="reflex-count">Memorize…</p></div>`;
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("game-stage").innerHTML=`<div class="reflex-stage">${head("sequence","Repeat the sequence in the same order.")}<div id="reaction-seq" class="reflex-options"></div><div id="reaction-picked" class="picked-sequence"></div></div>`;const box=$("reaction-seq"),picked=$("reaction-picked");let n=0;S.active=true;
  const options=shuffle(SHAPES.slice(0,clamp(5+Math.floor(S.level/6),5,8)));
