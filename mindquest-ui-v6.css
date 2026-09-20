@@ -497,3 +497,74 @@ body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom
  #game.active .count-choices{grid-template-columns:repeat(4,1fr)}
  #game.active .feature-grid{grid-template-columns:repeat(2,1fr)}
 }
+
+
+/* v7.2 — compact gameplay + checkpoint visibility */
+#game.active .game-card{
+  min-height:0!important;
+  height:auto!important;
+  max-height:none!important;
+  padding:10px 14px 10px!important;
+}
+#game.active #game-stage{
+  min-height:0!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding:5px 8px 8px!important;
+}
+#game.active .memory-wrap,
+#game.active .detective-stage{
+  width:min(760px,100%)!important;
+  max-width:760px!important;
+}
+#game.active .memory-lab-head,
+#game.active .detective-title{padding-bottom:7px!important;margin-bottom:7px!important}
+#game.active .memory-lab-head h3,
+#game.active .detective-title h2{font-size:18px!important}
+#game.active .memory-sub{font-size:10px!important}
+#game.active .memory-instruction-banner{margin:8px auto 8px!important;padding:8px 12px!important}
+#game.active .memory-items{margin:8px auto!important;gap:6px!important}
+#game.active .memory-item,
+#game.active .choice{min-height:50px!important}
+#game.active .memory-board{margin:8px auto!important;gap:5px!important;max-width:390px!important}
+#game.active .memory-board .memory-cell{min-height:54px!important;font-size:20px!important}
+#game.active .pair-grid{margin:8px auto!important;gap:6px!important}
+#game.active .pair-card{min-height:54px!important}
+#game.active .sequence-display{margin:8px auto!important}
+#game.active .sequence-token{min-width:50px!important;min-height:50px!important;font-size:23px!important}
+#game.active .detective-prompt{padding:11px!important;margin:5px auto 8px!important}
+#game.active .detective-prompt h3{font-size:17px!important;margin-bottom:6px!important}
+#game.active .detective-prompt p{font-size:10px!important;margin:5px 0 0!important}
+#game.active .detective-task-card{padding:12px!important}
+#game.active .detective-task-content{font-size:12px!important;line-height:1.45!important}
+#game.active .detective-choices{gap:6px!important}
+#game.active .detective-choice{min-height:44px!important;padding:8px 10px!important}
+#game.active .logic-sequence span,
+#game.active .shape-sequence span,
+#game.active .visual-rule span{min-width:46px!important;padding:7px!important;font-size:17px!important}
+#game.active .odd-grid span{padding:10px 7px!important;font-size:17px!important}
+#game.active .analogy>div{padding:9px!important;font-size:16px!important}
+
+/* Saved checkpoint library */
+#resume-progress-wrap{width:100%;margin:14px 0 0!important}
+.mq-resume-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:9px;padding:0 2px}
+.mq-resume-heading h3{margin:2px 0 2px;font-size:16px;letter-spacing:-.2px}
+.mq-resume-heading>div>span{display:block;color:var(--muted);font-size:10px}
+.mq-resume-count{padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#68718a;font-size:9px;font-weight:850;white-space:nowrap}
+.mq-saved-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mq-saved-card{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:9px;padding:10px 11px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(31,39,82,.035);min-width:0}
+.mq-saved-card.compact{padding:8px 9px}
+.mq-saved-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#f1f0ff;font-size:18px}
+.mq-saved-main{min-width:0}
+.mq-saved-top{display:flex;align-items:center;gap:6px;min-width:0}
+.mq-saved-top strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mq-saved-top span{font-size:7px;font-weight:900;letter-spacing:.06em;color:#6f7690;padding:3px 5px;border-radius:999px;background:#f5f6fa;white-space:nowrap}
+.mq-saved-main p{margin:3px 0 0;color:var(--muted);font-size:9px;line-height:1.35}
+.mq-resume-saved{min-height:34px!important;padding:7px 10px!important;border-radius:9px!important;font-size:9px!important;white-space:nowrap}
+.mq-console .mq-saved-section{margin-top:12px}
+.mq-console .mq-saved-list{grid-template-columns:1fr}
+.mq-console .mq-saved-card{grid-template-columns:32px minmax(0,1fr) auto;padding:7px 8px}
+.mq-console .mq-saved-icon{width:30px;height:30px;font-size:15px}
+.mq-console .mq-saved-main p{font-size:8px}
+@media(max-width:700px){.mq-saved-list{grid-template-columns:1fr}.mq-resume-heading{align-items:flex-start}.mq-saved-card{grid-template-columns:34px minmax(0,1fr)}.mq-resume-saved{grid-column:2;width:max-content}.mq-console .mq-resume-saved{grid-column:auto;width:auto}}

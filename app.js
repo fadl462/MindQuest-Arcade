@@ -91,5 +91,5 @@ function renderPremium(){
 }
 function goHome(){clearTimeout(state.timer);state.active=false;state.level=1;state.lives=3;state.streak=0;state.score=0;state.earnedThisRun=0;show('home');updateGlobal();}
 function leaveGame(){if(state.active||document.querySelector('#game.screen.active')){const ok=window.confirm('Save your checkpoint and return to the Game Arcade? You can resume it later.');if(!ok)return}goHome()}
-window.MQ={state,$,ages,updateGlobal,levelComplete,levelFailed,nextChallenge,showMilestone,showAccountGate,showPremiumVault,createAccount,startPremiumTrial,choosePremiumPlan,renderPremium};renderAges();renderGames();document.addEventListener("click",e=>{const b=e.target.closest("#account-submit");if(b){e.preventDefault();createAccount();}});
+window.MQ={state,$,ages,updateGlobal,levelComplete,levelFailed,nextChallenge,showMilestone,showAccountGate,showPremiumVault,createAccount,startPremiumTrial,choosePremiumPlan,renderPremium,goHome,leaveGame};renderAges();renderGames();document.addEventListener("click",e=>{const b=e.target.closest("#account-submit");if(b){e.preventDefault();createAccount();}});
 })();
