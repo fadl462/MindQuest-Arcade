@@ -431,3 +431,19 @@ body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom
 .save-status{display:inline-flex;align-items:center;min-height:34px;padding:0 10px;border-radius:10px;color:#536079;background:#f6f8fc;border:1px solid #e1e5ef;font-size:10px;font-weight:800;opacity:0;transform:translateY(-2px);transition:opacity .18s ease,transform .18s ease}
 .save-status.visible{opacity:1;transform:translateY(0)}
 @media(max-width:700px){.save-game-btn{display:none}.save-status{display:none}}
+
+/* v6.8 activity-stimulus hardening — every answer set is paired with a clearly visible task */
+#game.active .detective-task-area{display:block;width:100%;margin:0 auto 12px}
+#game.active .detective-task-card{padding:18px 18px 16px;margin:0 auto;background:#fff;border:1px solid #e2e5ef;border-radius:16px;box-shadow:0 7px 18px rgba(31,39,82,.045);text-align:center}
+#game.active .detective-task-label{display:inline-flex;align-items:center;min-height:22px;padding:4px 8px;border-radius:999px;background:#f0f1ff;color:#5153b7;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+#game.active .detective-task-content{margin-top:8px;font-size:14px;line-height:1.55;color:#20243a}
+#game.active .detective-task-content b{font-weight:850}
+#game.active .detective-answer-label{margin:2px 0 7px;text-align:left;color:#70778c;font-size:10px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
+#game.active .detective-task-card .clue-box{margin-top:10px;text-align:left}
+#game.active .detective-task-card .clue-box p{margin:0;color:#4f566d;font-size:12px;line-height:1.6}
+#game.active .detective-prompt .detective-task-label{margin-bottom:7px}
+#game.active .rule-box>div{min-height:64px;align-items:center}
+#game.active .rule-box span{min-width:58px;font-size:21px;color:#20243a !important;border:1px solid #e0e4ee}
+#game.active .logic-sequence span{color:#20243a !important;background:#fff}
+#game.active .order-sequence span{color:#20243a !important}
+#game.active .detective-choice{color:#20243a !important}

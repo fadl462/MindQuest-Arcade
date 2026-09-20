@@ -46,10 +46,18 @@ function renderInstruction(type){
  $('detective-start').addEventListener('click',()=>run(type),{once:true});
 }
 function begin(type,html,choices,correct){
- $('game-stage').innerHTML=`<div class="detective-stage"><div class="detective-title"><span>${info[type][0]}</span><span class="activity-chip">Activity ${S.detectiveActivity+1}/4</span></div>${html}<div id="detective-choices" class="detective-choices"></div></div>`;
+ const safeChoices=(choices||[]).map(c=>{
+  if(c&&typeof c==='object'&&'value' in c) return {value:String(c.value),label:c.label??String(c.value)};
+  const value=String(c);
+  return {value,label:`<strong>${value}</strong>`};
+ });
+ const expected=String(correct);
+ const hasStructuredPrompt=/<(?:div|section)[^>]*class=["\'][^"\']*(?:detective-prompt|clue-box|rule-box|order-question|deduction-box|visual-rule|analogy|odd-grid|shape-sequence)[^"\']*["\']/i.test(html);
+ const task=hasStructuredPrompt?html:`<div class="detective-prompt detective-task-card"><span class="detective-task-label">YOUR TASK</span><div class="detective-task-content">${html}</div></div>`;
+ $('game-stage').innerHTML=`<div class="detective-stage"><div class="detective-title"><span>${info[type][0]}</span><span class="activity-chip">Activity ${S.detectiveActivity+1}/4</span></div><div class="detective-task-area">${task}</div><div class="detective-answer-label">Choose your answer</div><div id="detective-choices" class="detective-choices"></div></div>`;
  const box=$('detective-choices');S.active=true;
- shuffle(choices).forEach((c)=>{const b=document.createElement('button');b.type='button';b.className='detective-choice';b.innerHTML=c.label;
-  b.addEventListener('click',()=>{if(!S.active)return;if(c.value===correct){b.classList.add('good');activityComplete()}else{b.classList.add('bad');S.detectiveActivity=0;MQ.levelFailed();}},{once:true});box.appendChild(b);});
+ shuffle(safeChoices).forEach(c=>{const b=document.createElement('button');b.type='button';b.className='detective-choice';b.innerHTML=c.label;
+  b.addEventListener('click',()=>{if(!S.active)return;if(c.value===expected){b.classList.add('good');activityComplete()}else{b.classList.add('bad');S.detectiveActivity=0;MQ.levelFailed();}},{once:true});box.appendChild(b);});
 }
 function activityComplete(){if(!S.active)return;S.active=false;S.detectiveCorrect=(S.detectiveCorrect||0)+1;
  if(S.detectiveActivity===3){S.detectiveActivity=0;$('game-message').textContent='✓ Four investigations solved!';S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}
@@ -195,7 +203,7 @@ function chain(){
   {q:'Three boxes are red, blue and green. The red box is not first. Blue comes before green. Which order works?',c:'Blue → Green → Red',o:['Blue → Green → Red','Red → Blue → Green','Green → Blue → Red','Blue → Red → Green']},
   {q:'A trip is longer than 2 hours but shorter than 5 hours. It takes a whole number of hours and is not 3. How long is it?',c:'4 hours',o:['2 hours','3 hours','4 hours','5 hours']}
  ];
- const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];choice(q.q,q.q,q.o,q.c)
+ const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];begin('chain',`<div class="detective-prompt"><span class="detective-task-label">LINKED CLUES</span><h3>${q.q}</h3><p>Use both parts of the clue before choosing.</p></div>`,q.o,q.c)
 }
 
 function elimination(){
@@ -205,7 +213,7 @@ function elimination(){
   ['Which number survives every rule?','It is odd. It is greater than 7. It is less than 12.',['6','8','9','12'],'9'],
   ['Which shape fits the clues?','It has 3 sides. It has no curved edges.',['Circle','Triangle','Square','Oval'],'Triangle']
  ];
- const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];begin('elimination',q[0],q[2],q[3],q[1]);
+ const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];begin('elimination',`<div class="detective-prompt"><span class="detective-task-label">ELIMINATION CLUES</span><h3>${q[0]}</h3><div class="clue-box"><p>${q[1]}</p></div><p>Eliminate any option that breaks a clue.</p></div>`,q[2],q[3]);
 }
 
 function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'rankOrder':rankOrder();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'chain':chain();break;case'elimination':elimination();break;case'logicGrid':logicGrid();break;case'deduction':deduction();}}
