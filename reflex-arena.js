@@ -15,7 +15,8 @@ const INFO={
  target:["Target Rush","Wait for the target, then tap it as quickly as possible.","Tap the target only after it appears."],
  color:["Color Flash","Watch the signal and tap the matching color.","Ignore the decoys and react to the target color."],
  avoid:["Safe Tap","Find the safe symbol among the hazards.","Tap only the safe symbol."],
- sequence:["Reaction Sequence","Watch the short sequence, then repeat it.","Tap the symbols in exactly the order shown."]
+ sequence:["Reaction Sequence","Watch the short sequence, then repeat it.","Tap the symbols in exactly the order shown."],
+ double:["Double Target","React to two targets in the correct order.","Tap the first target, then the second target without tapping a decoy."]
 };
 function activity(){return Number.isInteger(S.reflexActivity)?S.reflexActivity:0}
 function ageFactor(){return [1.35,1.15,1,.88,.78][S.age]||1}
@@ -27,11 +28,11 @@ function begin(){S.active=false;clearTimeout(S.timer);S.reflexToken=(S.reflexTok
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four reflex challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next challenge…`;if(last){S.reflexActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.reflexActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){
- const type=["target","color","avoid","sequence","go"][(S.level-1+activity())%5],i=INFO[type];S.active=false;clearTimeout(S.timer);
+ const type=["target","color","avoid","sequence","go","double"][(S.level-1+activity())%5],i=INFO[type];S.active=false;clearTimeout(S.timer);
  $("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">⚡</div><span class="ui-skill">PSYCHOMOTOR</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>⚡ Faster as you advance</span><span>✓ Four activities per level</span></div><button id="reflex-start" class="primary-btn ui-start">Start Activity →</button></div>`;
  $("reflex-start").onclick=()=>runActivity(type);
 }
-function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else sequence()}
+function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else if(type==="double")doubleTarget();else sequence()}
 function goNoGo(){
  const token=begin(),go=Math.random()>.38;
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('go','Wait for the signal. Tap GO, but do not tap NO-GO.')}<div class="reflex-signal" id="go-signal">Get ready…</div><div id="go-button-wrap" class="reflex-options"><button id="go-button" class="reflex-target" disabled>GO</button></div></div>`;
@@ -43,6 +44,12 @@ function goNoGo(){
  },signalDelay());
 }
 
+function doubleTarget(){
+ const token=begin(),count=clamp(4+Math.floor(S.level/5),4,8),first=(S.level+activity()*2+S.age)%count,second=(first+2+activity())%count;
+ $('game-stage').innerHTML=`<div class=\"reflex-stage\">${head('double','Wait for the two targets. Tap them in the order they appear.')}<p class=\"reflex-count\">Get ready…</p><div id=\"double-board\" class=\"reflex-options\"></div></div>`;
+ const board=$('double-board');for(let i=0;i<count;i++){const b=document.createElement('button');b.className='reflex-target';b.style.width='58px';b.style.height='58px';b.disabled=true;b.setAttribute('aria-label',`Target ${i+1}`);b.onclick=()=>{if(!S.active)return;if(i===((S.doubleStep||0)===0?first:second)){S.doubleStep=(S.doubleStep||0)+1;if(S.doubleStep===2){S.doubleStep=0;complete()}}else fail()};board.appendChild(b)}
+ S.doubleStep=0;S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;S.active=true;const cells=[...board.querySelectorAll('button')];cells[first].textContent='🎯';S.timer=setTimeout(()=>{if(!S.active)return;cells[first].textContent='';cells[second].textContent='🎯';S.timer=setTimeout(()=>{if(S.active)fail()},responseWindow(.8))},Math.max(280,signalDelay()/2));},signalDelay());
+}
 function target(){
  const token=begin(),count=clamp(3+Math.floor((S.level-1)/4)+activity(),3,8),size=clamp(76-Math.floor(S.level/4)*4,48,76);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("target","Wait for the target. Then tap it before time runs out.")}<p class="reflex-count">Get ready…</p><div id="target-board" class="reflex-options"></div></div>`;

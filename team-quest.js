@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["choice","order","match","plan","empathy"];
+const TYPES=["choice","order","match","plan","empathy","responsibility"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const BANK=[
  ["A friend drops their crayons. What could you do?",["Help pick them up","Laugh","Walk away"]],
@@ -79,7 +79,8 @@ const INFO={
  order:["Team Order","Put the teamwork steps in the most useful order.","Think about what must happen first, what follows, and what should be checked at the end."],
  match:["Team Match","Match the situation with the helpful response.","Choose the response that best fits the situation."],
  plan:["Team Plan","Select actions that create a strong team plan.","Choose useful actions and avoid actions that create conflict or confusion."],
- empathy:["Perspective Check","Choose the response that best recognises another person's perspective.","Think about how the other person may feel and what response would help."]
+ empathy:["Perspective Check","Choose the response that best recognises another person's perspective.","Think about how the other person may feel and what response would help."],
+ responsibility:["Responsibility Check","Choose the action that shows ownership of a shared task.","Look for actions that are honest, dependable and considerate of the group."]
 };
 function activity(){return Number.isInteger(S.teamActivity)?S.teamActivity:0}
 function levelIndex(){return (S.level-1)%20}
@@ -92,7 +93,20 @@ function ageText(text){
  return text;
 }
 function instruction(){const type=TYPES[(S.level-1+activity())%5],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🤝</div><span class="ui-skill">BEHAVIOURAL</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🤝 Think about others</span><span>✓ Four activities per level</span></div><button id="team-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("team-start").onclick=()=>runActivity(type)}
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else plan()}
+function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else plan()}
+function responsibility(){
+ const BANK=[
+  ['You promised to bring the team materials, but forgot. What is responsible?', ['Tell the team honestly and help find another solution','Hide the mistake','Blame someone else']],
+  ['You notice the shared workspace is messy after the activity. What should you do?', ['Help tidy it before leaving','Leave it for someone else','Pretend you did not notice']],
+  ['You cannot finish your assigned part on time. What should you do?', ['Tell the team early and discuss the next step','Say nothing until the deadline','Delete the unfinished work']],
+  ['A teammate trusts you with an important task. What shows responsibility?', ['Complete it carefully and report back','Ignore it','Give it away without telling them']],
+  ['You make an error in the team report. What is best?', ['Point it out and help correct it','Hide it','Change someone else’s work to cover it']],
+  ['The group rule applies to everyone. What should you do?', ['Follow it even when it is inconvenient','Break it secretly','Ask others to break it too']]
+ ];
+ const q=BANK[(S.level+activity()+S.age)%BANK.length];
+ $('game-stage').innerHTML=`<div class=\"team-stage\">${head('responsibility')}<div class=\"team-question\">${ageText(q[0])}</div><div id=\"team-options\" class=\"team-options\"></div></div>`;
+ const box=$('team-options');S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement('button');b.className='team-option';b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});
+}
 function choice(){
  const q=BANK[levelIndex()];$("game-stage").innerHTML=`<div class="team-stage">${head("choice")}<div class="team-question">${ageText(q[0])}</div><div id="team-options" class="team-options"></div></div>`;
  const box=$("team-options");S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});

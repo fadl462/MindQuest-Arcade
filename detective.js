@@ -9,7 +9,8 @@ const plans=[
  ['clue','pattern','analogy','odd'],['rule','sequence','math','clue'],['order','analogy','pattern','deduction'],['math','clue','sequence','rule'],
  ['deduction','pattern','order','analogy'],['sequence','rule','clue','math'],['visual','odd','deduction','order'],['pattern','math','analogy','clue'],
  ['rule','deduction','sequence','visual'],['analogy','order','math','pattern'],['clue','rule','deduction','sequence'],['visual','math','order','analogy'],
- ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','deduction']
+ ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','deduction'],
+ ['estimate','classify','compare','sequence'],['classify','estimate','deduction','math']
 ];
 const info={
  sequence:['Sequence Detective','Find what comes next in the sequence.','Look for the change between each item, then choose the item that continues the rule.'],
@@ -22,7 +23,9 @@ const info={
  rule:['Rule Detective','Discover which rule the group follows.','Test the choices against the rule and select the one that fits.'],
  visual:['Shape Detective','Find the shape that completes the visual rule.','Compare sides, symbols, position or rotation to discover the rule.'],
  compare:['Comparison Detective','Compare two quantities and identify the correct relationship.','Look carefully at both sides before deciding which is greater, smaller or equal.'],
- deduction:['Logic Detective','Combine clues to make one logical conclusion.','Use all the information. Do not choose an answer that conflicts with a clue.']
+ deduction:['Logic Detective','Combine clues to make one logical conclusion.','Use all the information. Do not choose an answer that conflicts with a clue.'],
+ estimate:['Estimate Detective','Choose the closest sensible estimate.','Use the scale and information given. An estimate should be close, not exact.'],
+ classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.']
 };
 function age(){return S.age}
 function difficulty(){return S.level + age()*.7}
@@ -103,6 +106,27 @@ function compare(){
  begin('compare',`<div class="detective-prompt"><div class="logic-sequence"><span>${x}</span><b>?</b><span>${y}</span></div><p>Is the left value greater, smaller or equal to the right value?</p></div>`,chooseObjs(correct,['GREATER','SMALLER','EQUAL'].filter(v=>v!==correct)),correct);
 }
 
+function estimate(){
+ const l=S.level,a=age();
+ const base=a===0?5+l%4:a===1?10+l*2:20+l*3;
+ const exact=base+(l%3===0?1:0);
+ const rounded=Math.round(exact/5)*5;
+ const correct=rounded;
+ const others=[correct-5,correct+5,correct+10].filter(x=>x>0);
+ begin('estimate',`<div class=\"detective-prompt\"><div class=\"logic-sequence\"><span>About ${correct-2}</span><b>→</b><span>Closest estimate?</span></div><p>Which value is the closest sensible estimate?</p></div>`,chooseObjs(correct,others),String(correct));
+}
+function classify(){
+ const sets=[
+  ['Which belongs with the animals?',['🐶','🐱','🐰','🍎'],'🐰'],
+  ['Which is a tool?',['🔨','🍌','🐟','🌈'],'🔨'],
+  ['Which is a source of energy?',['☀️','🪨','📚','🧸'],'☀️'],
+  ['Which is a renewable resource?',['Sunlight','Coal','Plastic','Petrol'],'Sunlight'],
+  ['Which is a communication method?',['Email','Hammer','Ruler','Spoon'],'Email'],
+  ['Which belongs in a database?',['Record','Banana','Shoe','Cloud'],'Record']
+ ];
+ const q=sets[(S.level+age())%sets.length];
+ begin('classify',`<div class=\"detective-prompt\"><h3>${q[0]}</h3><p>Choose the item that fits the category.</p></div>`,q[1].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[2]);
+}
 function deduction(){
  const sets=S.level<8?[['All red blocks are circles.','This block is red.','It must be a…','Circle',['Circle','Square','Triangle','Star']],['Every bird has wings.','Kofi is a bird.','Kofi has…','Wings',['Wings','Wheels','Fins','Roots']]]:[['All planners make lists.','Ama is a planner.','Ama makes…','Lists',['Lists','Cakes','Maps','Songs']],['Every triangle has three sides.','This shape is a triangle.','It has…','Three sides',['Three sides','Four sides','Five sides','No sides']]];
  const q=sets[(S.level-1)%sets.length];begin('deduction',`<div class="deduction-box">${q[0]}<br>${q[1]}<h3>${q[2]}</h3></div>`,q[4].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[3]);
