@@ -10,7 +10,7 @@ const games=[
 {id:"world",icon:"🌍",name:"World Explorer",skill:"COGNITIVE",desc:"Explore countries, landmarks, maps and journeys."},
 {id:"money",icon:"💰",name:"Money Mission",skill:"COGNITIVE",desc:"Count, compare, budget and make change with Ghana cedis."}
 ];
-const state={age:1,game:"memory",level:1,lives:3,streak:0,bestStreak:0,xp:0,score:0,earnedThisRun:0,active:false,timer:null,skills:{cognitive:0,behavioural:0,psychomotor:0},skillStats:{memory:0,attention:0,logic:0,problemSolving:0,reaction:0,precision:0,teamwork:0,empathy:0,responsibility:0,financialLiteracy:0,geography:0},milestonePending:false,account:null,premium:false,settings:{sound:true,sfx:true,volume:.18}};
+const state={age:0,game:"memory",level:1,lives:3,streak:0,bestStreak:0,xp:0,score:0,earnedThisRun:0,active:false,timer:null,skills:{cognitive:0,behavioural:0,psychomotor:0},skillStats:{memory:0,attention:0,logic:0,problemSolving:0,reaction:0,precision:0,teamwork:0,empathy:0,responsibility:0,financialLiteracy:0,geography:0},milestonePending:false,account:null,premium:false,settings:{sound:true,sfx:true,volume:.18}};
 const $=id=>document.getElementById(id); const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');}
 let audioCtx=null,ambientNodes=null;
