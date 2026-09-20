@@ -25,7 +25,7 @@ function consoleInsight(){
  const s=MQ.state, st=s.skillStats||{}, entries=Object.entries(st).sort((a,b)=>Number(b[1]||0)-Number(a[1]||0));
  const practiced=entries.filter(x=>Number(x[1]||0)>0), focus=practiced[0], emerging=entries.filter(x=>Number(x[1]||0)<Number((focus&&focus[1])||0)).slice(-1)[0];
  const mission=dailyMission();
- return {focus:focus?skillLabels[focus[0]]:'Start exploring',focusPoints:Number(focus?.[1]||0),emerging:emerging?skillLabels[emerging[0]]:'New skill area',levels:intel.totalLevels||0,missionDone:!!mission.done,account:!!s.account,premium:!!s.premium};
+ const premiumScreen=document.querySelector('.screen.active')?.id==='premium'; return {focus:focus?skillLabels[focus[0]]:'Start exploring',focusPoints:Number(focus?.[1]||0),emerging:emerging?skillLabels[emerging[0]]:'New skill area',levels:intel.totalLevels||0,missionDone:!!mission.done,account:!!s.account,premium:premiumScreen};
 }
 function renderIntelligenceConsole(){
  const host=document.getElementById('mq-intelligence-console'); if(!host)return;
