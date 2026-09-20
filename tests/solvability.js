@@ -18,6 +18,8 @@ ok('Builder balance has a single defensible answer',/const left=4\+tier\(\)\+\(S
 
 ok('Reflex rhythm uses two response controls',/rhythm-controls/.test(reflex)&&/data-v=\"●\"/.test(reflex)&&/data-v=\"○\"/.test(reflex));
 ok('Reflex double target prevents identical positions',/second=\(first\+2\+activity\(\)\)%count===first/.test(reflex));
+ok('Reflex double target controls become playable',/cells\.forEach\(b=>b\.disabled=false\)/.test(reflex));
 ok('Builder rotation displays first three and expects fourth',/v\.slice\(0,3\)/.test(builder)&&/correct=v\[3\]/.test(builder));
 ok('Builder tile match always has at least one target cell',/if\(!target\.size\)target\.add/.test(builder));
+ok('Builder symmetry removes one mirrored target',/const source=candidates/.test(builder)&&/cells\[target\]=false/.test(builder));
 console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0);

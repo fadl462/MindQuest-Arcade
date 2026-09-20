@@ -29,13 +29,16 @@ ok('manifest present',/rel="manifest"/.test(index));
 const reflex=read('reflex-arena.js'),builder=read('builder.js');
 ok('Reflex Arena reaches advanced chase and mirror mechanics',/\"mirror\".*\"chase\"/.test(reflex)&&/else if\(type===\"chase\"\)chase\(\)/.test(reflex));
 ok('Reflex Arena chase uses its own activity identity',/head\('chase'/.test(reflex));
-ok('Builder balance uses a valid difference calculation',/const left=4\+tier\(\)\+\(S\.level%5\),right=2\+/.test(builder)&&/const choices=\[gap,/.test(builder));
+ok('Builder balance uses a valid difference calculation',/const left=4\+tier\(\)\+\(S\.level%5\),right=2\+/.test(builder)&&/const choices=\[\.\.\.new Set/.test(builder));
 ok('Builder resource allocation uses correct mechanic identity',/head\('allocate'/.test(builder)&&/id=\"alloc-done\"/.test(builder));
 
 
 ok('Reflex rhythm presents real response choices',/id=\"rhythm-controls\"/.test(reflex)&&/data-v=\"●\"/.test(reflex)&&/data-v=\"○\"/.test(reflex));
 ok('Reflex double target positions are distinct',/second=\(first\+2\+activity\(\)\)%count===first\?\(first\+1\)%count/.test(reflex));
+ok('Reflex double target controls become playable',/cells\.forEach\(b=>b\.disabled=false\)/.test(reflex)&&/S\.doubleStep=0/.test(reflex));
 ok('Reflex no-go control uses neutral response label',/id=\"go-button\" class=\"reflex-target\" disabled>RESPOND/.test(reflex));
 ok('Builder rotation expects the fourth clockwise position',/correct=v\[3\]/.test(builder));
 ok('Builder tile match cannot generate an empty target',/if\(!target\.size\)target\.add/.test(builder)&&/highlighted pattern, then rebuild/.test(builder));
+ok('Builder symmetry creates a real missing mirrored cell',/const source=candidates/.test(builder)&&/cells\[target\]=false/.test(builder));
+ok('Builder numeric choices are unique',/const choices=\[\.\.\.new Set\(\[gap/.test(builder)&&/const options=\[\.\.\.new Set\(\[need/.test(builder));
 console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0);

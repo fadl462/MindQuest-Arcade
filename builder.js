@@ -33,7 +33,7 @@ function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.leve
 function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🧩</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🧩 Plan before you place</span><span>✓ Four activities per level</span></div><button id="builder-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("builder-start").onclick=()=>runActivity(type)}
 function weight(){
  const left=6+tier()+(S.level%6),right=2+((S.level+activity()+S.age)%4),need=left-right;
- const options=[need,Math.max(1,need-1),need+1,need+2];
+ const options=[...new Set([need,Math.max(1,need-1),need+1,need+2])];
  choiceBuilder('weight',`The left side weighs <b>${left}</b> units and the right side weighs <b>${right}</b> units. How much weight must you add to the right side to balance the structure?`,options,need);
 }
 function choiceBuilder(type,prompt,choices,correct){
@@ -61,13 +61,19 @@ function buildSequence(){
 function symmetry(){
  const n=S.level<8?3:S.level<15?4:5,center=Math.floor(n/2);
  const cells=Array.from({length:n*n},()=>false);
- for(let r=0;r<n;r++) for(let c=0;c<center;c++) if((r+c+S.level)%3===0){cells[r*n+c]=true;cells[r*n+(n-1-c)]=true;}
- const missing=[];for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(c>=center && cells[r*n+c]!==cells[r*n+(n-1-c)]) missing.push(r*n+c);
- const target=missing[0]??center*n+center; const distract=[(target+n-1)%(n*n),(target+1)%(n*n),(target+n)%(n*n)];
- $('game-stage').innerHTML=`<div class="builder-stage">${head('symmetry')}<div class="builder-prompt"><h3>Which cell should be filled?</h3><div class="builder-lab-grid" style="--n:${n}">${cells.map((v,i)=>`<button class="builder-cell ${v?'filled':''}" data-i="${i}">${i===target?'?':''}</button>`).join('')}</div></div></div>`;S.active=true;document.querySelectorAll('.builder-cell').forEach(b=>b.onclick=()=>b.dataset.i===String(target)?complete():fail());
+ for(let r=0;r<n;r++) for(let c=0;c<Math.ceil(n/2);c++){
+   const yes=(r+c+S.level+activity())%3===0;
+   if(yes){cells[r*n+c]=true;cells[r*n+(n-1-c)]=true;}
+ }
+ const candidates=[];
+ for(let r=0;r<n;r++) for(let c=0;c<Math.floor(n/2);c++) if(cells[r*n+c]) candidates.push(r*n+c);
+ const source=candidates[(S.level+activity())%Math.max(1,candidates.length)]??0;
+ const sr=Math.floor(source/n),sc=source%n,target=sr*n+(n-1-sc);
+ cells[target]=false;
+ $('game-stage').innerHTML=`<div class="builder-stage">${head('symmetry','Complete the reflected pattern.')}<div class="builder-prompt"><h3>Which cell should be filled?</h3><p>One cell is missing from the reflected side.</p><div class="builder-lab-grid" style="--n:${n}">${cells.map((v,i)=>`<button class="builder-cell ${v?'filled':''}" data-i="${i}">${i===target?'?':''}</button>`).join('')}</div></div></div>`;S.active=true;document.querySelectorAll('.builder-cell').forEach(b=>b.onclick=()=>b.dataset.i===String(target)?complete():fail());
 }
 function packing(){
- const capacity=6+Math.floor(S.level/4)+activity(),item=1+(S.level+S.age+activity())%3,correct=Math.floor(capacity/item),choices=[correct,Math.max(1,correct-1),correct+1,correct+2];
+ const capacity=6+Math.floor(S.level/4)+activity(),item=1+(S.level+S.age+activity())%3,correct=Math.floor(capacity/item),choices=[...new Set([correct,Math.max(1,correct-1),correct+1,correct+2])];
  $("game-stage").innerHTML=`<div class="builder-stage">${head('packing')}<div class="builder-prompt"><h3>How many items fit?</h3><p>Space available: <b>${capacity}</b> units. Each item uses <b>${item}</b> units.</p><div class="builder-options">${shuffle(choices).map(v=>`<button class="builder-option" data-v="${v}">${v} items</button>`).join('')}</div></div></div>`;
  S.active=true;document.querySelectorAll('.builder-option').forEach(b=>b.onclick=()=>b.dataset.v===String(correct)?complete():fail());
 }
@@ -139,7 +145,7 @@ function rotate(){
 
 function balance(){
  const left=4+tier()+(S.level%5),right=2+((S.level+activity()+S.age)%4),gap=left-right;
- const choices=[gap,Math.max(1,gap-1),gap+1,gap+2];
+ const choices=[...new Set([gap,Math.max(1,gap-1),gap+1,gap+2])];
  $('game-stage').innerHTML=`<div class="builder-stage">${head('balance','Balance the structure by adding blocks to the lighter side.')}<div class="builder-prompt"><h3>How many blocks are needed?</h3><div class="builder-balance-visual" style="display:flex;align-items:center;justify-content:center;gap:18px;margin:18px auto;max-width:620px"><div class="builder-balance-side" style="flex:1;display:grid;gap:6px;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:16px"><strong>LEFT</strong><span>${left} blocks</span></div><div class="builder-balance-scale" aria-hidden="true" style="font-size:32px">⚖️</div><div class="builder-balance-side" style="flex:1;display:grid;gap:6px;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:16px"><strong>RIGHT</strong><span>${right} blocks</span></div></div><p>How many blocks should be added to the right side so both sides are equal?</p><div class="builder-options">${shuffle(choices).map(v=>`<button class="builder-option" data-v="${v}">${v} block${v===1?'':'s'}</button>`).join('')}</div></div></div>`;
  S.active=true;document.querySelectorAll('.builder-option').forEach(b=>b.onclick=()=>b.dataset.v===String(gap)?complete():fail());
 }
