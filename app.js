@@ -1,211 +1,61 @@
 (() => {
 "use strict";
-
-const ages = [
-  {range:"3–5", name:"Little Explorers", factor:.75},
-  {range:"6–8", name:"Skill Builders", factor:1},
-  {range:"9–11", name:"Smart Challengers", factor:1.15},
-  {range:"12–14", name:"Young Strategists", factor:1.3},
-  {range:"15–18", name:"Future Leaders", factor:1.45}
+const ages=[{range:"3–5",name:"Little Explorers",factor:.75},{range:"6–8",name:"Skill Builders",factor:1},{range:"9–11",name:"Smart Challengers",factor:1.15},{range:"12–14",name:"Young Strategists",factor:1.3},{range:"15–18",name:"Future Leaders",factor:1.45}];
+const games=[
+{id:"memory",icon:"🧠",name:"Memory Lab",skill:"COGNITIVE",desc:"Remember objects and beat increasingly demanding memory challenges."},
+{id:"detective",icon:"🔎",name:"Detective",skill:"COGNITIVE",desc:"Solve patterns, sequences and logic challenges."},
+{id:"reflex",icon:"⚡",name:"Reflex Arena",skill:"PSYCHOMOTOR",desc:"React quickly as the target gets faster."},
+{id:"builder",icon:"🧩",name:"Builder",skill:"COGNITIVE",desc:"Plan and construct structures with limited spaces."},
+{id:"team",icon:"🤝",name:"Team Quest",skill:"BEHAVIOURAL",desc:"Navigate social situations and constructive choices."},
+{id:"world",icon:"🌍",name:"World Explorer",skill:"COGNITIVE",desc:"Explore countries, landmarks, maps and journeys."},
+{id:"money",icon:"💰",name:"Money Mission",skill:"COGNITIVE",desc:"Count, compare, budget and make change with Ghana cedis."}
 ];
-
-const games = [
-  {id:"memory", icon:"🧠", name:"Memory Lab", skill:"COGNITIVE", desc:"Remember objects and beat increasingly demanding memory challenges."},
-  {id:"detective", icon:"🔎", name:"Detective", skill:"COGNITIVE", desc:"Solve patterns, sequences and logic challenges."},
-  {id:"reflex", icon:"⚡", name:"Reflex Arena", skill:"PSYCHOMOTOR", desc:"React quickly as the target gets faster."},
-  {id:"builder", icon:"🧩", name:"Builder", skill:"COGNITIVE", desc:"Plan and construct structures with limited spaces."},
-  {id:"team", icon:"🤝", name:"Team Quest", skill:"BEHAVIOURAL", desc:"Navigate social situations and constructive choices."},
-  {id:"world", icon:"🌍", name:"World Explorer", skill:"COGNITIVE", desc:"Explore countries, landmarks, maps and journeys."}
-];
-
-const state = {
-  age:1, game:"memory", level:1, lives:3, streak:0, bestStreak:0,
-  xp:0, score:0, earnedThisRun:0, active:false, timer:null,
-  skills:{cognitive:0, behavioural:0, psychomotor:0}
-};
-
-const $ = id => document.getElementById(id);
-const shuffle = arr => [...arr].sort(() => Math.random() - .5);
-const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
-
-function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");}
-function difficulty(){return (1 + (state.level-1)*.11) * ages[state.age].factor;}
+const state={age:1,game:"memory",level:1,lives:3,streak:0,bestStreak:0,xp:0,score:0,earnedThisRun:0,active:false,timer:null,skills:{cognitive:0,behavioural:0,psychomotor:0},skillStats:{memory:0,attention:0,logic:0,problemSolving:0,reaction:0,precision:0,teamwork:0,empathy:0,responsibility:0,financialLiteracy:0,geography:0},milestonePending:false,account:null,premium:false,settings:{sound:true,sfx:true,volume:.18}};
+const $=id=>document.getElementById(id); const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');}
+let audioCtx=null,ambientNodes=null;
+function ensureAudio(){if(!window.AudioContext&&!window.webkitAudioContext)return null;if(!audioCtx){const C=window.AudioContext||window.webkitAudioContext;audioCtx=new C()}if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
+function startFocusSound(){if(!state.settings?.sound)return;const c=ensureAudio();if(!c||ambientNodes)return;const master=c.createGain();master.gain.value=Math.min(.035,Math.max(.004,Number(state.settings.volume??.18)*.08));master.connect(c.destination);const a=c.createOscillator(),b=c.createOscillator(),f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=650;a.type='sine';b.type='sine';a.frequency.value=196;b.frequency.value=246;a.detune.value=-5;b.detune.value=4;a.connect(f);b.connect(f);f.connect(master);a.start();b.start();ambientNodes={a,b,master,f}}
+function stopFocusSound(){if(!ambientNodes)return;try{ambientNodes.a.stop();ambientNodes.b.stop()}catch{}try{ambientNodes.master.disconnect()}catch{}ambientNodes=null}
+function ping(kind='ok'){if(!state.settings?.sfx)return;const c=ensureAudio();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=kind==='bad'?180:kind==='milestone'?660:520;g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.025,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.22);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.24)}
+function difficulty(){return (1+(state.level-1)*.11)*ages[state.age].factor;}
 function updateGlobal(){
-  $("xp").textContent=state.xp;
-  $("streak").textContent=state.streak;
-  $("badges").textContent=Math.floor(state.xp/500);
-  $("level").textContent=state.level;
-  $("lives").textContent=state.lives;
-  $("game-streak").textContent=state.streak;
-  $("score").textContent=state.score;
-  $("difficulty").textContent=difficulty().toFixed(1)+"×";
-  $("progress").style.width=(state.level/20*100)+"%";
-  $("progress-label").textContent=`Level ${state.level} of 20`;
+ $("xp").textContent=state.xp;$("streak").textContent=state.streak;$("badges").textContent=Math.floor(state.xp/500);$("level").textContent=state.level;$("lives").textContent=state.lives;$("game-streak").textContent=state.streak;$("score").textContent=state.score;$("difficulty").textContent=difficulty().toFixed(1)+"×";$("progress").style.width=(state.level/20*100)+"%";$("progress-label").textContent=`Level ${state.level} of 20`;
 }
-function renderAges(){
-  const box=$("age-options"); box.innerHTML="";
-  ages.forEach((a,i)=>{
-    const b=document.createElement("button"); b.className="age-btn"+(i===state.age?" active":"");
-    b.type="button"; b.textContent=`${a.range}\n${a.name}`; b.style.whiteSpace="pre-line";
-    b.addEventListener("click",()=>{state.age=i;renderAges();renderGames();});
-    box.appendChild(b);
-  });
-  $("path-label").textContent="Ages "+ages[state.age].range;
-}
-function renderGames(){
-  const box=$("game-list"); box.innerHTML="";
-  games.forEach(g=>{
-    const b=document.createElement("button"); b.type="button"; b.className="game-tile";
-    b.innerHTML=`<div class="icon">${g.icon}</div><h3>${g.name}</h3><p>${g.desc}</p><span class="tag">${g.skill} • 20 PROGRESSIVE LEVELS</span>`;
-    b.addEventListener("click",()=>startGame(g.id)); box.appendChild(b);
-  });
-}
+function renderAges(){const box=$("age-options");box.innerHTML="";ages.forEach((a,i)=>{const b=document.createElement('button');b.className='age-btn'+(i===state.age?' active':'');b.type='button';b.textContent=`${a.range}\n${a.name}`;b.style.whiteSpace='pre-line';b.onclick=()=>{state.age=i;renderAges();renderGames();};box.appendChild(b)});$("path-label").textContent='Ages '+ages[state.age].range;}
+function renderGames(){const box=$("game-list");box.innerHTML="";games.forEach(g=>{const b=document.createElement('button');b.type='button';b.className='game-tile';b.dataset.game=g.id;b.innerHTML=`<div class="icon">${g.icon}</div><h3>${g.name}</h3><p>${g.desc}</p><span class="tag">${g.skill} • 20 PROGRESSIVE LEVELS</span>`;b.onclick=()=>startGame(g.id);box.appendChild(b)});}
 function startGame(id){
-  clearTimeout(state.timer); state.game=id; state.level=1; state.lives=3; state.streak=0; state.score=0; state.earnedThisRun=0; state.detectiveActivity=0; state.memoryActivity=0; state.reflexActivity=0; state.builderActivity=0; state.teamActivity=0; state.worldActivity=0; state.memoryCorrect=0; state.memoryMistakes=0;
-  const g=games.find(x=>x.id===id);
-  $("game-icon").textContent=g.icon; $("game-name").textContent=g.name; $("game-skill").textContent=g.skill;
-  show("game"); updateGlobal(); nextChallenge();
-}
-function addSkill(g){
-  const key=g.skill==="COGNITIVE"?"cognitive":g.skill==="BEHAVIOURAL"?"behavioural":"psychomotor";
-  state.skills[key]+=1;
-}
-function levelComplete(){
-  if(!state.active)return; state.active=false;
-  state.streak++; state.bestStreak=Math.max(state.bestStreak,state.streak);
-  const gain=75+state.level*20+state.streak*10;
-  state.xp+=gain; state.score+=gain; state.earnedThisRun+=gain; addSkill(games.find(x=>x.id===state.game));
-  if(state.level<20){
-    $("game-message").textContent=`✓ Level ${state.level} complete! Level ${state.level+1} is harder. Starting automatically…`;
-    state.level++; updateGlobal();
-    state.timer=setTimeout(()=>{ $("game-message").textContent=""; nextChallenge(); },900);
-  } else finishGame();
-}
-function levelFailed(){
-  if(!state.active)return; state.active=false; state.lives--; state.streak=0; updateGlobal();
-  $("game-message").textContent=state.lives>0?"Level not completed. Try again.":"Lives used. Restarting this level…";
-  state.timer=setTimeout(()=>{if(state.lives<=0)state.lives=3;$("game-message").textContent="";nextChallenge();},900);
-}
-function nextChallenge(){
-  clearTimeout(state.timer); updateGlobal();
-  if(state.game==="memory")(window.MQMemoryLab?window.MQMemoryLab.run:memory)();
-  else if(state.game==="detective")(window.MQDetective?window.MQDetective.run:detective)();
-  else if(state.game==="reflex")(window.MQReflexArena?window.MQReflexArena.run:reflex);
-  else if(state.game==="builder")(window.MQBuilder?window.MQBuilder.run:builder);
-  else if(state.game==="team")(window.MQTeamQuest?window.MQTeamQuest.run:team);
-  else if(state.game==="world")(window.MQWorldExplorer?window.MQWorldExplorer.run:world)();
-}
-function memory(){
-  const icons=["🐶","🚲","🍎","⭐","🎈","🐟","🚀","🌳","⚽","🎸","🦁","🍕","🌈","🐼","🦋","🎯"];
-  const factor=difficulty(), count=clamp(Math.round(3+state.level*.45*factor),3,12);
-  const show=clamp(Math.round(2800-state.level*95/ages[state.age].factor),750,2800);
-  const answer=shuffle(icons).slice(0,count);
-  $("game-stage").innerHTML=`<div class="memory-wrap"><h3>Memorise ${count} objects</h3><p class="lead">You have ${(show/1000).toFixed(1)} seconds.</p><div class="memory-items">${answer.map(x=>`<div class="memory-item">${x}</div>`).join("")}</div></div>`;
-  state.active=false;
-  state.timer=setTimeout(()=>{
-    const distract=shuffle(icons.filter(x=>!answer.includes(x))).slice(0,clamp(3+Math.floor(state.level/3),3,7));
-    const choices=shuffle(answer.concat(distract)); let found=0;
-    $("game-stage").innerHTML=`<div class="memory-wrap"><h3>Find all ${count} objects</h3><div id="choices" class="memory-items"></div></div>`;
-    const box=$("choices"); state.active=true;
-    choices.forEach(x=>{
-      const b=document.createElement("button"); b.type="button"; b.className="choice"; b.textContent=x;
-      b.addEventListener("click",()=>{if(!state.active||b.disabled)return;b.disabled=true;
-        if(!answer.includes(x)){b.classList.add("bad");levelFailed();}
-        else{b.classList.add("good");found++;if(found===answer.length)levelComplete();}
-      });box.appendChild(b);
-    });
-  },show);
-}
-function detective(){ return showGameInstruction("detective"); }
-function runDetective(){
-  const max=9, n=clamp(3+Math.floor(state.level/6),3,6);
-  const nums=shuffle(Array.from({length:max},(_,i)=>i+1)).slice(0,n);
-  const missing=nums[Math.floor(Math.random()*nums.length)];
-  const shown=nums.filter(x=>x!==missing);
-  const distract=shuffle(Array.from({length:max},(_,i)=>i+1).filter(x=>!nums.includes(x))).slice(0,3);
-  $("game-stage").innerHTML=`<div><h3>Which number is missing?</h3><div class="number-row">${shown.map(x=>`<span class="number">${x}</span>`).join("")}</div><div id="choices" class="number-row"></div></div>`;
-  const box=$("choices"); state.active=true;
-  shuffle([missing,...distract]).forEach(x=>{const b=document.createElement("button");b.type="button";b.className="number";b.textContent=x;b.addEventListener("click",()=>x===missing?levelComplete():levelFailed());box.appendChild(b);});
-}
-function reflex(){ return window.MQReflexArena?window.MQReflexArena.run:showGameInstruction("reflex"); }
-function runReflex(){
-  $("game-stage").innerHTML=`<div><h3>Wait for it…</h3><p class="lead">Tap the target as soon as it appears.</p><button id="target" class="target" type="button" disabled>?</button></div>`;
-  const delay=clamp(Math.round(1450-(state.level*48)*ages[state.age].factor),260,1450);
-  state.active=false;
-  state.timer=setTimeout(()=>{const t=$("target");t.textContent="🎯";t.disabled=false;state.active=true;
-    t.addEventListener("click",levelComplete,{once:true});
-  },delay);
-}
-function builder(){ return window.MQBuilder?window.MQBuilder.run:showGameInstruction("builder"); }
-function runBuilder(){
-  const size=state.level<7?3:state.level<14?4:5;
-  const needed=clamp(Math.round(2+state.level*.55*difficulty()),2,size*size-1);
-  $("game-stage").innerHTML=`<div><h3>Build with ${needed} blocks</h3><p class="lead">Choose spaces to complete the structure.</p><div id="builder" class="builder-grid"></div></div>`;
-  const box=$("builder");let placed=0;state.active=true;
-  for(let i=0;i<size*size;i++){const b=document.createElement("button");b.type="button";b.className="builder-block";
-    b.addEventListener("click",()=>{if(!state.active||b.classList.contains("filled"))return;b.classList.add("filled");b.textContent="";placed++;if(placed>=needed)levelComplete();});
-    box.appendChild(b);
-  }
-}
-function team(){ return window.MQTeamQuest?window.MQTeamQuest.run:showGameInstruction("team"); }
-function world(){ return window.MQWorldExplorer?window.MQWorldExplorer.run:showGameInstruction("world"); }
-function runTeam(){
-  const questions=[
-    ["A teammate makes a mistake. What is the most constructive response?",["Help them fix it","Blame them","Ignore the problem"]],
-    ["Your team disagrees about a solution. What should happen next?",["Listen and discuss","Shout louder","Quit"]],
-    ["A teammate is struggling with the challenge.",["Offer useful help","Laugh at them","Hide the instructions"]],
-    ["You finish your task early while the team is behind.",["Ask how you can help","Leave without telling anyone","Distract the team"]]
-  ];
-  const q=questions[(state.level-1)%questions.length];
-  $("game-stage").innerHTML=`<div class="scenario"><h3>${q[0]}</h3><div id="scenario-options"></div></div>`;
-  const box=$("scenario-options");state.active=true;
-  q[1].forEach((x,i)=>{const b=document.createElement("button");b.type="button";b.className="scenario-option";b.textContent=x;
-    b.addEventListener("click",()=>i===0?levelComplete():levelFailed());box.appendChild(b);});
-}
+ clearTimeout(state.timer);state.game=id;state.level=1;state.lives=3;state.streak=0;state.bestStreak=0;state.score=0;state.earnedThisRun=0;state.active=false;
+ ['detectiveActivity','memoryActivity','reflexActivity','builderActivity','teamActivity','worldActivity','moneyActivity'].forEach(k=>state[k]=0);
+ const g=games.find(x=>x.id===id);startFocusSound();$("game-icon").textContent=g.icon;$("game-name").textContent=g.name;$("game-skill").textContent=g.skill;show('game');updateGlobal();nextChallenge();}
+function addSkill(g){const key=g.skill==='COGNITIVE'?'cognitive':g.skill==='BEHAVIOURAL'?'behavioural':'psychomotor';state.skills[key]=(state.skills[key]||0)+1;const map={memory:['memory','attention'],detective:['logic','problemSolving'],reflex:['reaction','precision'],builder:['problemSolving','precision'],team:['teamwork','empathy','responsibility'],world:['geography','problemSolving'],money:['financialLiteracy','problemSolving']};(map[g.id]||[]).forEach(k=>state.skillStats[k]=(state.skillStats[k]||0)+1);}
+function levelComplete(){if(!state.active)return;state.active=false;state.streak++;state.bestStreak=Math.max(state.bestStreak,state.streak);const gain=75+state.level*20+state.streak*10;state.xp+=gain;state.score+=gain;state.earnedThisRun+=gain;addSkill(games.find(x=>x.id===state.game));const completed=state.level;updateGlobal();if(completed%5===0){state.milestonePending=true;state.milestoneLevel=completed;ping('milestone');state.timer=setTimeout(()=>showMilestone(completed),500);return;}state.level++;updateGlobal();$("game-message").textContent=`✓ Level ${completed} complete! Level ${state.level} is harder. Starting automatically…`;state.timer=setTimeout(()=>{$("game-message").textContent='';nextChallenge()},900);}
+function levelFailed(){if(!state.active)return;state.active=false;state.lives--;state.streak=0;updateGlobal();$("game-message").textContent=state.lives>0?'Level not completed. Try again.':'Lives used. Restarting this level…';state.timer=setTimeout(()=>{if(state.lives<=0)state.lives=3;$("game-message").textContent='';nextChallenge()},900);}
+function nextChallenge(){clearTimeout(state.timer);updateGlobal();if(state.game==='memory')(window.MQMemoryLab?window.MQMemoryLab.run:memory)();else if(state.game==='detective')(window.MQDetective?window.MQDetective.run:detective)();else if(state.game==='reflex')(window.MQReflexArena?window.MQReflexArena.run:reflex)();else if(state.game==='builder')(window.MQBuilder?window.MQBuilder.run:builder)();else if(state.game==='team')(window.MQTeamQuest?window.MQTeamQuest.run:team)();else if(state.game==='world')(window.MQWorldExplorer?window.MQWorldExplorer.run:world)();else if(state.game==='money')(window.MQMoneyMission?window.MQMoneyMission.run:money)();}
+function memory(){window.MQMemoryLab?.run?.()}
+function detective(){window.MQDetective?.run?.()}
+function reflex(){window.MQReflexArena?.run?.()}
+function builder(){window.MQBuilder?.run?.()}
+function team(){window.MQTeamQuest?.run?.()}
+function world(){window.MQWorldExplorer?.run?.()}
+function money(){window.MQMoneyMission?.run?.()}
+function showMilestone(completed){clearTimeout(state.timer);const next=completed<20?completed+1:null;const report=buildReport(completed);$("milestone-title").textContent=completed===20?'20-Level Mastery Complete!':`Level ${completed} Complete!`;$("milestone-subtitle").textContent=completed===20?'You have completed the core MindQuest pathway.':'Great work — here is what your play is building so far.';$("milestone-body").innerHTML=report;const btn=$("milestone-continue");btn.textContent=completed===10?'Continue to Account Setup →':completed===20?'Enter Premium Vault →':`Continue to Level ${next} →`;btn.onclick=()=>{if(completed===10)showAccountGate();else if(completed===20)showPremiumVault();else continueAfterMilestone()};show('milestone');}
+function buildReport(level){const s=state.skillStats||{};const items=[['🧠 Memory & attention',s.memory+s.attention,'Remembering information, staying focused and handling more than one piece of information at a time.'],['🔎 Logic & problem solving',s.logic+s.problemSolving,'Looking for patterns, testing ideas and working through a challenge before choosing an answer.'],['⚡ Reaction & precision',s.reaction+s.precision,'Responding at the right moment and coordinating what you see with what you do.'],['🤝 Social & emotional skills',s.teamwork+s.empathy+s.responsibility,'Practising cooperation, perspective-taking, patience and responsible choices.'],['🌍 Knowledge & financial thinking',s.geography+s.financialLiteracy,'Using real-world knowledge, quantities and practical information to make sensible decisions.']];return `<div class="performance-grid">${items.map(x=>`<article class="performance-card"><div class="performance-top"><strong>${x[0]}</strong><span>${x[1]} practice points</span></div><p>${x[2]}</p><div class="performance-bar"><span style="width:${clamp(x[1]*6,4,100)}%"></span></div></article>`).join('')}</div><div class="performance-note"><strong>What this means</strong><p>These practice points are indicators of the skills exercised through gameplay. They are not a clinical, academic or intelligence assessment.</p></div>`;}
+function continueAfterMilestone(){state.milestonePending=false;state.milestoneLevel=0;state.level++;updateGlobal();show('game');startFocusSound();state.timer=setTimeout(nextChallenge,250);}
+function showAccountGate(){if(state.account){continueAfterAccount();return;}show('account-gate');}
+function continueAfterAccount(){state.account=loadAccount();state.milestonePending=false;state.milestoneLevel=0;state.level++;updateGlobal();show('game');startFocusSound();state.timer=setTimeout(nextChallenge,250);}
+function loadAccount(){try{return JSON.parse(localStorage.getItem('mindquest-account-v1')||'null')}catch{return null}}
+function saveAccount(account){try{localStorage.setItem('mindquest-account-v1',JSON.stringify(account))}catch{}state.account=account;}
+function createAccount(){const name=$("account-name").value.trim(),username=$("account-username").value.trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');const consent=$("account-consent").checked;if(name.length<2||username.length<3||!consent){$("account-error").textContent='Please enter a display name, a username of at least 3 characters, and confirm the account notice.';return}saveAccount({displayName:name,username,agePath:ages[state.age].range,createdAt:new Date().toISOString()});$("account-error").textContent='';$("account-status").textContent='Account created';continueAfterAccount();}
+function showPremiumVault(){state.milestonePending=false;show('premium');renderPremium();}
 
-function showGameInstruction(id){
-  const info={
-    detective:{icon:"🔎",skill:"COGNITIVE",name:"Detective",purpose:"Solve the challenge carefully and choose the answer that fits the clues.",how:"Read the sequence, inspect the choices, then select the answer. A wrong answer fails the level.",timing:"No countdown • Think carefully",pass:"Choose the correct answer"},
-    reflex:{icon:"⚡",skill:"PSYCHOMOTOR",name:"Reflex Arena",purpose:"Test your reaction speed and timing.",how:"Wait until the target appears. Tap it as quickly as you can. Do not tap early.",timing:"Reaction window • Gets faster",pass:"Hit the target after it appears"},
-    builder:{icon:"🧩",skill:"COGNITIVE",name:"Builder",purpose:"Plan a structure and place the required number of blocks.",how:"Choose spaces on the grid. Fill the required number of blocks to complete the build.",timing:"No countdown • Plan first",pass:"Place every required block"},
-    team:{icon:"🤝",skill:"BEHAVIOURAL",name:"Team Quest",purpose:"Make constructive decisions in realistic team situations.",how:"Read the situation and choose the response that supports cooperation, communication and responsibility.",timing:"No countdown • Read carefully",pass:"Choose the constructive response"},
-    world:{icon:"🌍",skill:"COGNITIVE",name:"World Explorer",purpose:"Explore countries, landmarks, maps and journeys.",how:"Read the clue and choose the place, landmark or route that fits the information shown.",timing:"No countdown • Explore carefully",pass:"Choose the answer that fits"}
-  }[id];
-  if(!info)return;
-  state.active=false; clearTimeout(state.timer);
-  $("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">${info.icon}</div><span class="ui-skill">${info.skill}</span><h2>${info.name}</h2><p class="ui-purpose">${info.purpose}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${info.how}</p></div><div class="ui-meta"><span>✓ ${info.pass}</span><span>⏱ ${info.timing}</span></div><button id="ui-start" class="primary-btn ui-start">Start Activity →</button></div>`;
-  $("ui-start").addEventListener("click",()=>{
-    if(id==="detective")runDetective();
-    else if(id==="reflex")runReflex();
-    else if(id==="builder")runBuilder();
-    else runTeam();
-  });
-}
-function finishGame(){
-  state.active=false; updateGlobal(); show("result");
-  $("result-text").textContent=`You mastered all 20 levels of ${games.find(x=>x.id===state.game).name}. The challenges became progressively harder as you advanced.`;
-  $("result-xp").textContent=state.earnedThisRun; $("result-levels").textContent=20; $("result-streak").textContent=state.bestStreak;
-}
-function goHome(){
-  clearTimeout(state.timer);
-  state.active=false;
-  state.level=1;
-  state.lives=3;
-  state.streak=0;
-  state.score=0;
-  state.earnedThisRun=0;
-  show("home");
-  updateGlobal();
-}
-function leaveGame(){
-  if(state.active || document.querySelector("#game.screen.active")){
-    const ok=window.confirm("Leave this game and return to the Game Arcade? Your current level attempt will end.");
-    if(!ok)return;
-  }
-  goHome();
-}
-$("back-home").addEventListener("click",leaveGame);
-$("result-home").addEventListener("click",goHome);
-$("play-again").addEventListener("click",()=>startGame(state.game));
-window.MQ={state,$,ages,updateGlobal,levelComplete,levelFailed,nextChallenge}; renderAges(); renderGames(); updateGlobal();
+function renderPremium(){const locked=!state.premium;$("premium-status").textContent=locked?'PREMIUM ACCESS REQUIRED':'PREMIUM ACTIVE';$("premium-grid").innerHTML=[['🧠','Adaptive Intelligence Engine','Difficulty adapts to performance patterns across the full skill profile.'],['📊','Deep Performance Lab','Longitudinal skill trends, mastery maps and milestone history.'],['🎯','Daily Mastery Missions','Personalised daily challenges with streaks and rotating objectives.'],['🧭','Mastery Worlds','Advanced game worlds with multi-stage missions and branching challenges.'],['👨‍👩‍👧','Parent / Guardian Insights','A separate progress view focused on practice patterns, not labels or diagnoses.'],['🎧','Focus Soundscapes','Optional ambient focus environments with independent music and effect controls.'],['🏆','Elite Badges & Certificates','Milestone certificates, mastery badges and achievement collections.'],['⚙️','Advanced Accessibility','Expanded timing, motion, contrast, text-size and sound controls.']].map(x=>`<article class="premium-card ${locked?'locked':''}"><div class="premium-icon">${x[0]}</div><h3>${x[1]}</h3><p>${x[2]}</p><span>${locked?'🔒 Premium':'✓ Available'}</span></article>`).join('');}
+function openSettings(){const s=state.settings||{};$("sound-toggle").checked=s.sound!==false;$("sfx-toggle").checked=s.sfx!==false;$("volume-control").value=s.volume??.18;$("settings").classList.add('settings-open');}
+function closeSettings(){$("settings").classList.remove('settings-open')}
+function goHome(){clearTimeout(state.timer);stopFocusSound();state.active=false;state.level=1;state.lives=3;state.streak=0;state.score=0;state.earnedThisRun=0;show('home');updateGlobal();}
+function leaveGame(){if(state.active||document.querySelector('#game.screen.active')){const ok=window.confirm('Save your checkpoint and return to the Game Arcade? You can resume it later.');if(!ok)return}goHome()}
+$("back-home").onclick=leaveGame;$("result-home").onclick=goHome;$("play-again").onclick=()=>startGame(state.game);$("milestone-continue").onclick=()=>continueAfterMilestone();$("account-submit").onclick=createAccount;$("account-skip")?.addEventListener('click',()=>{});$("settings-open").onclick=openSettings;$("settings-close").onclick=closeSettings;
+["sound-toggle","sfx-toggle","volume-control"].forEach(id=>$(id)?.addEventListener('input',()=>{state.settings.sound=$("sound-toggle").checked;state.settings.sfx=$("sfx-toggle").checked;state.settings.volume=Number($("volume-control").value);if(state.settings.sound)startFocusSound();else stopFocusSound();try{localStorage.setItem('mindquest-settings-v1',JSON.stringify(state.settings))}catch{}}));
+state.account=loadAccount();try{const st=JSON.parse(localStorage.getItem('mindquest-settings-v1')||'null');if(st)state.settings=Object.assign(state.settings,st)}catch{}
+window.MQ={state,$,ages,updateGlobal,levelComplete,levelFailed,nextChallenge,showMilestone,showAccountGate,showPremiumVault};renderAges();renderGames();updateGlobal();
 })();
