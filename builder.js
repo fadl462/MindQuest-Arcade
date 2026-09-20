@@ -4,7 +4,7 @@ const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["fill","pattern","path","mirror","count","rotate","balance","sequence","symmetry","packing","allocate","weight"];
+const TYPES=["fill","pattern","path","mirror","count","rotate","balance","sequence","symmetry","packing","allocate","weight","maze"];
 const INFO={
  fill:["Block Builder","Fill the required spaces without using blocked cells.","Choose exactly the number of build cells requested."],
  pattern:["Pattern Builder","Complete the structure by following its visual rule.","Study the filled cells, then choose the missing cell."],
@@ -17,6 +17,7 @@ const INFO={
  symmetry:["Symmetry Builder","Complete the missing half of a symmetrical design.","Choose the cell that makes the pattern balanced across the centre."],
  packing:["Packing Builder","Choose how many items can fit without exceeding the available space.","Use the capacity and item size together; do not exceed the limit."],
 allocate:["Resource Allocation","Allocate a limited number of blocks to the structure.","Select exactly the required number of blocks before building."],
+maze:['Maze Builder','Find a route from the start to the goal without stepping on blocked cells.','Tap adjacent cells to build a valid path from START to GOAL.'],
 weight:["Weight Balance","Balance two sides using blocks with different weights.","Choose the added weight that makes both sides equal."]
 };
 function activity(){return Number.isInteger(S.builderActivity)?S.builderActivity:0}
@@ -67,7 +68,17 @@ function packing(){
  S.active=true;document.querySelectorAll('.builder-option').forEach(b=>b.onclick=()=>b.dataset.v===String(correct)?complete():fail());
 }
 
-function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else if(type==="symmetry")symmetry();else if(type==="packing")packing();else if(type==="allocate")allocate();else if(type==="weight")weight();else mirror()}
+
+function maze(){
+ const n=S.level<8?3:S.level<15?4:5,start=0,goal=n*n-1,blocked=new Set();
+ for(let i=1;i<goal;i++){const onSafePath=(i<n)||((i%n)===n-1);if(!onSafePath && (i*7+S.level+activity())%5===0) blocked.add(i);}
+ blocked.delete(1);blocked.delete(goal-1);
+ $('game-stage').innerHTML=`<div class="builder-stage">${head('maze','Build a route from START to GOAL.')}<div class="builder-lab-grid" id="maze-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button class="builder-cell" data-i="${i}" ${blocked.has(i)?'disabled':''}>${i===start?'START':i===goal?'GOAL':''}</button>`).join('')}</div><p id="maze-path">0 steps</p></div>`;
+ let pos=start,steps=0;S.active=true;const cells=[...document.querySelectorAll('#maze-grid .builder-cell')];const adjacent=(a,b)=>{const ar=Math.floor(a/n),ac=a%n,br=Math.floor(b/n),bc=b%n;return Math.abs(ar-br)+Math.abs(ac-bc)===1};
+ cells.forEach(b=>b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(!adjacent(pos,i)||blocked.has(i)){fail();return}pos=i;steps++;b.classList.add('good');$('maze-path').textContent=`${steps} steps`;if(pos===goal)complete()});
+}
+
+function runActivity(type){if(type==="fill")fill();else if(type==="pattern")pattern();else if(type==="path")path();else if(type==="count")count();else if(type==="rotate")rotate();else if(type==="balance")balance();else if(type==="sequence")buildSequence();else if(type==="symmetry")symmetry();else if(type==="packing")packing();else if(type==="allocate")allocate();else if(type==="weight")weight();else if(type==="maze")maze();else mirror()}
 function makeGrid(n){return `<div class="builder-lab-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button type="button" class="builder-cell" data-i="${i}"></button>`).join("")}</div>`}
 function fill(){
  const n=size(),total=n*n,need=clamp(Math.round((2+Math.floor(S.level*.5)+activity())*ageScale()),2,total-2),blockedCount=clamp(1+Math.floor(S.level/5),1,4),blocked=shuffle([...Array(total).keys()]).slice(0,blockedCount);

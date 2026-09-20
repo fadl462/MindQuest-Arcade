@@ -9,8 +9,8 @@ const plans=[
  ['clue','pattern','analogy','odd'],['rule','sequence','math','clue'],['order','analogy','pattern','deduction'],['math','clue','sequence','rule'],
  ['deduction','pattern','order','analogy'],['sequence','rule','clue','math'],['visual','odd','deduction','order'],['pattern','math','analogy','clue'],
  ['rule','deduction','sequence','visual'],['analogy','order','math','pattern'],['clue','rule','deduction','sequence'],['visual','math','order','analogy'],
- ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','chain'],
- ['estimate','classify','compare','ranking'],['classify','estimate','constraint','probability'],['chain','data','ranking','constraint']
+ ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','elimination'],
+ ['estimate','classify','elimination','ranking'],['classify','estimate','constraint','probability'],['chain','data','ranking','constraint']
 ];
 const info={
  sequence:['Sequence Detective','Find what comes next in the sequence.','Look for the change between each item, then choose the item that continues the rule.'],
@@ -32,7 +32,8 @@ const info={
  estimate:['Estimate Detective','Choose the closest sensible estimate.','Use the scale and information given. An estimate should be close, not exact.'],
  classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.'],
  data:['Data Detective','Read a small table and identify the correct comparison.','Compare the values in the table before choosing the answer.'],
-chain:['Multi-Clue Chain','Solve two linked clues before choosing the final answer.','Use the first clue to narrow the options, then use the second clue to confirm the answer.']
+chain:['Multi-Clue Chain','Solve two linked clues before choosing the final answer.','Use the first clue to narrow the options, then use the second clue to confirm the answer.'],
+ elimination:['Elimination Detective','Cross out options that violate the clues, then choose the only one left.','Check each clue against every option before deciding.']
 };
 function age(){return S.age}
 function difficulty(){return S.level + age()*.7}
@@ -203,7 +204,18 @@ function chain(){
  ];
  const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];choice(q.q,q.q,q.o,q.c)
 }
-function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'rankOrder':rankOrder();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'chain':chain();break;case'deduction':deduction();}}
+
+function elimination(){
+ const sets=[
+  ['Which item fits all three clues?','It is larger than 5. It is even. It is less than 10.',['4','6','8','11'],'6'],
+  ['Which animal fits all three clues?','It can fly. It has feathers. It is not a penguin.',['Dog','Eagle','Cat','Turtle'],'Eagle'],
+  ['Which number survives every rule?','It is odd. It is greater than 7. It is less than 12.',['6','8','9','12'],'9'],
+  ['Which shape fits the clues?','It has 3 sides. It has no curved edges.',['Circle','Triangle','Square','Oval'],'Triangle']
+ ];
+ const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];begin('elimination',q[0],q[2],q[3],q[1]);
+}
+
+function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'rankOrder':rankOrder();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'chain':chain();break;case'elimination':elimination();break;case'deduction':deduction();}}
 function start(){S.detectiveActivity=0;S.detectiveCorrect=0;window.MQDetective={run:()=>{const type=plans[S.level-1][S.detectiveActivity]||'sequence';renderInstruction(type)}}}
 start();
 })();

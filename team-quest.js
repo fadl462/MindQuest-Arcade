@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict","leadership","actionSequence","tradeoff"];
+const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict","leadership","actionSequence","tradeoff","activeListening"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const BANK=[
  ["A friend drops their crayons. What could you do?",["Help pick them up","Laugh","Walk away"]],
@@ -86,7 +86,8 @@ const INFO={
  conflict:["Conflict Resolution","Choose a calm response that helps a disagreement move forward.","Focus on the problem, listen to both sides and look for a fair next step."],
  leadership:["Leadership Check","Match tasks to people and help a team use its strengths.","Good delegation considers skills, fairness and the shared goal."],
 actionSequence:["Action Sequence","Choose the best order for completing a team task.","Put the actions in a sensible sequence before the team begins."],
-tradeoff:["Team Trade-off","Choose a fair solution when the team has competing needs.","Balance fairness, time and the needs of the whole group."]
+tradeoff:["Team Trade-off","Choose a fair solution when the team has competing needs.","Balance fairness, time and the needs of the whole group."],
+activeListening:["Active Listening","Choose the response that shows you understood before reacting.","Listen, reflect the key point, then respond to the issue."]
 };
 function activity(){return Number.isInteger(S.teamActivity)?S.teamActivity:0}
 function levelIndex(){return (S.level-1)%20}
@@ -125,7 +126,16 @@ function tradeoff(){
   ['The group has limited materials. What should the team do first?',['Decide together how to share them','Keep materials with one person','Use everything immediately','Choose randomly'], 'Decide together how to share them']
  ];const q=qs[(S.level+activity()+S.age)%qs.length];choice(q[0],q[0],q[1],q[2]);
 }
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else if(type==="leadership")leadership();else if(type==="actionSequence")actionSequence();else if(type==="tradeoff")tradeoff();else plan()}
+
+function activeListening(){
+ const qs=[
+ ['A teammate says, “I am worried we will miss the deadline.” What shows listening?','You are worried about the deadline. Let us check what remains.'],
+ ['A teammate explains that they do not understand their task. What should you say first?','I understand. Which part should we clarify together?'],
+ ['Someone says they feel left out of the plan. What is a listening response?','I hear that you want a chance to contribute. What idea would you like to add?']
+ ];const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('activeListening'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'That is not my problem.','Just do what you were told.','Stop talking.'],q[1]);
+}
+
+function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else if(type==="leadership")leadership();else if(type==="actionSequence")actionSequence();else if(type==="tradeoff")tradeoff();else if(type==="activeListening")activeListening();else plan()}
 
 function negotiation(){
  const qs=[

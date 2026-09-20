@@ -2,7 +2,7 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$,shuffle=a=>[...a].sort(()=>Math.random()-.5),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan","compareShop","basketBuild","budgetMax"];
+const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan","compareShop","basketBuild","budgetMax","exactChange"];
 const INFO={
  count:["Money Match","Count Ghana cedi coins and notes.","Add the values carefully, then choose the total."],
  compare:["Price Detective","Compare prices and decide which amount is greater, smaller or equal.","Read both amounts before choosing."],
@@ -15,6 +15,7 @@ const INFO={
  savingPlan:["Savings Planner","Choose the plan that reaches a goal while leaving a realistic amount to save each time.","Compare the goal, starting amount and regular saving amount."],
  compareShop:["Smart Price Compare","Compare two products using both price and quantity.","Check the total price and how many items you receive before deciding."],
 budgetMax:["Budget Builder","Choose the basket that gives the most value without exceeding the budget.","Check the total cost first, then compare what each basket gives you."],
+exactChange:["Exact Change","Select the coins and notes that make the exact change.","Use the fewest pieces you can while reaching the exact amount."],
 basketBuild:["Basket Builder","Build a useful basket while meeting the item requirement and budget.","Select the required number of items without exceeding the budget."]
 };
 const VALUES=[1,2,5,10,20,50,100];
@@ -39,7 +40,14 @@ function savingPlan(){
  const weeks=Math.ceil((goal-start)/weekly); const correct=`${weeks} weeks`;
  choice(head('savingPlan'),`You have <b>${money(start)}</b> and want <b>${money(goal)}</b>. If you save <b>${money(weekly)}</b> each week, about how long will it take?`,[correct,`${Math.max(1,weeks-1)} weeks`,`${weeks+1} weeks`,`${weeks+2} weeks`],correct);
 }
-function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else if(type==="compareShop")compareShop();else if(type==="basketBuild")basketBuild();else if(type==="budgetMax")budgetMax();else budget()}
+
+function exactChange(){
+ const amounts=[6,9,12,15,18,24,30],target=amounts[(S.level+activity()+S.age)%amounts.length];const den=[10,5,2,1];let remaining=target;const correct=[];for(const d of den){while(remaining>=d){correct.push(d);remaining-=d}}
+ $('game-stage').innerHTML=`<div class="team-stage money-stage">${head('exactChange',`Make exactly ${money(target)}.`)}<div id="change-pieces" class="team-options"></div><div id="change-total" style="margin:12px 0;font-weight:700">0 / ${money(target)}</div><button id="change-check" class="primary-btn">Check Change →</button></div>`;
+ const box=$('change-pieces');let total=0,selected=[];S.active=true;den.forEach(d=>{const b=document.createElement('button');b.className='team-option';b.textContent=money(d);b.onclick=()=>{if(!S.active)return;if(total+d>target)return;total+=d;selected.push(d);$('change-total').textContent=`${money(total)} / ${money(target)}`};box.appendChild(b)});$('change-check').onclick=()=>{if(total===target&&selected.length===correct.length)complete();else fail()};
+}
+
+function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else if(type==="compareShop")compareShop();else if(type==="basketBuild")basketBuild();else if(type==="budgetMax")budgetMax();else if(type==="exactChange")exactChange();else budget()}
 function money(n){return `GH₵${Number(n).toFixed(n%1?2:0)}`}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$('game-stage').innerHTML=`<div class="team-stage money-stage">${title}<div class="team-question">${prompt}</div><div id="money-options" class="team-options"></div></div>`;const box=$('money-options');S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===String(correct)?complete():fail();box.appendChild(b)})}

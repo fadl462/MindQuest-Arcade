@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["place","landmark","clue","route","capital","culture","hemisphere","direction","climate","landform","compass","distance"];
+const TYPES=["place","landmark","clue","route","capital","culture","hemisphere","direction","climate","landform","compass","distance","timeZone"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const PLACES=[
  ["Ghana","Africa","Accra"],["Kenya","Africa","Nairobi"],["Egypt","Africa","Cairo"],["Nigeria","Africa","Abuja"],
@@ -54,7 +54,8 @@ const INFO={
  continent:["Continent Challenge","Connect countries with their correct continents.","Use the country location to identify its continent."],
  capital:["Capital Challenge","Match a country with its capital city.","Use the country clue and choose the correct capital."],
 compass:["Compass Challenge","Use compass directions to navigate from one place to another.","Follow the directions carefully and choose the destination."],
-distance:["Distance Order","Compare travel distances and identify the shortest route.","Use the given distances rather than guessing from the place names."]
+distance:["Distance Order","Compare travel distances and identify the shortest route.","Use the given distances rather than guessing from the place names."],
+timeZone:["Time Zone Explorer","Use broad world time-zone clues to compare locations.","For this challenge, use the simplified UTC offset shown in the question."]
 };
 function activity(){return Number.isInteger(S.worldActivity)?S.worldActivity:0}
 function levelIndex(){return (S.level-1)%20}
@@ -100,7 +101,13 @@ function distance(){
  const base=10+S.level*3,vals=[base,base+7+(activity()*2),base+13];const order=[...vals].sort((a,b)=>a-b);const correct=order.join(' → ');choiceWorld('distance',`Three routes are ${vals[0]} km, ${vals[1]} km and ${vals[2]} km. Which order is shortest to longest?`,[correct,[...order].reverse().join(' → '),`${vals[1]} → ${vals[0]} → ${vals[2]}`,`${vals[2]} → ${vals[0]} → ${vals[1]}`],correct)
 }
 function choiceWorld(type,prompt,choices,correct){$('game-stage').innerHTML=`<div class="world-stage">${head(type)}<div class="world-question">${prompt}</div><div class="team-options" id="world-options"></div></div>`;const box=$('world-options');S.active=true;shuffle(choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
-function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else if(type==="capital")capital();else if(type==="culture")culture();else if(type==="continent")continent();else if(type==="hemisphere")hemisphere();else if(type==="direction")direction();else if(type==="climate")climate();else if(type==="landform")landform();else if(type==="compass")compass();else if(type==="distance")distance();else route()}
+
+function timeZone(){
+ const qs=[['Accra is UTC+0 and City B is UTC+3. If it is 10:00 in Accra, what time is it in City B?','13:00',['11:00','13:00','15:00','07:00']],['Accra is UTC+0 and City C is UTC-5. If it is 14:00 in Accra, what time is it in City C?','09:00',['09:00','19:00','12:00','04:00']],['A city is UTC+2. If it is 08:00 UTC, what is the local time?','10:00',['06:00','08:00','10:00','12:00']]];
+ const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('timeZone'),q[0],q[2],q[1]);
+}
+
+function runActivity(type){if(type==="place")place();else if(type==="landmark")landmark();else if(type==="clue")clue();else if(type==="capital")capital();else if(type==="culture")culture();else if(type==="continent")continent();else if(type==="hemisphere")hemisphere();else if(type==="direction")direction();else if(type==="climate")climate();else if(type==="landform")landform();else if(type==="compass")compass();else if(type==="distance")distance();else if(type==="timeZone")timeZone();else route()}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$("game-stage").innerHTML=`<div class="team-stage world-stage">${title}<div class="team-question">${prompt}</div><div id="world-options" class="team-options"></div></div>`;const box=$("world-options");S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(x);b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
 function place(){const p=PLACES[levelIndex()];const mode=S.level<6?"country":S.level<13?"continent":"capital";if(mode==="country"){const others=shuffle(PLACES.filter(x=>x[1]===p[1]&&x[0]!==p[0]).map(x=>x[0])).slice(0,3);choice(head("place"),`Which country is in ${p[1]} and has ${p[2]} as its capital?`,[p[0],...others],p[0])}else if(mode==="continent"){const others=shuffle(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[1])).filter((x,i,a)=>a.indexOf(x)===i).slice(0,3);choice(head("place"),`Which continent is ${p[0]} in?`,[p[1],...others],p[1])}else{const others=shuffle([...new Set(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[2]))]).slice(0,3);choice(head("place"),`What is the capital of ${p[0]}?`,[p[2],...others],p[2])}}

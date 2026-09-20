@@ -12,11 +12,11 @@ const WORDS=['apple','river','garden','rocket','pencil','window','tiger','banana
 const PLANS=[
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
- ['working','count','visual','direction','pairs'],
+ ['working','count','visual','filter','pairs'],
  ['sequence','location','feature','reverse','direction'],
- ['visual','sequence','direction','pairs','location'],
+ ['visual','sequence','filter','pairs','location'],
  ['feature','change','category','direction','order'],
- ['working','count','visual','direction','pairs'],
+ ['working','count','visual','switchback','pairs'],
  ['sequence','location','feature','reverse','direction'],
  ['visual','sequence','direction','pairs','location'],
  ['feature','change','category','direction','order'],
@@ -171,7 +171,7 @@ function count(){begin((sp,t)=>{
  $('game-stage').innerHTML=`<div class="memory-wrap">${header('count')}<div class="memory-timer">Remember how many times each object appears.</div><div class="memory-items">${shuffle(pool).map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div>`;
  S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('count','Choose the number for each object.')}<div class="count-list" id="count-list"></div></div>`;const box=$('count-list');let done=0;S.active=true;types.forEach((icon,i)=>{const row=document.createElement('div');row.className='count-row';row.innerHTML=`<span>${icon}</span><div class="count-choices"></div>`;const cb=row.querySelector('.count-choices'),correct=counts[i],vals=[correct,1+(correct%4),2+(correct%4),3+(correct%4)].filter((v,j,a)=>a.indexOf(v)===j).slice(0,4);shuffle(vals).forEach(v=>{const b=document.createElement('button');b.className='word-option';b.textContent=v;b.onclick=()=>{if(!S.active||b.disabled)return;b.disabled=true;if(v!==correct){b.classList.add('bad');fail()}else{b.classList.add('good');if(++done===types.length)complete()}};cb.appendChild(b)});box.appendChild(row)});deadline(sp.response*1.25)},sp.show)
 })}
-const START={visual,sequence,location,pairs,feature,working,change,category,order,count,direction,reverse,temporal};
+const START={visual,sequence,location,pairs,feature,working,change,category,order,count,direction,reverse,temporal,grid,interference,filter,switchback};
 const RULES={
  visual:'Remember the objects you see, then select them from the choices.',
  sequence:'Watch the exact order, then tap the objects in the same order.',
@@ -185,7 +185,11 @@ const RULES={
  count:'Remember how many times each object appeared, then choose each count.',
  direction:'Watch the arrow sequence, then tap the directions in the same order.',
  reverse:'Remember the sequence, then reproduce it from last to first.',
- temporal:'Remember the event order, then reproduce the sequence from first to last.'
+ temporal:'Remember the event order, then reproduce the sequence from first to last.',
+ grid:'Remember the highlighted positions, then reproduce them on the grid.',
+ interference:'Remember the target sequence and ignore the distractors.',
+ filter:'Remember the category, then select every matching object.',
+ switchback:'Remember the two streams, then reproduce them in alternating order.'
 };
 function interference(){begin((sp,t)=>{
  const count=clamp(3+Math.floor(S.level/5),3,8);
@@ -193,12 +197,31 @@ function interference(){begin((sp,t)=>{
  $('game-stage').innerHTML=`<div class="memory-wrap">${header('interference','Remember the TARGET sequence. Ignore the distractors.')}<div class="memory-timer">Target sequence</div><div class="sequence-display">${target.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div class="memory-timer" style="margin-top:14px">Distractor flash</div><div class="sequence-display">${distract.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div></div>`;
  S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('interference','Tap the target objects in the original order.')}<div id="interference-choices" class="memory-items"></div><div id="interference-picked" class="picked-sequence"></div></div>`;const box=$('interference-choices'),picked=$('interference-picked');let n=0;S.active=true;shuffle(target.concat(distract)).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==target[n]){b.classList.add('bad');fail()}else{b.disabled=true;b.classList.add('good');picked.textContent+=(n?' ':'')+x;if(++n===target.length)complete()}};box.appendChild(b)});deadline(sp.response)},Math.max(1800,sp.show+900))
 })}
+
+function filter(){
+ const target=['animals','foods','vehicles','nature'][(S.level+S.age+S.memoryActivity)%4];
+ const banks={animals:['🐶','🍎','🚗','🐱','🌳','🐼','🚲','🦊'],foods:['🍎','🐶','🍕','🚗','🍌','🐱','🥕','🚲'],vehicles:['🚗','🍎','🚌','🐶','🚲','🍌','✈️','🌳'],nature:['🌳','🚗','🌊','🐱','🌻','🚌','⛰️','🍕']};
+ const targetSet={animals:new Set(['🐶','🐱','🐼','🦊']),foods:new Set(['🍎','🍕','🍌','🥕']),vehicles:new Set(['🚗','🚌','🚲','✈️']),nature:new Set(['🌳','🌊','🌻','⛰️'])}[target];
+ begin((sp,t)=>{
+  const vals=shuffle(banks[target]),correct=vals.filter(v=>targetSet.has(v));
+  $('game-stage').innerHTML=`<div class="memory-stage">${header('filter',`Remember the category: <b>${target}</b>`)}<div class="memory-cards" id="filter-cards"></div><p>Select every object that belongs to the remembered category.</p></div>`;
+  const box=$('filter-cards');S.active=true;vals.forEach(v=>{const b=document.createElement('button');b.className='memory-card';b.textContent=v;b.onclick=()=>{if(!S.active)return;b.classList.toggle('selected');const picked=[...box.querySelectorAll('.selected')].map(x=>x.textContent);const ok=picked.every(x=>targetSet.has(x))&&picked.length===correct.length;if(ok)complete();};box.appendChild(b)});deadline(sp.response);
+ },true);
+}
+function switchback(){
+ begin((sp,t)=>{const pool=shuffle(ICONS).slice(0,10),a=pool.slice(0,4),b=pool.slice(5,9);const seq=Array.from({length:8},(_,i)=>i%2===0?a[Math.floor(i/2)%a.length]:b[Math.floor(i/2)%b.length]);
+ $('game-stage').innerHTML=`<div class="memory-stage">${header('switchback','Remember the two streams, then alternate them.')}<div class="memory-sequence">${seq.join(' ')}</div></div>`;S.timer=setTimeout(()=>{const buttons=shuffle([...new Set(seq)]);$('game-stage').innerHTML=`<div class="memory-stage">${header('switchback','Rebuild the alternating sequence.')}<div id="switchback-options" class="memory-cards"></div><div id="switchback-picked" class="memory-sequence"></div></div>`;const box=$('switchback-options'),picked=$('switchback-picked');S.active=true;let i=0;buttons.forEach(v=>{const b=document.createElement('button');b.className='memory-card';b.textContent=v;b.onclick=()=>{if(!S.active)return;if(v!==seq[i]){fail();return}b.disabled=true;picked.textContent+=`${i?' ':''}${v}`;if(++i===seq.length)complete()};box.appendChild(b)});deadline(sp.response)},sp.show)},true)
+}
+
+function runType(type){if(type==='filter')filter();else if(type==='switchback')switchback();else if(type==='interference')interference();else if(type==='reverse')reverse();else if(type==='temporal')temporal();else if(type==='direction')direction();else if(type==='count')count();else if(type==='order')order();else if(type==='category')category();else if(type==='working')working();else if(type==='change')change();else if(type==='feature')feature();else if(type==='location')location();else if(type==='pairs')pairs();else if(type==='sequence')sequence();else if(type==='grid')grid();else visual();}
 function instructions(type){
  const i=INFO[type],sp=cfg();
  $('game-stage').innerHTML=`<div class="memory-instruction-screen"><div class="instruction-icon">🧠</div><span class="memory-kind">${i[2]}</span><div class="instruction-activity">Activity ${(S.memoryActivity||0)+1} of 4</div><h2>${i[0]}</h2><p class="instruction-purpose">${i[1]}</p><div class="instruction-rule"><strong>How to play</strong><p>${RULES[type]}</p></div><div class="instruction-timing"><span>⏱️ Study: ${(sp.show/1000).toFixed(1)} sec • Response: ${Math.round(sp.response/1000)} sec</span><span>🎯 Pass with no incorrect response</span></div><button id="start-memory-activity" type="button" class="primary-btn instruction-start">Start Activity →</button></div>`;
  S.active=false;clearTimeout(S.timer);
  $('start-memory-activity').onclick=()=>{START[type]();};
 }
-function run(){S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;let type=PLANS[S.level-1]?.[S.memoryActivity]||'visual';if(S.level>=10 && S.memoryActivity===3) type='grid';if(S.level>=14 && S.memoryActivity===2) type='interference';instructions(type)}
+function run(){S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;let type=PLANS[S.level-1]?.[S.memoryActivity]||'visual';if(S.level>=10 && S.memoryActivity===3) type='grid';if(S.level>=14 && S.memoryActivity===2) type='interference';
+if(S.level>=17 && S.memoryActivity===3) type='filter';
+if(S.level>=19 && S.memoryActivity===2) type='switchback';instructions(type)}
 window.MQMemoryLab={run};
 })();
