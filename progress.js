@@ -23,8 +23,46 @@ function recordLevel(level,game){ensureIntel();intel.totalLevels=Math.max(intel.
 function openProfile(){ensureIntel();const s=MQ.state,stats=s.skillStats||{};dailyMission();const account=s.account;const skillHtml=allSkills.map(k=>{const v=Number(stats[k]||0),pct=Math.min(100,v*5);return `<div class="mq-skill"><div class="mq-skill-top"><span>${skillLabels[k]}</span><b>${v}</b></div><small>${v? 'Practised through gameplay':'Not yet practised'}</small><div class="mq-bar"><span style="width:${pct}%"></span></div></div>`}).join('');const hist=(intel.milestones||[]).slice(-4).reverse().map(m=>`<div class="mq-history-card"><strong>Lv ${m.level}</strong><small>${new Date(m.date).toLocaleDateString()} • ${m.xp} XP</small></div>`).join('')||'<div class="mq-note">Your first milestone report will appear after Level 5.</div>';const overlay=document.getElementById('mq-profile-overlay');overlay.innerHTML=`<div class="mq-profile"><div class="mq-profile-head"><div><p class="eyebrow">MINDQUEST PLAYER INTELLIGENCE</p><h2>${account?account.displayName:'Guest Explorer'}</h2><p class="mq-note">${account?'Player account active on this device.':'Guest profile — account tracking begins at Level 10.'}</p></div><button class="mq-close" id="mq-profile-close">✕</button></div><div class="mq-profile-hero"><div><span class="mq-premium-chip">${s.premium?'PREMIUM ACTIVE':'CORE PATHWAY'}</span><h3>Keep building your mind.</h3><p>MindQuest tracks the skills you practise across games. These indicators describe gameplay practice; they are not IQ, clinical or academic assessments.</p></div><div class="mq-profile-stats"><div class="mq-profile-stat"><b>${s.xp}</b><span>XP</span></div><div class="mq-profile-stat"><b>${s.streak}</b><span>Current streak</span></div><div class="mq-profile-stat"><b>${intel.totalLevels||0}</b><span>Levels logged</span></div></div></div><div class="mq-section"><h3>Today's Mastery Mission</h3><div class="mq-mission"><div><strong>${intel.daily.title}</strong><div class="mq-note">${intel.daily.desc}</div></div><span>${intel.daily.done?'✓ Complete':'In progress'}</span></div></div><div class="mq-section"><h3>Skill Map</h3><div class="mq-skill-grid">${skillHtml}</div></div><div class="mq-section"><h3>Milestone History</h3><div class="mq-history">${hist}</div></div><div class="mq-section"><h3>What the indicators mean</h3><p class="mq-note">Memory and attention reflect recall and sustained focus practice. Logic and problem solving reflect pattern, reasoning and planning practice. Reaction and precision reflect timing and coordination practice. Teamwork, empathy and responsibility reflect constructive social decision practice. World knowledge and financial thinking reflect practical knowledge and quantity-based decision practice.</p></div></div>`;overlay.classList.add('open');document.getElementById('mq-profile-close').onclick=()=>overlay.classList.remove('open')}
 function addProfileButton(){injectStyles();let box=document.querySelector('.header-actions');if(box&&!document.getElementById('mq-profile-open')){const b=document.createElement('button');b.id='mq-profile-open';b.className='header-action profile-action';b.type='button';b.title='Player Profile';b.setAttribute('aria-label','Open player profile');b.innerHTML='<span>📊</span><small>Profile</small>';b.onclick=openProfile;box.insertBefore(b,box.firstChild)}if(!document.getElementById('mq-profile-overlay')){const d=document.createElement('div');d.id='mq-profile-overlay';d.className='mq-profile-overlay';document.body.appendChild(d)}}
 try{const age=Number(localStorage.getItem(AGE_KEY));if(Number.isInteger(age)&&age>=0&&age<MQ.ages.length)MQ.state.age=age;const a=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||'null');if(a)MQ.state.account=a;}catch{}
-try{localStorage.setItem(VIEW_KEY,'home')}catch{}
+function setView(view){try{localStorage.setItem(VIEW_KEY,view)}catch{}}
+function activeSavedCheckpoint(){
+  try{
+    const session=JSON.parse(localStorage.getItem(SESSION)||'null');
+    if(session&&session.age!==undefined&&session.game){
+      const p=saved[keyFor(Number(session.age),session.game)];
+      if(p)return p;
+    }
+  }catch{}
+  const entries=Object.values(saved).filter(p=>p&&p.level>=1&&p.level<=20);
+  entries.sort((a,b)=>(b.level-a.level)||(b.xp-a.xp));
+  return entries[0]||null;
+}
+function restoreSavedView(){
+  let view='home';
+  try{view=localStorage.getItem(VIEW_KEY)||'home'}catch{}
+  if(view==='home')return;
+  const p=activeSavedCheckpoint();
+  if(!p)return;
+  restore(p);
+  if(view==='account'){MQ.showAccountGate();return;}
+  if(view==='premium'){MQ.showPremiumVault();return;}
+  if(view==='milestone'||p.milestonePending){MQ.showMilestone(p.milestoneLevel||p.level);return;}
+  if(view==='game'){
+    const meta={memory:['🧠','Memory Lab','COGNITIVE'],detective:['🔎','Detective','COGNITIVE'],reflex:['⚡','Reflex Arena','PSYCHOMOTOR'],builder:['🧩','Builder','COGNITIVE'],team:['🤝','Team Quest','BEHAVIOURAL'],world:['🌍','World Explorer','COGNITIVE'],money:['💰','Money Mission','COGNITIVE']}[p.game];
+    if(!meta)return;
+    document.getElementById('game-icon').textContent=meta[0];document.getElementById('game-name').textContent=meta[1];document.getElementById('game-skill').textContent=meta[2];
+    document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('game').classList.add('active');
+    MQ.nextChallenge();
+  }
+}
 ensureIntel();addProfileButton();
+const originalNextChallenge=MQ.nextChallenge;
+MQ.nextChallenge=function(){setView('game');return originalNextChallenge()};
+const originalShowAccountGate=MQ.showAccountGate;
+MQ.showAccountGate=function(){setView('account');return originalShowAccountGate()};
+const originalShowPremiumVault=MQ.showPremiumVault;
+MQ.showPremiumVault=function(){setView('premium');return originalShowPremiumVault()};
+const originalShowMilestone=MQ.showMilestone;
+MQ.showMilestone=function(level){setView('milestone');recordMilestone(level);return originalShowMilestone(level)};
 const originalComplete=MQ.levelComplete;
 MQ.levelComplete=function(){
  const wasActive=!!MQ.state.active;
@@ -45,12 +83,12 @@ MQ.levelComplete=function(){
    if(before%5===0)recordMilestone(before);
  }
 };
-const originalShowMilestone=MQ.showMilestone;MQ.showMilestone=function(level){recordMilestone(level);originalShowMilestone(level)};
 setInterval(save,400);window.addEventListener('beforeunload',save);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save()});
 function syncHomePathway(){const age=Number(MQ.state.age);document.querySelectorAll('.age-btn').forEach((b,i)=>b.classList.toggle('active',i===age));const label=document.getElementById('path-label');if(label&&MQ.ages[age])label.textContent='Ages '+MQ.ages[age].range;}
 syncHomePathway();
 const homeCard=document.querySelector('#home .card:last-of-type');
 if(homeCard){const wrap=document.createElement('div');wrap.id='resume-progress-wrap';wrap.style.cssText='display:none;';homeCard.parentNode.insertBefore(wrap,homeCard.nextSibling);const render=()=>{syncHomePathway();const entries=Object.values(saved).filter(p=>p&&p.level>=1&&p.level<=20);if(!entries.length){wrap.style.display='none';return}entries.sort((a,b)=>(b.level-a.level)||(b.xp-a.xp));const p=entries[0];wrap.style.display='block';wrap.innerHTML=`<div class="mq-resume-card"><div><strong>Continue ${gameName(p.game)}</strong><div class="mq-resume-meta">Ages ${MQ.ages[p.age].range} • Level ${p.level}/20 • ${p.xp} XP${p.milestonePending?' • Checkpoint report ready':''}</div></div><button id="resume-last" class="primary-btn" type="button">Resume Game →</button></div>`;document.getElementById('resume-last').onclick=()=>{restore(p);if(p.milestonePending){MQ.showMilestone(p.milestoneLevel||p.level);return}if(p.level>=11&&!MQ.state.account){MQ.showAccountGate();return}const meta={memory:['🧠','Memory Lab','COGNITIVE'],detective:['🔎','Detective','COGNITIVE'],reflex:['⚡','Reflex Arena','PSYCHOMOTOR'],builder:['🧩','Builder','COGNITIVE'],team:['🤝','Team Quest','BEHAVIOURAL'],world:['🌍','World Explorer','COGNITIVE'],money:['💰','Money Mission','COGNITIVE']}[p.game];if(!meta)return;document.getElementById('game-icon').textContent=meta[0];document.getElementById('game-name').textContent=meta[1];document.getElementById('game-skill').textContent=meta[2];document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('game').classList.add('active');try{localStorage.setItem(VIEW_KEY,'game')}catch{}localStorage.setItem(SESSION,JSON.stringify({age:p.age,game:p.game}));MQ.nextChallenge()};};setTimeout(render,120);setInterval(render,1000)}
 document.getElementById('back-home')?.addEventListener('click',()=>saveAndExit(),true);
+setTimeout(restoreSavedView,60);
 document.querySelectorAll('.age-btn').forEach((b,i)=>b.addEventListener('click',()=>{try{localStorage.setItem(AGE_KEY,String(i))}catch{}}));
 })();
