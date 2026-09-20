@@ -55,7 +55,11 @@ function mirror(){
    const yes=mode===0?((r+c+S.level)%3===0):mode===1?((r*2+c+S.level)%4===0):((r===c)||(r+c===n-1));
    if(yes&&c<axis)left.push(r*n+c);
  }
- const targets=[...new Set(left.map(i=>{const r=Math.floor(i/n),c=i%n;return r*n+(n-1-c)}))];
+ let targets=[...new Set(left.map(i=>{const r=Math.floor(i/n),c=i%n;return r*n+(n-1-c)}))];
+ if(!targets.length){
+   const fallback=(S.level+S.age+mode)%n;
+   targets=[fallback*n+(n-1)];
+ }
  $("game-stage").innerHTML=`<div class="builder-stage">${head("mirror",`Mirror pattern ${mode+1}: complete the reflected side.`)}<p class="builder-task">Tap the cells that mirror the left side.</p>${makeGrid(n)}</div>`;
  const cells=[...document.querySelectorAll(".builder-cell")];left.forEach(i=>{cells[i].classList.add("filled");cells[i].disabled=true});let done=0;S.active=true;
  cells.forEach((b,i)=>b.onclick=()=>{if(!S.active||b.disabled)return;if(targets.includes(i)){b.classList.add("filled");b.disabled=true;if(++done===targets.length)complete()}else fail()});

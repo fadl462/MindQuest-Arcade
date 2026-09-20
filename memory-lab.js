@@ -70,8 +70,8 @@ function pairs(){begin((sp,t)=>{
 function feature(){begin((sp,t)=>{
  const count=clamp(sp.count,3,8),co=COLORS.length,sh=SHAPES.length;
  const colorStart=(S.level*3+S.age*2)%co,shapeStart=(S.level*5+S.age*3)%sh;
- const colors=Array.from({length:count},(_,i)=>COLORS[(colorStart+i*3)%co]);
- const shapes=Array.from({length:count},(_,i)=>SHAPES[(shapeStart+i*5)%sh]);
+ const colors=[];const shapes=[];const used=new Set();
+ for(let i=0;colors.length<count;i++){const color=COLORS[(colorStart+i*3)%co],shape=SHAPES[(shapeStart+i*5)%sh],key=`${shape}|${color}`;if(!used.has(key)){used.add(key);colors.push(color);shapes.push(shape)}}
  const a=colors.map((color,i)=>({color,shape:shapes[i]}));
  $('game-stage').innerHTML=`<div class="memory-wrap">${header('feature')}<div class="memory-timer">Remember the exact shape + colour for <b>${(sp.show/1000).toFixed(1)} seconds</b>.</div><div class="feature-items">${a.map(x=>`<div class="feature-item"><span>${x.shape}</span><small>${x.color}</small></div>`).join('')}</div></div>`;
  S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;
@@ -96,7 +96,7 @@ function category(){begin((sp,t)=>{
  const groups=[
   ['Animals',['🐶','🐱','🐘','🦁','🐼','🐢','🐝']],['Food',['🍎','🍕','🍓','🍉','🍪','🥕','🧃']],
   ['Travel',['🚗','🚌','🚲','🚀','✈️','🚂','⛵']],['Play',['⚽','🎸','🎨','🎁','🪁','🧸','🎯']],
-  ['Nature',['🌳','🌻','🌊','🌈','🌴','⛰️','🌺']],['Sky',['⭐','🌙','☀️','☁️','🌟','🌈','☀️']],
+  ['Nature',['🌳','🌻','🌊','🌈','🌴','⛰️','🌺']],['Sky',['⭐','🌙','☀️','☁️','🌟','🌈']],
   ['School',['📚','✏️','📏','🖍️','🎒','📓','🧮']],['Music',['🎸','🎹','🥁','🎺','🎻','🎷','🎤']],
   ['Vehicles',['🚗','🚕','🚌','🚓','🚑','🚒','🚜']],['Fruit',['🍎','🍌','🍊','🍇','🍉','🍓','🍍']],
   ['Sea',['🐳','🐟','🦀','🐙','🦈','🐬','🐚']],['Farm',['🐄','🐖','🐑','🐔','🌽','🥕','🚜']],
