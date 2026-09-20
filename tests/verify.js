@@ -26,6 +26,7 @@ ok('Detective probability advanced bank retained',/3\/5/.test(detective)&&/Math\
 ok('Fisher-Yates shuffle used',/for\(let i=.*i>0;i--\)/.test(team)&&/Math\.floor\(Math\.random\(\)\*\(i\+1\)\)/.test(team));
 ok('premium copy does not promise inactive activation',/does not activate premium game modules/.test(index));
 ok('manifest present',/rel="manifest"/.test(index));
+ok('refresh always returns to Arcade',/function restoreSavedView\(\)\{[\s\S]*?localStorage\.setItem\(VIEW_KEY,'home'\)[\s\S]*?localStorage\.removeItem\(SESSION\)[\s\S]*?home\.classList\.add\('active'\)/.test(progress));
 const reflex=read('reflex-arena.js'),builder=read('builder.js');
 ok('Reflex Arena reaches advanced chase and mirror mechanics',/\"mirror\".*\"chase\"/.test(reflex)&&/else if\(type===\"chase\"\)chase\(\)/.test(reflex));
 ok('Reflex Arena chase uses its own activity identity',/head\('chase'/.test(reflex));

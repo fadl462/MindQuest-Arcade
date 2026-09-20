@@ -259,22 +259,19 @@ function activeSavedCheckpoint(){
   return entries[0]||null;
 }
 function restoreSavedView(){
-  let view='home';
-  try{view=localStorage.getItem(VIEW_KEY)||localStorage.getItem('mindquest-current-view-v3')||'home'}catch{}
-  if(view==='home')return;
-  const p=activeSavedCheckpoint();
-  if(!p)return;
-  restore(p);
-  if(view==='account'){MQ.showAccountGate();return;}
-  if(view==='premium'){MQ.showPremiumVault();return;}
-  if(view==='milestone'||p.milestonePending){MQ.showMilestone(p.milestoneLevel||p.level);return;}
-  if(view==='game'){
-    const meta={memory:['🧠','Memory Lab','COGNITIVE'],detective:['🔎','Detective','COGNITIVE'],reflex:['⚡','Reflex Arena','PSYCHOMOTOR'],builder:['🧩','Builder','COGNITIVE'],team:['🤝','Team Quest','BEHAVIOURAL'],world:['🌍','World Explorer','COGNITIVE'],money:['💰','Money Mission','COGNITIVE']}[p.game];
-    if(!meta)return;
-    document.getElementById('game-icon').textContent=meta[0];document.getElementById('game-name').textContent=meta[1];document.getElementById('game-skill').textContent=meta[2];
-    document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('game').classList.add('active');
-    MQ.nextChallenge();
+  // A browser refresh is a fresh entry into the app, not a request to reopen
+  // the last live challenge. Always return to the Arcade homepage. Saved
+  // challenges remain available in the Player Intelligence Console and can
+  // be resumed deliberately with their Resume button.
+  try{localStorage.setItem(VIEW_KEY,'home');}catch{}
+  try{localStorage.removeItem(SESSION);}catch{}
+  const home=document.getElementById('home');
+  if(home){
+    document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+    home.classList.add('active');
+    syncHomePathway();
   }
+  setView('home');
 }
 ensureIntel();updateBadges();MQ.updateGlobal();addProfileButton();syncPlayerIdentity();renderIntelligenceConsole();
 const mqModeObserver=new MutationObserver(()=>syncExperienceMode());
