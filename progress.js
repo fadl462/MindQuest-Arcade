@@ -286,7 +286,15 @@ function syncHomePathway(){const age=Number(MQ.state.age);document.querySelector
 syncHomePathway();
 const homeCard=document.querySelector('#home .card:last-of-type');
 if(homeCard){const wrap=document.createElement('div');wrap.id='resume-progress-wrap';wrap.style.cssText='display:none;';homeCard.parentNode.insertBefore(wrap,homeCard.nextSibling);const render=()=>{syncHomePathway();const entries=savedCheckpointEntries();if(!entries.length){wrap.style.display='none';return}wrap.style.display='block';wrap.innerHTML=`<div class="mq-resume-heading"><div><p class="eyebrow">YOUR CHECKPOINTS</p><h3>Saved challenges</h3><span>Resume any game exactly where you left it.</span></div><span class="mq-resume-count">${entries.length} saved</span></div><div class="mq-saved-list">${entries.map(p=>checkpointCard(p)).join('')}</div>`;bindSavedCheckpointButtons(wrap)};setTimeout(render,120);setInterval(render,1000)}
-document.getElementById('back-home')?.addEventListener('click',()=>{saveAndExit();if(typeof MQ.goHome==='function')MQ.goHome()},true);
+function bindGameNavigation(){
+  const go=ev=>{ev.preventDefault();ev.stopPropagation();saveAndExit();};
+  const back=document.getElementById('back-home');
+  const saveBtn=document.getElementById('save-game');
+  if(back){back.onclick=go;}
+  if(saveBtn){saveBtn.onclick=go;}
+}
+window.MQProgressSaveAndExit=saveAndExit;
+bindGameNavigation();
 setTimeout(restoreSavedView,60);
 document.querySelectorAll('.age-btn').forEach((b,i)=>b.addEventListener('click',()=>{try{localStorage.setItem(AGE_KEY,String(i))}catch{}}));
 })();
