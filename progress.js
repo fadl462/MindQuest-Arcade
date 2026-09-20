@@ -10,7 +10,7 @@ const gameName=id=>({memory:'Memory Lab',detective:'Detective',reflex:'Reflex Ar
 const skillLabels={memory:'Memory',attention:'Attention',logic:'Logic',problemSolving:'Problem Solving',reaction:'Reaction',precision:'Precision',teamwork:'Teamwork',empathy:'Empathy',responsibility:'Responsibility',geography:'World Knowledge',financialLiteracy:'Financial Thinking'};
 const allSkills=Object.keys(skillLabels);
 const checkpoint=()=>{const s=MQ.state;return {age:s.age,game:s.game,level:s.level,lives:s.lives,streak:s.streak,bestStreak:s.bestStreak,xp:s.xp,score:s.score,earnedThisRun:s.earnedThisRun,milestonePending:!!s.milestonePending,milestoneLevel:s.milestoneLevel||0,detectiveActivity:s.detectiveActivity||0,memoryActivity:s.memoryActivity||0,reflexActivity:s.reflexActivity||0,builderActivity:s.builderActivity||0,teamActivity:s.teamActivity||0,worldActivity:s.worldActivity||0,moneyActivity:s.moneyActivity||0,skills:s.skills,skillStats:s.skillStats,account:s.account||null,premium:!!s.premium,premiumPlan:s.premiumPlan||"",premiumTrialUntil:s.premiumTrialUntil||0}};
-const save=()=>{if(!MQ.state.game||arcadeExitSave)return;saved[keyFor(MQ.state.age,MQ.state.game)]=checkpoint();try{localStorage.setItem(STORE,JSON.stringify(saved));localStorage.setItem(SESSION,JSON.stringify({age:MQ.state.age,game:MQ.state.game}));localStorage.setItem(AGE_KEY,String(MQ.state.age));if(MQ.state.account)localStorage.setItem(ACCOUNT_KEY,JSON.stringify(MQ.state.account));localStorage.setItem(INTEL_KEY,JSON.stringify(intel))}catch{}};
+const save=()=>{if(arcadeExitSave)return;try{if(MQ.state.account)persistAccount(MQ.state.account);if(MQ.state.game)saved[keyFor(MQ.state.age,MQ.state.game)]=checkpoint();localStorage.setItem(STORE,JSON.stringify(saved));localStorage.setItem(SESSION,JSON.stringify({age:MQ.state.age,game:MQ.state.game}));localStorage.setItem(AGE_KEY,String(MQ.state.age));localStorage.setItem(INTEL_KEY,JSON.stringify(intel))}catch{}};
 const saveAndExit=()=>{if(!MQ.state.game)return;saved[keyFor(MQ.state.age,MQ.state.game)]=checkpoint();try{localStorage.setItem(STORE,JSON.stringify(saved));localStorage.setItem(SESSION,JSON.stringify({age:MQ.state.age,game:MQ.state.game}));localStorage.setItem(AGE_KEY,String(MQ.state.age));localStorage.setItem(VIEW_KEY,'home');if(MQ.state.account)localStorage.setItem(ACCOUNT_KEY,JSON.stringify(MQ.state.account));localStorage.setItem(INTEL_KEY,JSON.stringify(intel))}catch{}arcadeExitSave=true;setTimeout(()=>arcadeExitSave=false,1500)};
 const restore=p=>{Object.assign(MQ.state,p);MQ.state.active=false;MQ.state.timer=null;MQ.state.skills=p.skills||MQ.state.skills;MQ.state.skillStats=p.skillStats||MQ.state.skillStats;MQ.state.account=p.account||MQ.state.account;MQ.state.premium=!!p.premium;MQ.state.premiumPlan=p.premiumPlan||"";MQ.state.premiumTrialUntil=p.premiumTrialUntil||0;syncPlayerIdentity();MQ.updateGlobal()};
 function injectStyles(){if(document.getElementById('mq-intel-styles'))return;const s=document.createElement('style');s.id='mq-intel-styles';s.textContent=`
@@ -21,6 +21,19 @@ function dailyMission(){ensureIntel();const d=new Date().toISOString().slice(0,1
 function recordMilestone(level){ensureIntel();intel.totalLevels=Math.max(intel.totalLevels,level);intel.streakBest=Math.max(intel.streakBest,MQ.state.bestStreak||0);const exists=intel.milestones.some(m=>m.level===level);if(!exists)intel.milestones.push({level,date:new Date().toISOString(),xp:MQ.state.xp,skills:{...(MQ.state.skillStats||{})}});intel.milestones=intel.milestones.slice(-12);localStorage.setItem(INTEL_KEY,JSON.stringify(intel))}
 function recordLevel(level,game){ensureIntel();intel.totalLevels=Math.max(intel.totalLevels,level);const g=game||MQ.state.game;intel.games[g]=(intel.games[g]||0)+1;intel.streakBest=Math.max(intel.streakBest,MQ.state.bestStreak||0);if(level>=1&&level%5===0)intel.milestones=intel.milestones||[];localStorage.setItem(INTEL_KEY,JSON.stringify(intel))}
 function openProfile(){ensureIntel();const s=MQ.state,stats=s.skillStats||{};dailyMission();const account=s.account;const skillHtml=allSkills.map(k=>{const v=Number(stats[k]||0),pct=Math.min(100,v*5);return `<div class="mq-skill"><div class="mq-skill-top"><span>${skillLabels[k]}</span><b>${v}</b></div><small>${v? 'Practised through gameplay':'Not yet practised'}</small><div class="mq-bar"><span style="width:${pct}%"></span></div></div>`}).join('');const hist=(intel.milestones||[]).slice(-4).reverse().map(m=>`<div class="mq-history-card"><strong>Lv ${m.level}</strong><small>${new Date(m.date).toLocaleDateString()} • ${m.xp} XP</small></div>`).join('')||'<div class="mq-note">Your first milestone report will appear after Level 5.</div>';const overlay=document.getElementById('mq-profile-overlay');overlay.innerHTML=`<div class="mq-profile"><div class="mq-profile-head"><div><p class="eyebrow">MINDQUEST PLAYER INTELLIGENCE</p><h2>${account?account.displayName:'Guest Explorer'}</h2><p class="mq-note">${account?'Player account active on this device.':'Guest profile — account tracking begins at Level 10.'}</p></div><button class="mq-close" id="mq-profile-close">✕</button></div><div class="mq-profile-hero"><div><span class="mq-premium-chip">${s.premium?'PREMIUM ACTIVE':'CORE PATHWAY'}</span><h3>Keep building your mind.</h3><p>MindQuest tracks the skills you practise across games. These indicators describe gameplay practice; they are not IQ, clinical or academic assessments.</p></div><div class="mq-profile-stats"><div class="mq-profile-stat"><b>${s.xp}</b><span>XP</span></div><div class="mq-profile-stat"><b>${s.streak}</b><span>Current streak</span></div><div class="mq-profile-stat"><b>${intel.totalLevels||0}</b><span>Levels logged</span></div></div></div><div class="mq-section"><h3>Today's Mastery Mission</h3><div class="mq-mission"><div><strong>${intel.daily.title}</strong><div class="mq-note">${intel.daily.desc}</div></div><span>${intel.daily.done?'✓ Complete':'In progress'}</span></div></div><div class="mq-section"><h3>Skill Map</h3><div class="mq-skill-grid">${skillHtml}</div></div><div class="mq-section"><h3>Milestone History</h3><div class="mq-history">${hist}</div></div><div class="mq-section"><h3>What the indicators mean</h3><p class="mq-note">Memory and attention reflect recall and sustained focus practice. Logic and problem solving reflect pattern, reasoning and planning practice. Reaction and precision reflect timing and coordination practice. Teamwork, empathy and responsibility reflect constructive social decision practice. World knowledge and financial thinking reflect practical knowledge and quantity-based decision practice.</p></div></div>`;overlay.classList.add('open');document.getElementById('mq-profile-close').onclick=()=>overlay.classList.remove('open')}
+function consoleInsight(){
+ const s=MQ.state, st=s.skillStats||{}, entries=Object.entries(st).sort((a,b)=>Number(b[1]||0)-Number(a[1]||0));
+ const practiced=entries.filter(x=>Number(x[1]||0)>0), focus=practiced[0], emerging=entries.filter(x=>Number(x[1]||0)<Number((focus&&focus[1])||0)).slice(-1)[0];
+ const mission=dailyMission();
+ return {focus:focus?skillLabels[focus[0]]:'Start exploring',focusPoints:Number(focus?.[1]||0),emerging:emerging?skillLabels[emerging[0]]:'New skill area',levels:intel.totalLevels||0,missionDone:!!mission.done,account:!!s.account,premium:!!s.premium};
+}
+function renderIntelligenceConsole(){
+ const host=document.getElementById('mq-intelligence-console'); if(!host)return;
+ const i=consoleInsight();
+ host.innerHTML=`<div class="mq-console-head"><div><p class="eyebrow">PLAYER INTELLIGENCE</p><h3>${i.account?(safename(MQ.state.account.displayName)+"'s console"):'Your learning console'}</h3><p>MindQuest uses gameplay signals to help organise practice, not to label ability.</p></div><span class="mq-console-state">${i.premium?'PREMIUM':i.account?'PLAYER':'EXPLORE'}</span></div><div class="mq-console-grid"><div><b>${i.levels}</b><span>levels logged</span></div><div><b>${i.focusPoints}</b><span>focus practice points</span></div><div><b>${i.missionDone?'✓':'○'}</b><span>today's mission</span></div><div><b>${i.emerging}</b><span>next skill to practise</span></div></div><div class="mq-console-tip"><strong>Next suggestion</strong><span>${i.account?`Try a ${i.emerging} challenge next to broaden your practice.`:'Create a player profile when prompted to unlock persistent intelligence features.'}</span></div>`;
+}
+function safename(v){return String(v||'Player').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+window.addEventListener('mindquest:account-updated',()=>{syncPlayerIdentity();renderIntelligenceConsole();});
 function syncExperienceMode(){
  const body=document.body;if(!body)return;
  const active=document.querySelector('.screen.active');
@@ -32,11 +45,21 @@ function syncExperienceMode(){
  let badge=document.getElementById('mq-mode-badge');
  const identity=document.getElementById('player-identity');
  if(identity&&!badge){badge=document.createElement('span');badge.id='mq-mode-badge';badge.className='mq-mode-badge';identity.parentNode.insertBefore(badge,identity);}
- if(badge){badge.innerHTML=isPremium?'<i></i>PREMIUM':hasAccount?'<i></i>PLAYER':'<i></i>EXPLORE';badge.title=isPremium?'MindQuest premium experience':hasAccount?'MindQuest player experience':'MindQuest guest experience';}
+ if(badge){badge.innerHTML=isPremium?'<i></i>PREMIUM':hasAccount?'<i></i>PLAYER':'<i></i>EXPLORE';badge.title=isPremium?'MindQuest premium experience':hasAccount?'MindQuest player experience':'MindQuest guest experience';} const homeName=document.getElementById('account-home-name'),homeNote=document.getElementById('account-home-note'),homeBadge=document.getElementById('account-home-badge'); if(homeName)homeName.textContent=hasAccount?(MQ.state.account.displayName||'Player'):'Guest Explorer'; if(homeNote)homeNote.textContent=hasAccount?'Player account active on this device. Intelligence, history and personalised practice are enabled.':'Explore freely. Your player identity and long-term intelligence profile will activate when an account is created.'; if(homeBadge)homeBadge.textContent=isPremium?'PREMIUM':hasAccount?'PLAYER':'GUEST';
 }
 function syncPlayerIdentity(){const n=document.getElementById('player-identity-name');if(n)n.textContent=MQ.state.account?.displayName||'Guest';syncExperienceMode();}
 function addProfileButton(){injectStyles();let box=document.querySelector('.header-actions');if(box&&!document.getElementById('mq-profile-open')){const b=document.createElement('button');b.id='mq-profile-open';b.className='header-action profile-action';b.type='button';b.title='Player Profile';b.setAttribute('aria-label','Open player profile');b.innerHTML='<span>📊</span><small>Profile</small>';b.onclick=openProfile;box.insertBefore(b,box.firstChild)}if(!document.getElementById('mq-profile-overlay')){const d=document.createElement('div');d.id='mq-profile-overlay';d.className='mq-profile-overlay';document.body.appendChild(d)}}
-try{const age=Number(localStorage.getItem(AGE_KEY));if(Number.isInteger(age)&&age>=0&&age<MQ.ages.length)MQ.state.age=age;const a=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||'null');if(a)MQ.state.account=a;}catch{}
+function readStoredAccount(){
+  const keys=[ACCOUNT_KEY,'mindquest-account-v0','mindquest-player-account'];
+  for(const k of keys){try{const a=JSON.parse(localStorage.getItem(k)||'null');if(a&&typeof a==='object'&&a.displayName){return a}}catch{}}
+  try{
+    const all=Object.values(saved).filter(p=>p&&typeof p==='object');
+    for(const p of all){if(p.account&&p.account.displayName)return p.account}
+  }catch{}
+  return null;
+}
+function persistAccount(a){if(!a)return;try{localStorage.setItem(ACCOUNT_KEY,JSON.stringify(a));localStorage.setItem('mindquest-player-status','player');localStorage.setItem('mindquest-account-created','1')}catch{};MQ.state.account=a;syncPlayerIdentity();}
+try{const age=Number(localStorage.getItem(AGE_KEY));if(Number.isInteger(age)&&age>=0&&age<MQ.ages.length)MQ.state.age=age;const a=readStoredAccount();if(a)persistAccount(a);}catch{}
 try{const trialUntil=Number(localStorage.getItem('mindquest-premium-trial-until')||0);if(trialUntil>Date.now()){MQ.state.premium=true;MQ.state.premiumTrialUntil=trialUntil;MQ.state.premiumPlan='7-day-preview';}}catch{}
 function setView(view){try{localStorage.setItem(VIEW_KEY,view)}catch{};requestAnimationFrame(()=>requestAnimationFrame(()=>{try{window.scrollTo({top:0,left:0,behavior:'auto'})}catch{window.scrollTo(0,0)}document.documentElement.scrollTop=0;document.body.scrollTop=0;const app=document.getElementById('app');if(app)app.scrollTop=0;}))}
 function activeSavedCheckpoint(){
@@ -69,7 +92,7 @@ function restoreSavedView(){
     MQ.nextChallenge();
   }
 }
-ensureIntel();addProfileButton();syncPlayerIdentity();
+ensureIntel();addProfileButton();syncPlayerIdentity();renderIntelligenceConsole();
 const mqModeObserver=new MutationObserver(()=>syncExperienceMode());
 const mqMain=document.querySelector('main');if(mqMain)mqModeObserver.observe(mqMain,{subtree:true,attributes:true,attributeFilter:['class']});
 
@@ -101,7 +124,7 @@ MQ.levelComplete=function(){
    if(before%5===0)recordMilestone(before);
  }
 };
-setInterval(save,400);setInterval(syncPlayerIdentity,500);window.addEventListener('beforeunload',save);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save()});
+setInterval(save,700);setInterval(()=>{syncPlayerIdentity();renderIntelligenceConsole();},1200);window.addEventListener('beforeunload',save);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save()});
 function syncHomePathway(){const age=Number(MQ.state.age);document.querySelectorAll('.age-btn').forEach((b,i)=>b.classList.toggle('active',i===age));const label=document.getElementById('path-label');if(label&&MQ.ages[age])label.textContent='Ages '+MQ.ages[age].range;}
 syncHomePathway();
 const homeCard=document.querySelector('#home .card:last-of-type');
