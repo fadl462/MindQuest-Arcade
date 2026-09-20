@@ -19,7 +19,13 @@ const INFO={
  multitap:["Multi-Target Rush","Tap the targets in the order they appear.","React to each target in sequence without tapping a decoy."],
  sequence:["Reaction Sequence","Watch the short sequence, then repeat it.","Tap the symbols in exactly the order shown."],
  double:["Double Target","React to two targets in the correct order.","Tap the first target, then the second target without tapping a decoy."],
- delay:["Delayed Tap","Wait for the signal, then respond during a short timing window.","Do not tap during the countdown. Tap only when the signal appears."]
+ delay:["Delayed Tap","Wait for the signal, then respond during a short timing window.","Do not tap during the countdown. Tap only when the signal appears."],
+ rhythm:["Rhythm Tap","Watch the visual rhythm and reproduce it accurately.","Tap the symbols in the same rhythm and order."],
+ precision:["Precision Tap","Wait for a target, then tap it accurately before the timer expires.","Do not tap early. Hit the target once it appears."],
+ alternate:["Alternating Targets","Switch between the left and right targets in the required order.","Tap the highlighted side, then switch sides each time."],
+ combo:["Combo Rush","Remember a short symbol sequence and reproduce it quickly.","Tap every symbol in the exact order shown."],
+ mirror:["Mirror Signal","Respond with the opposite direction shown by the signal.","If the signal points one way, tap the opposite direction."],
+ chase:["Moving Target Chase","Follow a moving target and hit it repeatedly before it moves again.","Tap each target as it appears until the required number of hits is reached."]
 };
 function mirror(){const dirs=[['←','RIGHT'],['→','LEFT'],['↑','DOWN'],['↓','UP']];const d=dirs[(S.level+activity()+S.age)%dirs.length],token=begin();$('game-stage').innerHTML=`<div class="reflex-stage">${head('mirror')}<div class="reflex-target">${d[0]}</div><div class="reflex-controls"><button class="reflex-key" data-v="LEFT">←</button><button class="reflex-key" data-v="RIGHT">→</button><button class="reflex-key" data-v="UP">↑</button><button class="reflex-key" data-v="DOWN">↓</button></div></div>`;S.active=true;S.timer=setTimeout(()=>fail(),responseWindow());document.querySelectorAll('.reflex-key').forEach(b=>b.onclick=()=>{if(!S.active)return;b.dataset.v===d[1]?complete():fail()})}
 function chase(){
@@ -36,10 +42,10 @@ function responseWindow(mult=1){return clamp(Math.round((1750-difficulty()*42)*a
 function signalDelay(){return clamp(Math.round((980-difficulty()*18)*ageFactor()),330,980)}
 function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">REFLEX ARENA</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
 function begin(){S.active=false;clearTimeout(S.timer);S.reflexToken=(S.reflexToken||0)+1;return S.reflexToken}
-function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four reflex challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next challenge…`;if(last){S.reflexActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.reflexActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
+function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four reflex challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next challenge…`;if(last){S.reflexActivity=0;S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}else{S.reflexActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){
- const type=["target","color","avoid","sequence","go","double","multitap","switch","delay","rhythm","precision","alternate","combo"][(S.level-1+activity())%12],i=INFO[type];S.active=false;clearTimeout(S.timer);
+ const types=["target","color","avoid","sequence","go","double","multitap","switch","delay","rhythm","precision","alternate","combo"];const type=types[(S.level-1+activity())%types.length],i=INFO[type];S.active=false;clearTimeout(S.timer);
  $("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">⚡</div><span class="ui-skill">PSYCHOMOTOR</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>⚡ Faster as you advance</span><span>✓ Four activities per level</span></div><button id="reflex-start" class="primary-btn ui-start">Start Activity →</button></div>`;
  $("reflex-start").onclick=()=>runActivity(type);
 }

@@ -52,7 +52,7 @@ function begin(type,html,choices,correct){
   b.addEventListener('click',()=>{if(!S.active)return;if(c.value===correct){b.classList.add('good');activityComplete()}else{b.classList.add('bad');S.detectiveActivity=0;MQ.levelFailed();}},{once:true});box.appendChild(b);});
 }
 function activityComplete(){if(!S.active)return;S.active=false;S.detectiveCorrect=(S.detectiveCorrect||0)+1;
- if(S.detectiveActivity===3){S.detectiveActivity=0;$('game-message').textContent='✓ Four investigations solved!';S.timer=setTimeout(()=>{MQ.levelComplete()},650)}
+ if(S.detectiveActivity===3){S.detectiveActivity=0;$('game-message').textContent='✓ Four investigations solved!';S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}
  else{S.detectiveActivity++;$('game-message').textContent='✓ Investigation solved. Loading the next case…';S.timer=setTimeout(()=>{$('game-message').textContent='';MQ.nextChallenge()},650)}
 }
 function sequence(){
@@ -115,15 +115,6 @@ function compare(){
  begin('compare',`<div class="detective-prompt"><div class="logic-sequence"><span>${x}</span><b>?</b><span>${y}</span></div><p>Is the left value greater, smaller or equal to the right value?</p></div>`,chooseObjs(correct,['GREATER','SMALLER','EQUAL'].filter(v=>v!==correct)),correct);
 }
 
-function estimate(){
- const l=S.level,a=age();
- const base=a===0?5+l%4:a===1?10+l*2:20+l*3;
- const exact=base+(l%3===0?1:0);
- const rounded=Math.round(exact/5)*5;
- const correct=rounded;
- const others=[correct-5,correct+5,correct+10].filter(x=>x>0);
- begin('estimate',`<div class=\"detective-prompt\"><div class=\"logic-sequence\"><span>About ${correct-2}</span><b>→</b><span>Closest estimate?</span></div><p>Which value is the closest sensible estimate?</p></div>`,chooseObjs(correct,others),String(correct));
-}
 function classify(){
  const sets=[
   ['Which belongs with the animals?',['🐶','🐱','🐰','🍎'],'🐰'],

@@ -87,13 +87,14 @@ const INFO={
  leadership:["Leadership Check","Match tasks to people and help a team use its strengths.","Good delegation considers skills, fairness and the shared goal."],
 actionSequence:["Action Sequence","Choose the best order for completing a team task.","Put the actions in a sensible sequence before the team begins."],
 tradeoff:["Team Trade-off","Choose a fair solution when the team has competing needs.","Balance fairness, time and the needs of the whole group."],
-activeListening:["Active Listening","Choose the response that shows you understood before reacting.","Listen, reflect the key point, then respond to the issue."]
+activeListening:["Active Listening","Choose the response that shows you understood before reacting.","Listen, reflect the key point, then respond to the issue."],
+perspective:["Perspective Check","Consider how a teammate may experience a situation before responding.","Think about the other person’s viewpoint, then choose the most considerate response."]
 };
 function activity(){return Number.isInteger(S.teamActivity)?S.teamActivity:0}
 function levelIndex(){return (S.level-1)%20}
 function ageBand(){return AGE[S.age]||AGE[0]}
 function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">TEAM QUEST • ${ageBand()}</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
-function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four team challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next team challenge…`;if(last){S.teamActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.teamActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
+function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four team challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next team challenge…`;if(last){S.teamActivity=0;S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}else{S.teamActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function ageText(text){
  if(S.age<=1)return text.replace(/deadline/g,"time").replace(/trade-offs/g,"differences").replace(/clarification/g,"help");
@@ -156,19 +157,6 @@ function actionSequence(){
 }
 function communication(){const qs=[['A teammate is late. What is the clearest message?','I am waiting. Are you able to arrive by 3 PM?'],['A task is unclear. What should you say?','Could you explain which part I should complete first?'],['A teammate made a mistake. What is constructive?','Let us check what happened and fix it together.'],['You need help. What is clear?','I have finished step one. Could you help me with step two?'],['Plans changed. What should you communicate?','The plan changed. Here is the new time and what we need to do.']];const q=qs[(S.level+activity()+S.age)%qs.length];const distract=['You always do this wrong.','Whatever, just fix it.','Nobody told me anything.'];choice(head('communication'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],...distract],q[1])}
 
-function responsibility(){
- const BANK=[
-  ['You promised to bring the team materials, but forgot. What is responsible?', ['Tell the team honestly and help find another solution','Hide the mistake','Blame someone else']],
-  ['You notice the shared workspace is messy after the activity. What should you do?', ['Help tidy it before leaving','Leave it for someone else','Pretend you did not notice']],
-  ['You cannot finish your assigned part on time. What should you do?', ['Tell the team early and discuss the next step','Say nothing until the deadline','Delete the unfinished work']],
-  ['A teammate trusts you with an important task. What shows responsibility?', ['Complete it carefully and report back','Ignore it','Give it away without telling them']],
-  ['You make an error in the team report. What is best?', ['Point it out and help correct it','Hide it','Change someone else’s work to cover it']],
-  ['The group rule applies to everyone. What should you do?', ['Follow it even when it is inconvenient','Break it secretly','Ask others to break it too']]
- ];
- const q=BANK[(S.level+activity()+S.age)%BANK.length];
- $('game-stage').innerHTML=`<div class=\"team-stage\">${head('responsibility')}<div class=\"team-question\">${ageText(q[0])}</div><div id=\"team-options\" class=\"team-options\"></div></div>`;
- const box=$('team-options');S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement('button');b.className='team-option';b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});
-}
 function choice(){
  const q=BANK[levelIndex()];$("game-stage").innerHTML=`<div class="team-stage">${head("choice")}<div class="team-question">${ageText(q[0])}</div><div id="team-options" class="team-options"></div></div>`;
  const box=$("team-options");S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});

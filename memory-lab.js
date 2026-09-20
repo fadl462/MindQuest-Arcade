@@ -65,7 +65,7 @@ function complete(){
  if(!S.active)return;S.active=false;clearTimeout(S.timer);
  const last=(S.memoryActivity||0)===3;
  $('game-message').textContent=last?'✓ Four memory activities complete!':`✓ Activity ${(S.memoryActivity||0)+1} complete. Loading the next activity…`;
- if(last)S.timer=setTimeout(()=>{S.memoryActivity=0;MQ.levelComplete()},650);
+ if(last)S.timer=setTimeout(()=>{S.memoryActivity=0;MQ.state.active=true;MQ.levelComplete()},650);
  else{S.memoryActivity++;S.timer=setTimeout(()=>{$('game-message').textContent='';MQ.nextChallenge()},650)}
 }
 function visual(){begin((sp,t)=>{

@@ -55,13 +55,15 @@ const INFO={
  capital:["Capital Challenge","Match a country with its capital city.","Use the country clue and choose the correct capital."],
 compass:["Compass Challenge","Use compass directions to navigate from one place to another.","Follow the directions carefully and choose the destination."],
 distance:["Distance Order","Compare travel distances and identify the shortest route.","Use the given distances rather than guessing from the place names."],
-timeZone:["Time Zone Explorer","Use broad world time-zone clues to compare locations.","For this challenge, use the simplified UTC offset shown in the question."]
+timeZone:["Time Zone Explorer","Use broad world time-zone clues to compare locations.","For this challenge, use the simplified UTC offset shown in the question."],
+hemisphere:["Hemisphere Challenge","Identify whether a location is north or south of the Equator.","Use the country’s position relative to the Equator."],
+coordinates:["Coordinate Explorer","Use a simple grid coordinate to locate a place.","Read the letter and number together, then choose the matching place."]
 };
 function activity(){return Number.isInteger(S.worldActivity)?S.worldActivity:0}
 function levelIndex(){return (S.level-1)%20}
 function ageBand(){return AGE[S.age]||AGE[0]}
 function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">WORLD EXPLORER • ${ageBand()}</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
-function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four exploration challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next exploration…`;if(last){S.worldActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.worldActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
+function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four exploration challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next exploration…`;if(last){S.worldActivity=0;S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}else{S.worldActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function ageText(t){if(S.age===0)return t.replace(/continent/g,"place area").replace(/capital/g,"main city").replace(/landmark/g,"famous place");return t}
 function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🌍</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🌍 Explore places</span><span>✓ Four activities per level</span></div><button id="world-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("world-start").onclick=()=>runActivity(type)}

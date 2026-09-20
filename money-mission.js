@@ -16,7 +16,8 @@ const INFO={
  compareShop:["Smart Price Compare","Compare two products using both price and quantity.","Check the total price and how many items you receive before deciding."],
 budgetMax:["Budget Builder","Choose the basket that gives the most value without exceeding the budget.","Check the total cost first, then compare what each basket gives you."],
 exactChange:["Exact Change","Select the coins and notes that make the exact change.","Use the fewest pieces you can while reaching the exact amount."],
-basketBuild:["Basket Builder","Build a useful basket while meeting the item requirement and budget.","Select the required number of items without exceeding the budget."]
+basketBuild:["Basket Builder","Build a useful basket while meeting the item requirement and budget.","Select the required number of items without exceeding the budget."],
+priceCeiling:["Price Ceiling","Choose the highest price you can afford without exceeding your spending limit.","Compare each price with the limit and select the highest affordable one."]
 };
 const VALUES=[1,2,5,10,20,50,100];
 function activity(){return Number.isInteger(S.moneyActivity)?S.moneyActivity:0}
@@ -65,14 +66,6 @@ function budget(){const maxBudget=S.level<7?10:S.level<14?25:50;const budget=Mat
  let distract=total+2;if(distract<=budget)distract=total+1;
  const choices=[{label:`BUY ALL • ${money(total)}`,correct:true},{label:`BUY ALL • ${money(distract)}`,correct:false}];
  $('game-stage').innerHTML=`<div class="team-stage money-stage">${head('budget',`Choose the option that stays within a budget of ${money(budget)}.`)}<div class="money-basket">${prices.map(v=>`<span>Item ${money(v)}</span>`).join('')}</div><div class="team-options">${shuffle(choices).map(x=>`<button class="team-option" data-correct="${x.correct}">${x.label}</button>`).join('')}</div></div>`;S.active=true;document.querySelectorAll('.money-stage [data-correct]').forEach(b=>b.onclick=()=>b.dataset.correct==='true'?complete():fail())}
-function unit(){
- const packs=[
-  [3,15,5,4], [4,20,5,6], [5,25,6,4], [6,30,5,7], [8,40,5,9], [10,50,5,12]
- ];
- const q=packs[(levelIndex()+activity()+S.age)%packs.length],a=q[0],totalA=q[1],b=q[2],totalB=q[3]*b;
- const unitA=totalA/a,unitB=totalB/b,correct=unitA<=unitB?'OPTION A':'OPTION B';
- choice(head('unit'),`Which deal has the lower price per item? <div class=\"money-compare\"><b>Option A: ${a} items for ${money(totalA)}</b><span>vs</span><b>Option B: ${b} items for ${money(totalB)}</b></div>`,['OPTION A','OPTION B'],correct);
-}
 function discount(){
  const prices=[10,20,30,40,50,60,80,100],price=prices[(S.level+activity()+S.age)%prices.length];
  const rates=S.level<7?[10,20]:S.level<14?[10,20,25]:[10,20,25,50];
@@ -113,7 +106,7 @@ function compareShop(){
 }
 
 function priceCeiling(){const limit=[12,18,25,35,50][(S.level+activity()+S.age)%5]+(S.level>12?10:0);const prices=[limit-6,limit-3,limit-1,limit+4];const correct=Math.max(...prices.filter(x=>x<=limit));choice(head('priceCeiling'),`Your spending limit is <b>${money(limit)}</b>. Which price is the highest you can afford?`,prices.map(money),money(correct))}
-function finishLevel(){ if(!S.active)return; S.active=false; MQ.levelComplete(); }
+function finishLevel(){ S.active=false; MQ.state.active=true; MQ.levelComplete(); }
 
 window.MQMoneyMission={run:instruction};
 
