@@ -26,7 +26,25 @@ try{const age=Number(localStorage.getItem(AGE_KEY));if(Number.isInteger(age)&&ag
 try{localStorage.setItem(VIEW_KEY,'home')}catch{}
 ensureIntel();addProfileButton();
 const originalComplete=MQ.levelComplete;
-MQ.levelComplete=function(){const before=MQ.state.level;const game=MQ.state.game;originalComplete();if(before!==MQ.state.level||before===20){recordLevel(before,game);dailyMission().done=true;localStorage.setItem(INTEL_KEY,JSON.stringify(intel));if(before%5===0)recordMilestone(before)}};
+MQ.levelComplete=function(){
+ const wasActive=!!MQ.state.active;
+ /*
+    Some game modules deliberately set active=false as soon as the final
+    activity is solved, then call MQ.levelComplete() after a short transition.
+    The original core guard rejected that legitimate completion and left the
+    player stuck on Activity 4/4. Treat a direct level-complete call as a
+    trusted transition, while keeping normal activity input disabled.
+ */
+ if(!wasActive)MQ.state.active=true;
+ const before=MQ.state.level,game=MQ.state.game;
+ originalComplete();
+ if(before!==MQ.state.level||before===20){
+   recordLevel(before,game);
+   dailyMission().done=true;
+   localStorage.setItem(INTEL_KEY,JSON.stringify(intel));
+   if(before%5===0)recordMilestone(before);
+ }
+};
 const originalShowMilestone=MQ.showMilestone;MQ.showMilestone=function(level){recordMilestone(level);originalShowMilestone(level)};
 setInterval(save,400);window.addEventListener('beforeunload',save);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save()});
 function syncHomePathway(){const age=Number(MQ.state.age);document.querySelectorAll('.age-btn').forEach((b,i)=>b.classList.toggle('active',i===age));const label=document.getElementById('path-label');if(label&&MQ.ages[age])label.textContent='Ages '+MQ.ages[age].range;}
