@@ -1,222 +1,89 @@
 (() => {
-"use strict";
+'use strict';
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
+const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const plans=[
- ['sequence','odd','pattern','analogy'],['sequence','odd','order','math'],['pattern','sequence','odd','rule'],['analogy','math','order','sequence'],
- ['clue','pattern','analogy','odd'],['rule','sequence','math','clue'],['order','analogy','pattern','deduction'],['math','clue','sequence','rule'],
- ['deduction','pattern','order','analogy'],['sequence','rule','clue','math'],['visual','odd','deduction','order'],['pattern','math','analogy','clue'],
- ['rule','deduction','sequence','visual'],['analogy','order','math','pattern'],['clue','rule','deduction','sequence'],['visual','math','order','analogy'],
- ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','elimination'],
- ['estimate','classify','elimination','logicGrid'],['classify','estimate','constraint','probability'],['chain','data','ranking','constraint']
+ ['sequence','odd','pattern','analogy'],
+ ['math','clue','order','rule'],
+ ['visual','compare','classification','deduction'],
+ ['sequence','analogy','constraint','ranking'],
+ ['odd','math','data','elimination'],
+ ['pattern','clue','probability','order'],
+ ['rule','visual','logicGrid','estimate'],
+ ['compare','deduction','chain','classification'],
+ ['sequence','ranking','constraint','data'],
+ ['analogy','math','elimination','probability'],
+ ['odd','visual','logicGrid','rule'],
+ ['clue','order','estimate','compare'],
+ ['deduction','pattern','data','constraint'],
+ ['sequence','classification','ranking','chain'],
+ ['math','visual','probability','elimination'],
+ ['analogy','rule','logicGrid','data'],
+ ['compare','deduction','constraint','estimate'],
+ ['sequence','odd','classification','ranking'],
+ ['clue','chain','probability','logicGrid'],
+ ['rule','math','visual','elimination']
 ];
 const info={
- sequence:['Sequence Detective','Find what comes next in the sequence.','Look for the change between each item, then choose the item that continues the rule.'],
- odd:['Odd One Out','Find the item that does not belong.','Compare the choices carefully. Three follow a common rule; one does not.'],
- pattern:['Pattern Detective','Discover the hidden repeating or growing pattern.','Study the pattern, identify its rule, then select the missing part.'],
- analogy:['Analogy Detective','Work out the relationship between two things.','Use the first relationship as your clue for the second pair.'],
- math:['Number Detective','Use the number rule to find the answer.','Look for addition, subtraction, multiplication or a repeating number rule.'],
- clue:['Clue Detective','Use several clues to identify the correct answer.','Read every clue before choosing. Each clue narrows the possibilities.'],
- order:['Order Detective','Put events or objects into the correct order.','Think about what must happen first, next and last.'],
- rule:['Rule Detective','Discover which rule the group follows.','Test the choices against the rule and select the one that fits.'],
- visual:['Shape Detective','Find the shape that completes the visual rule.','Compare sides, symbols, position or rotation to discover the rule.'],
- compare:['Comparison Detective','Compare two quantities and identify the correct relationship.','Look carefully at both sides before deciding which is greater, smaller or equal.'],
- estimate:['Estimate Detective','Estimate a quantity using the information given.','Use sensible rounding or comparison to choose the closest answer.'],
- classification:['Classification Detective','Identify which category or rule best describes the item.','Look for the defining property shared by the correct group.'],
- deduction:['Logic Detective','Combine clues to make one logical conclusion.','Use all the information. Do not choose an answer that conflicts with a clue.'],
- ranking:['Ranking Detective','Arrange quantities from smallest to largest using the clues given.','Compare every value carefully, then choose the correct order.'],
- constraint:['Constraint Detective','Use several rules at the same time to find the only option that fits.','Check every condition before choosing. One condition alone is not enough.'],
- probability:['Probability Detective','Compare simple chances and choose the outcome that is most likely.','Count the possible outcomes and compare how often each can occur.'],
- estimate:['Estimate Detective','Choose the closest sensible estimate.','Use the scale and information given. An estimate should be close, not exact.'],
- classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.'],
- data:['Data Detective','Read a small table and identify the correct comparison.','Compare the values in the table before choosing the answer.'],
-chain:['Multi-Clue Chain','Solve two linked clues before choosing the final answer.','Use the first clue to narrow the options, then use the second clue to confirm the answer.'],
-logicGrid:['Logic Grid Detective','Use two clues to match people with objects or places.','Cross-check both clues. Only one pairing satisfies them both.'],
- elimination:['Elimination Detective','Cross out options that violate the clues, then choose the only one left.','Check each clue against every option before deciding.']
+ sequence:['Sequence Detective','Find what comes next.','Look for the change between each item and continue the same rule.'],
+ odd:['Odd One Out','Find the item that does not belong.','Compare the choices and identify the one that breaks the shared rule.'],
+ pattern:['Pattern Detective','Complete the visual pattern.','Look for repetition, movement or growth, then choose what comes next.'],
+ analogy:['Analogy Detective','Complete the relationship.','Use the first pair to understand how the second pair should work.'],
+ math:['Number Detective','Continue the number rule.','Identify the operation or pattern and apply it once more.'],
+ clue:['Clue Detective','Solve the case from the clues.','Use every clue together. Each clue should support the same answer.'],
+ order:['Order Detective','Choose the logical order.','Think about what must happen first, next and last.'],
+ rule:['Rule Detective','Find the number that follows the rule.','Test the rule against the examples before choosing.'],
+ visual:['Shape Detective','Complete the visual sequence.','Compare the number, shape or position of symbols.'],
+ compare:['Comparison Detective','Compare two values.','Decide whether the left value is greater, smaller or equal.'],
+ classification:['Classification Detective','Identify the item that belongs.','Find the defining property shared by the target category.'],
+ deduction:['Logic Detective','Make one logical conclusion.','Use all the statements and reject answers that conflict with them.'],
+ ranking:['Ranking Detective','Arrange values from smallest to largest.','Compare each value carefully before choosing the order.'],
+ constraint:['Constraint Detective','Find the only option that satisfies every rule.','Check every condition, not just one.'],
+ probability:['Probability Detective','Compare simple chances.','Count the possible outcomes and choose the most likely result.'],
+ data:['Data Detective','Read the data and answer.','Compare the values shown in the table before choosing.'],
+ chain:['Multi-Clue Chain','Solve linked clues.','Use the first clue to narrow the field and the second to confirm.'],
+ logicGrid:['Logic Grid Detective','Match the correct pair.','Use both clues together to find the only valid pairing.'],
+ elimination:['Elimination Detective','Eliminate impossible options.','Cross out every choice that breaks any clue.'],
+ estimate:['Estimate Detective','Choose the closest sensible estimate.','Round to a useful scale rather than trying to be exact.']
 };
-function age(){return S.age}
-function difficulty(){return S.level + age()*.7}
-function choose(correct,others){return shuffle([String(correct),...others.map(String)]);}
-function renderInstruction(type){
- const x=info[type]; const level=S.level; const ageText=['3–5','6–8','9–11','12–14','15–18'][age()];
- S.active=false;clearTimeout(S.timer);
- $('game-stage').innerHTML=`<div class="detective-instruction"><div class="ui-icon">🔎</div><span class="ui-skill">COGNITIVE • ${ageText}</span><div class="activity-chip">Activity ${S.detectiveActivity+1}/4</div><h2>${x[0]}</h2><p class="ui-purpose">${x[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${x[2]}</p></div><div class="ui-meta"><span>🧩 Level ${level} reasoning</span><span>✓ One correct answer</span></div><button id="detective-start" class="primary-btn ui-start" type="button">Start Activity →</button></div>`;
- $('detective-start').addEventListener('click',()=>run(type),{once:true});
-}
+function age(){return Number(S.age)||0}
+function level(){return Number(S.level)||1}
 function begin(type,html,choices,correct){
- const safeChoices=(choices||[]).map(c=>{
-  if(c&&typeof c==='object'&&'value' in c) return {value:String(c.value),label:c.label??String(c.value)};
-  const value=String(c);
-  return {value,label:`<strong>${value}</strong>`};
- });
  const expected=String(correct);
- const hasStructuredPrompt=/<(?:div|section)[^>]*class=["\'][^"\']*(?:detective-prompt|clue-box|rule-box|order-question|deduction-box|visual-rule|analogy|odd-grid|shape-sequence)[^"\']*["\']/i.test(html);
- const task=hasStructuredPrompt?html:`<div class="detective-prompt detective-task-card"><span class="detective-task-label">YOUR TASK</span><div class="detective-task-content">${html}</div></div>`;
- $('game-stage').innerHTML=`<div class="detective-stage"><div class="detective-title"><span>${info[type][0]}</span><span class="activity-chip">Activity ${S.detectiveActivity+1}/4</span></div><div class="detective-task-area">${task}</div><div class="detective-answer-label">Choose your answer</div><div id="detective-choices" class="detective-choices"></div></div>`;
+ const normalized=(choices||[]).map(c=>typeof c==='object'&&c!==null?{value:String(c.value),label:String(c.label??c.value)}:{value:String(c),label:`<strong>${String(c)}</strong>`});
+ const unique=[];const seen=new Set();for(const c of normalized){if(!seen.has(c.value)){seen.add(c.value);unique.push(c)}}
+ if(!unique.some(c=>c.value===expected)) unique.unshift({value:expected,label:`<strong>${expected}</strong>`});
+ const task=`<div class="detective-prompt detective-task-card"><span class="detective-task-label">YOUR TASK</span>${html}</div>`;
+ $('game-stage').innerHTML=`<div class="detective-stage"><div class="detective-title"><div><span class="ui-skill">COGNITIVE • ${AGE[age()]}</span><h2>${info[type][0]}</h2></div><span class="activity-chip">Activity ${(S.detectiveActivity||0)+1}/4</span></div><div class="detective-task-area">${task}</div><div class="detective-answer-label">CHOOSE YOUR ANSWER</div><div id="detective-choices" class="detective-choices" role="group" aria-label="Answer choices"></div></div>`;
  const box=$('detective-choices');S.active=true;
- shuffle(safeChoices).forEach(c=>{const b=document.createElement('button');b.type='button';b.className='detective-choice';b.innerHTML=c.label;
-  b.addEventListener('click',()=>{if(!S.active)return;if(c.value===expected){b.classList.add('good');activityComplete()}else{b.classList.add('bad');S.detectiveActivity=0;MQ.levelFailed();}},{once:true});box.appendChild(b);});
+ shuffle(unique).forEach(c=>{const b=document.createElement('button');b.type='button';b.className='detective-choice';b.innerHTML=c.label;b.addEventListener('click',()=>{if(!S.active)return;if(c.value===expected){b.classList.add('good');complete()}else{b.classList.add('bad');S.active=false;MQ.levelFailed()}},{once:true});box.appendChild(b)});
 }
-function activityComplete(){if(!S.active)return;S.active=false;S.detectiveCorrect=(S.detectiveCorrect||0)+1;
- if(S.detectiveActivity===3){S.detectiveActivity=0;$('game-message').textContent='✓ Four investigations solved!';S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}
- else{S.detectiveActivity++;$('game-message').textContent='✓ Investigation solved. Loading the next case…';S.timer=setTimeout(()=>{$('game-message').textContent='';MQ.nextChallenge()},650)}
-}
-function sequence(){
- const l=S.level,a=age();let seq,correct,others;
- if(a===0){const step= l<8?1:2;const start=1+(l%3);seq=[start,start+step,start+step*2,'?'];correct=start+step*3;others=[correct+1,correct-1,correct+step+1]}
- else if(l<7){const start=2+(l%4),step=1+(l%3);seq=[start,start+step,start+2*step,'?'];correct=start+3*step;others=[correct+1,correct-1,correct+step]}
- else if(l<14){const start=3+(l%5),step=2+(l%4);seq=[start,start+step,start+2*step,start+3*step,'?'];correct=start+4*step;others=[correct+1,correct-step,correct+step*2]}
- else{const base=2+(l%4);seq=[base,base*2,base*3,base*4,'?'];correct=base*5;others=[correct-1,base*6,correct+base]}
- begin('sequence',`<div class="detective-prompt"><div class="logic-sequence">${seq.map(x=>`<span>${x}</span>`).join('<b>→</b>')}</div><p>What comes next?</p></div>`,chooseObjs(correct,others),String(correct));
-}
-function chooseObjs(correct,others){return choose(correct,others).map(v=>({value:v,label:`<strong>${v}</strong>`}))}
-function odd(){
- const sets=[['🐶','🐱','🐰','🍎'],['🔵','🟢','🟡','🔺'],['2','4','6','9'],['Monday','Tuesday','March','Wednesday'],['triangle','square','circle','January']];
- const idx=Math.min(sets.length-1,Math.floor((S.level-1)/4));let arr=[...sets[idx]];
- if(S.level>=9)arr=['12','18','24','25']; if(S.level>=15)arr=['14','21','28','32'];
- const correct=arr[arr.length-1];begin('odd',`<div class="detective-prompt"><h3>Which one does not belong?</h3><div class="odd-grid">${arr.map(x=>`<span>${x}</span>`).join('')}</div></div>`,arr.map(x=>({value:x,label:`<strong>${x}</strong>`})),correct);
-}
-function pattern(){
- const shapes=['●','■','▲','◆','★'];const step=S.level%3+1;const arr=[];for(let i=0;i<4;i++)arr.push(shapes[(i*step)%shapes.length]);const correct=shapes[(4*step)%shapes.length];
- const others=shuffle(shapes.filter(x=>x!==correct)).slice(0,3);begin('pattern',`<div class="detective-prompt"><div class="shape-sequence">${arr.map(x=>`<span>${x}</span>`).join('')}<span class="missing-box">?</span></div><p>Which symbol completes the pattern?</p></div>`,chooseObjs(correct,others),correct);
-}
-function analogy(){
- const sets=S.level<8?[['Bird','Fly','Fish','Swim'],['Hand','Glove','Foot','Shoe'],['Cup','Drink','Plate','Eat']]:S.level<15?[['Seed','Plant','Egg','Chick'],['Book','Read','Song','Listen'],['Teacher','School','Doctor','Hospital']]:[['Thermometer','Temperature','Clock','Time'],['Compass','Direction','Scale','Distance'],['Editor','Article','Director','Film']];
- const [a,b,c,d]=sets[(S.level-1)%sets.length];begin('analogy',`<div class="analogy"><div>${a} <b>→</b> ${b}</div><div>${c} <b>→</b> ?</div></div>`,[d,'Grow','Read','Measure'].filter((x,i,a)=>a.indexOf(x)===i).slice(0,4).map(x=>({value:x,label:`<strong>${x}</strong>`})),d);
-}
-function math(){
- const l=S.level,a=age();let seq,correct,others;
- if(a===0){const start=2+l%3;seq=[start,start+2,start+4,'?'];correct=start+6;others=[correct+1,correct-2,correct+2]}
- else if(l<8){const start=3+l%4;seq=[start,start*2,start*2+2,'?'];correct=start*2+4;others=[correct+1,correct+2,start*3]}
- else if(l<15){const start=2+l%3;seq=[start,start+3,start+6,start+9,'?'];correct=start+12;others=[correct-3,correct+3,correct*2]}
- else{const start=2+l%3;seq=[start,start*2,start*4,start*8,'?'];correct=start*16;others=[correct-2,start*12,correct+4]}
- begin('math',`<div class="detective-prompt"><div class="logic-sequence">${seq.map(x=>`<span>${x}</span>`).join('<b>→</b>')}</div><p>Find the number that follows the rule.</p></div>`,chooseObjs(correct,others),String(correct));
-}
-function clue(){
- const cases=S.level<8?[['The animal is small.','It can fly.','It has feathers.'],['The object is round.','You can kick it.','It is used in a game.']]:S.level<15?[['It is larger than a dog.','It lives in water.','It has fins.'],['It is used at school.','It contains pages.','You can read it.']]:[['It measures temperature.','It is not a clock.','It is used when checking heat.'],['It shows direction.','It has a needle.','It helps travellers navigate.']];
- const answers=S.level<8?['Bird','Ball','Fish','Book']:(S.level<15?['Thermometer','Book','Compass','Thermometer']:['Thermometer','Compass','Book','Thermometer']);const correct=answers[(S.level-1)%answers.length];
- begin('clue',`<div class="clue-box">${cases[(S.level-1)%cases.length].map((x,i)=>`<div><b>CLUE ${i+1}</b>${x}</div>`).join('')}</div><p>What is being described?</p>`,answers.map(x=>({value:x,label:`<strong>${x}</strong>`})),correct);
-}
-function order(){
- const sets=S.level<8?[['Wake up','Brush teeth','Eat breakfast','Go to school'],['Plant seed','Water it','It grows','Pick the fruit']]:S.level<15?[['Plan','Collect materials','Build','Test'],['Choose topic','Research','Write','Review']]:[['Identify problem','Gather evidence','Test explanation','Draw conclusion'],['Set goal','Plan actions','Execute plan','Evaluate result']];
- const s=sets[(S.level-1)%sets.length];const correct=s.join(' → ');begin('order',`<div class="order-question"><p>Which order makes the most sense?</p><div class="order-sequence">${s.map((x,i)=>`<span>${i+1}. ${x}</span>`).join('')}</div></div>`,[s.join(' → '),[...s].reverse().join(' → '),[s[1],s[0],s[2],s[3]].join(' → '),[s[0],s[2],s[1],s[3]].join(' → ')].map(x=>({value:x,label:`<span>${x}</span>`})),correct);
-}
-function rule(){
- const l=S.level;let group,correct,others;
- if(l<8){group=['2','4','6','8'];correct='10';others=['9','11','12']}
- else if(l<15){group=['3','6','9','12'];correct='15';others=['14','16','18']}
- else{group=['5','10','20','40'];correct='80';others=['45','60','70']}
- begin('rule',`<div class="rule-box"><p>These numbers follow a rule:</p><div>${group.map(x=>`<span>${x}</span>`).join('')}</div><p>Which number follows the same rule?</p></div>`,chooseObjs(correct,others),correct);
-}
-function visual(){
- const seq=['●','●●','●●●','?'];const correct='●●●●';const others=['●●','▲▲▲▲','■■'];begin('visual',`<div class="visual-rule">${seq.map(x=>`<span>${x}</span>`).join('<b>→</b>')}</div><p>What comes next?</p>`,chooseObjs(correct,others),correct);
-}
-function compare(){
- const l=S.level,a=age();let x,y;
- if(a===0){x=1+(l%5);y=x+(l%2?1:0)}
- else if(l<8){x=3+(l%7);y=x+((l%3)-1)}
- else if(l<15){x=8+(l*2)%20;y=5+(l*3)%24}
- else{x=12+(l*3)%50;y=10+(l*5)%55}
- const correct=x===y?'EQUAL':x>y?'GREATER':'SMALLER';
- begin('compare',`<div class="detective-prompt"><div class="logic-sequence"><span>${x}</span><b>?</b><span>${y}</span></div><p>Is the left value greater, smaller or equal to the right value?</p></div>`,chooseObjs(correct,['GREATER','SMALLER','EQUAL'].filter(v=>v!==correct)),correct);
-}
-
-function classify(){
- const sets=[
-  ['Which belongs with the animals?',['🐶','🐱','🐰','🍎'],'🐰'],
-  ['Which is a tool?',['🔨','🍌','🐟','🌈'],'🔨'],
-  ['Which is a source of energy?',['☀️','🪨','📚','🧸'],'☀️'],
-  ['Which is a renewable resource?',['Sunlight','Coal','Plastic','Petrol'],'Sunlight'],
-  ['Which is a communication method?',['Email','Hammer','Ruler','Spoon'],'Email'],
-  ['Which belongs in a database?',['Record','Banana','Shoe','Cloud'],'Record']
- ];
- const q=sets[(S.level+age())%sets.length];
- begin('classify',`<div class=\"detective-prompt\"><h3>${q[0]}</h3><p>Choose the item that fits the category.</p></div>`,q[1].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[2]);
-}
-function estimate(){
- const l=S.level,a=age(),base=18+(l*7)+(a*5),step=l<8?10:l<15?25:50;
- const value=Math.round(base/step)*step,others=[value-step,value+step,value+step*2].filter(x=>x>0);
- begin('estimate',`<div class="detective-prompt"><div class="logic-sequence"><span>Estimate</span><b>≈</b><span>${base}</span></div><p>Which value is the closest sensible estimate?</p></div>`,chooseObjs(value,others),String(value));
-}
-function classification(){
- const sets=[['Which belongs with fruits?',['Apple','Carrot','Potato','Onion'],'Apple'],['Which belongs with vehicles?',['Bus','Chair','Cup','Book'],'Bus'],['Which is a renewable energy source?',['Sunlight','Plastic','Glass','Concrete'],'Sunlight'],['Which is a geometric shape?',['Triangle','River','Cloud','Forest'],'Triangle'],['Which is used for measuring time?',['Clock','Ruler','Compass','Scale'],'Clock']];
- const q=sets[(S.level+S.age)%sets.length];begin('classification',`<div class="detective-prompt"><h3>${q[0]}</h3></div>`,q[1].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[2]);
-}
-
-function rankOrder(){
- const items=[['Ama',2],['Kojo',4],['Esi',1],['Yaw',3]].map(x=>x); const shift=(S.level+S.age)%items.length;const rotated=items.slice(shift).concat(items.slice(0,shift));
- const answer=[...rotated].sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
- $('game-stage').innerHTML=`<div class="team-stage detective-stage"><div class="arcade-lab-head"><div><span class="lab-kind">DETECTIVE • RANK ORDER</span><h3>Ranking Detective</h3><p>Tap the names from lowest rank to highest rank.</p></div><span class="activity-chip">Activity ${(S.detectiveActivity||0)+1}/4</span></div><div class="team-question">Clues: ${rotated.map(x=>`<b>${x[0]}</b> has position ${x[1]}`).join(' • ')}</div><div id="rank-options" class="team-options"></div><div id="rank-picked" class="picked-sequence"></div></div>`;
- const box=$('rank-options'),picked=$('rank-picked');let n=0;S.active=true;shuffle(rotated).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x[0];b.onclick=()=>{if(!S.active||b.disabled)return;if(x[0]!==answer[n]){b.classList.add('bad');fail();return}b.disabled=true;b.classList.add('good');picked.textContent+=(n?' → ':'')+x[0];n++;if(n===answer.length)complete()};box.appendChild(b)})
-}
-function ranking(){
- const base=5+(S.level%6),step=1+(S.level%4);
- const nums=[base,base+step*2,base+step,base+step*3];
- const correct=[...nums].sort((a,b)=>a-b).join(' < ');
- const variants=[correct,[...nums].reverse().join(' < '),[nums[0],nums[2],nums[1],nums[3]].join(' < '),[nums[1],nums[0],nums[3],nums[2]].join(' < ')];
- begin('ranking',`<div class="detective-prompt"><h3>Which order is smallest to largest?</h3><div class="logic-sequence">${nums.map(x=>`<span>${x}</span>`).join('')}</div></div>`,variants.map(x=>({value:x,label:`<strong>${x}</strong>`})),correct);
-}
-
-function logicGrid(){const q=[['Ama','Kofi','book','ball'],['Kojo','Esi','pencil','drum'],['Yaw','Mia','kite','camera'],['Nana','Kofi','map','guitar']][(S.level+age())%4];const correct=`${q[0]} → ${q[2]}`;const choices=[correct,`${q[0]} → ${q[3]}`,`${q[1]} → ${q[2]}`,`${q[1]} → ${q[3]}`];begin('logicGrid',`<b>${q[0]}</b> chose the item that comes before the second clue. <b>${q[1]}</b> chose the other item. Which pairing is correct?`,choices,correct)}
-function deduction(){
- const sets=S.level<8?[['All red blocks are circles.','This block is red.','It must be a…','Circle',['Circle','Square','Triangle','Star']],['Every bird has wings.','Kofi is a bird.','Kofi has…','Wings',['Wings','Wheels','Fins','Roots']]]:[['All planners make lists.','Ama is a planner.','Ama makes…','Lists',['Lists','Cakes','Maps','Songs']],['Every triangle has three sides.','This shape is a triangle.','It has…','Three sides',['Three sides','Four sides','Five sides','No sides']]];
- const q=sets[(S.level-1)%sets.length];begin('deduction',`<div class="deduction-box">${q[0]}<br>${q[1]}<h3>${q[2]}</h3></div>`,q[4].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[3]);
-}
-function constraint(){
- const sets=[
-  {q:'Which number is even, greater than 20, and less than 30?',a:'24',o:['15','27','31']},
-  {q:'Which shape has 4 equal sides and 4 corners?',a:'Square',o:['Triangle','Circle','Square','Oval']},
-  {q:'Which item is red, smaller than a ball, and used for writing?',a:'Pencil',o:['Pencil','Book','Shoe','Cup']},
-  {q:'Which number is a multiple of 5 and greater than 40?',a:'45',o:['42','43','45','48']},
-  {q:'Which choice is both a vehicle and used on water?',a:'Boat',o:['Boat','Bicycle','Train','Car']}
- ];
- const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];
- begin('constraint',`<div class="detective-prompt"><h3>${q.q}</h3></div>`,q.o.map(x=>({value:x,label:`<strong>${x}</strong>`})),q.a);
-}
-
-function probability(){
- const sets=[
-  ['A bag has 3 red balls and 1 blue ball. Which colour is more likely?', 'Red', ['Red','Blue','Equal','Neither']],
-  ['A spinner has 2 green sections and 6 yellow sections. Which colour is more likely?', 'Yellow', ['Green','Yellow','Equal','Neither']],
-  ['There are 5 sunny days and 2 rainy days in a set of 7 cards. Which card is more likely?', 'Sunny', ['Sunny','Rainy','Equal','Cannot tell']],
-  ['A box has 4 large blocks and 4 small blocks. Which size is more likely?', 'Equal', ['Large','Small','Equal','Neither']]
- ];
- const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];
- begin('probability',`<div class="detective-prompt"><h3>${q[0]}</h3></div>`,q[2].map(x=>({value:x,label:`<strong>${x}</strong>`})),q[1]);
-}
-function data(){
- const sets=[
-  {title:'Weekly Reading',rows:[['Ama',4],['Kojo',6],['Esi',5]],q:'Who read the most pages?',a:'Kojo',o:['Ama','Kojo','Esi','They were equal']},
-  {title:'Seeds Planted',rows:[['Team A',12],['Team B',9],['Team C',15]],q:'Which team planted the most seeds?',a:'Team C',o:['Team A','Team B','Team C','They were equal']},
-  {title:'Water Collected',rows:[['Monday',8],['Tuesday',11],['Wednesday',7]],q:'Which day had the highest amount?',a:'Tuesday',o:['Monday','Tuesday','Wednesday','All equal']}
- ];
- const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];
- begin('data',`<div class="detective-prompt"><h3>${q.q}</h3><div class="logic-sequence">${q.rows.map(r=>`<span>${r[0]}: ${r[1]}</span>`).join('')}</div></div>`,q.o.map(x=>({value:x,label:`<strong>${x}</strong>`})),q.a);
-}
-
-function chain(){
- const sets=[
-  {q:'Four friends have different numbers of books. Ama has more than Kojo. Esi has fewer than Kojo. Who must have the most?',c:'Ama',o:['Ama','Kojo','Esi','They are equal']},
-  {q:'A number is greater than 20 and less than 30. It is even and divisible by 4. Which number fits?',c:'24',o:['22','24','26','28']},
-  {q:'Three boxes are red, blue and green. The red box is not first. Blue comes before green. Which order works?',c:'Blue → Green → Red',o:['Blue → Green → Red','Red → Blue → Green','Green → Blue → Red','Blue → Red → Green']},
-  {q:'A trip is longer than 2 hours but shorter than 5 hours. It takes a whole number of hours and is not 3. How long is it?',c:'4 hours',o:['2 hours','3 hours','4 hours','5 hours']}
- ];
- const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];begin('chain',`<div class="detective-prompt"><span class="detective-task-label">LINKED CLUES</span><h3>${q.q}</h3><p>Use both parts of the clue before choosing.</p></div>`,q.o,q.c)
-}
-
-function elimination(){
- const sets=[
-  ['Which item fits all three clues?','It is larger than 5. It is even. It is less than 10.',['4','6','8','11'],'6'],
-  ['Which animal fits all three clues?','It can fly. It has feathers. It is not a penguin.',['Dog','Eagle','Cat','Turtle'],'Eagle'],
-  ['Which number survives every rule?','It is odd. It is greater than 7. It is less than 12.',['6','8','9','12'],'9'],
-  ['Which shape fits the clues?','It has 3 sides. It has no curved edges.',['Circle','Triangle','Square','Oval'],'Triangle']
- ];
- const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];begin('elimination',`<div class="detective-prompt"><span class="detective-task-label">ELIMINATION CLUES</span><h3>${q[0]}</h3><div class="clue-box"><p>${q[1]}</p></div><p>Eliminate any option that breaks a clue.</p></div>`,q[2],q[3]);
-}
-
-function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'rankOrder':rankOrder();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'chain':chain();break;case'elimination':elimination();break;case'logicGrid':logicGrid();break;case'deduction':deduction();}}
-function start(){S.detectiveActivity=0;S.detectiveCorrect=0;window.MQDetective={run:()=>{const type=plans[S.level-1][S.detectiveActivity]||'sequence';renderInstruction(type)}}}
+function complete(){if(!S.active)return;S.active=false;S.detectiveCorrect=(S.detectiveCorrect||0)+1;if(S.detectiveActivity===3){S.detectiveActivity=0;$('game-message').textContent='✓ Case solved. Level complete!';S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}else{S.detectiveActivity++;$('game-message').textContent='✓ Correct. Next case loading…';S.timer=setTimeout(()=>{$('game-message').textContent='';MQ.nextChallenge()},650)}}
+function instruction(type){const x=info[type];S.active=false;clearTimeout(S.timer);$('game-stage').innerHTML=`<div class="detective-instruction"><div class="ui-icon">🔎</div><span class="ui-skill">COGNITIVE • ${AGE[age()]}</span><span class="activity-chip">Activity ${(S.detectiveActivity||0)+1}/4</span><h2>${x[0]}</h2><p class="ui-purpose">${x[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${x[2]}</p></div><div class="ui-meta"><span>🧩 Level ${level()} reasoning</span><span>✓ One correct answer</span></div><button id="detective-start" class="primary-btn ui-start" type="button">Start Activity →</button></div>`;$('detective-start').addEventListener('click',()=>run(type),{once:true})}
+function choices(correct,others){return shuffle([String(correct),...others.map(String)]).map(v=>({value:v,label:`<strong>${v}</strong>`}))}
+function sequence(){const l=level(),a=age();let seq,correct,others;if(a===0){const start=1+(l%3),step=l<8?1:2;seq=[start,start+step,start+2*step,'?'];correct=start+3*step;others=[correct+1,correct-1,correct+step]}else if(l<8){const start=2+(l%4),step=1+(l%3);seq=[start,start+step,start+2*step,'?'];correct=start+3*step;others=[correct+1,correct-1,correct+step+1]}else if(l<15){const start=3+(l%5),step=2+(l%4);seq=[start,start+step,start+2*step,start+3*step,'?'];correct=start+4*step;others=[correct+1,correct-step,correct+step*2]}else{const base=2+(l%4);seq=[base,base*2,base*3,base*4,'?'];correct=base*5;others=[correct-base,base*6,correct+base]};begin('sequence',`<div class="logic-sequence">${seq.map(x=>`<span>${x}</span>`).join('<b>→</b>')}</div><p>What comes next?</p>`,choices(correct,others),correct)}
+function odd(){const l=level();let arr,correct;if(l<5){arr=['🐶','🐱','🐰','🍎'];correct='🍎'}else if(l<9){arr=['2','4','6','9'];correct='9'}else if(l<13){arr=['Monday','Tuesday','March','Wednesday'];correct='March'}else if(l<17){arr=['14','21','28','32'];correct='32'}else{arr=['12','18','24','31'];correct='31'};begin('odd',`<h3>Which one does not belong?</h3><div class="odd-grid">${arr.map(x=>`<span>${x}</span>`).join('')}</div>`,choices(correct,arr.filter(x=>x!==correct)),correct)}
+function pattern(){const shapes=['●','■','▲','◆','★'];const step=level()%3+1;const arr=[0,1,2,3].map(i=>shapes[(i*step)%shapes.length]);const correct=shapes[(4*step)%shapes.length];begin('pattern',`<div class="shape-sequence">${arr.map(x=>`<span>${x}</span>`).join('')}<span class="missing-box">?</span></div><p>Which symbol completes the pattern?</p>`,choices(correct,shuffle(shapes.filter(x=>x!==correct)).slice(0,3)),correct)}
+function analogy(){const bank=[['Bird','Fly','Fish','Swim'],['Hand','Glove','Foot','Shoe'],['Cup','Drink','Plate','Eat'],['Thermometer','Temperature','Clock','Time'],['Compass','Direction','Scale','Distance'],['Editor','Article','Director','Film']];const q=bank[(level()+age()-1)%bank.length];begin('analogy',`<div class="analogy"><div><b>${q[0]}</b> → ${q[1]}</div><div><b>${q[2]}</b> → ?</div></div><p>Which answer has the same relationship?</p>`,choices(q[3],['Read','Measure','Grow']),q[3])}
+function math(){const l=level(),a=age();let seq,correct,others;if(a===0){const s=2+l%3;seq=[s,s+2,s+4,'?'];correct=s+6;others=[correct+1,correct-2,correct+2]}else if(l<8){const s=3+l%4;seq=[s,s*2,s*2+2,'?'];correct=s*2+4;others=[correct+1,correct+2,s*3]}else if(l<15){const s=2+l%3;seq=[s,s+3,s+6,s+9,'?'];correct=s+12;others=[correct-3,correct+3,correct*2]}else{const s=2+l%3;seq=[s,s*2,s*4,s*8,'?'];correct=s*16;others=[correct-2,s*12,correct+4]};begin('math',`<div class="logic-sequence">${seq.map(x=>`<span>${x}</span>`).join('<b>→</b>')}</div><p>Find the number that follows the rule.</p>`,choices(correct,others),correct)}
+function clue(){const sets=[{clues:['It is small.','It can fly.','It has feathers.'],a:'Bird',o:['Bird','Ball','Fish','Book']},{clues:['It is round.','You can kick it.','It is used in a game.'],a:'Ball',o:['Bird','Ball','Fish','Book']},{clues:['It lives in water.','It has fins.','It is an animal.'],a:'Fish',o:['Fish','Book','Ball','Bird']},{clues:['It is used at school.','It contains pages.','You can read it.'],a:'Book',o:['Book','Ball','Bird','Fish']}];const q=sets[(level()+age()-1)%sets.length];begin('clue',`<div class="clue-box">${q.clues.map((x,i)=>`<div><b>CLUE ${i+1}</b>${x}</div>`).join('')}</div><p>What is being described?</p>`,choices(q.a,q.o.filter(x=>x!==q.a)),q.a)}
+function order(){const sets=[['Wake up','Brush teeth','Eat breakfast','Go to school'],['Plant seed','Water it','It grows','Pick the fruit'],['Plan','Collect materials','Build','Test'],['Choose topic','Research','Write','Review'],['Identify problem','Gather evidence','Test explanation','Draw conclusion'],['Set goal','Plan actions','Execute plan','Evaluate result']];const s=sets[(level()+age()-1)%sets.length];const correct=s.join(' → ');const o=[[...s].reverse().join(' → '),[s[1],s[0],s[2],s[3]].join(' → '),[s[0],s[2],s[1],s[3]].join(' → ')];begin('order',`<p>Which order makes the most sense?</p><div class="order-question">${s.map((x,i)=>`<span>${i+1}. ${x}</span>`).join('')}</div>`,choices(correct,o),correct)}
+function rule(){const l=level();let group,correct,others;if(l<8){group=['2','4','6','8'];correct='10';others=['9','11','12']}else if(l<15){group=['3','6','9','12'];correct='15';others=['14','16','18']}else{group=['5','10','20','40'];correct='80';others=['45','60','70']};begin('rule',`<div class="rule-box"><p>These numbers follow a rule:</p><div>${group.map(x=>`<span>${x}</span>`).join('')}</div><p>Which number follows the same rule?</p></div>`,choices(correct,others),correct)}
+function visual(){const n=Math.min(5,2+Math.ceil(level()/7));const seq=Array.from({length:n},(_,i)=>'●'.repeat(i+1));const correct='●'.repeat(n+1);const others=['▲'.repeat(n+1),'■'.repeat(Math.max(1,n-1)),'●'.repeat(n)];begin('visual',`<div class="visual-rule">${seq.map(x=>`<span>${x}</span>`).join('<b>→</b>')}<b>→</b><span>?</span></div><p>What comes next?</p>`,choices(correct,others),correct)}
+function compare(){const l=level(),a=age();let x,y;if(a===0){x=1+l%5;y=x+(l%2?1:0)}else if(l<8){x=3+l%7;y=x+((l%3)-1)}else if(l<15){x=8+(l*2)%20;y=5+(l*3)%24}else{x=12+(l*3)%50;y=10+(l*5)%55};const c=x===y?'EQUAL':x>y?'GREATER':'SMALLER';begin('compare',`<div class="logic-sequence"><span>${x}</span><b>?</b><span>${y}</span></div><p>Is the left value greater, smaller or equal?</p>`,choices(c,['GREATER','SMALLER','EQUAL'].filter(v=>v!==c)),c)}
+function classification(){const sets=[['Which belongs with fruits?',['Apple','Carrot','Potato','Onion'],'Apple'],['Which is a vehicle?',['Bus','Chair','Cup','Book'],'Bus'],['Which is renewable energy?',['Sunlight','Plastic','Glass','Concrete'],'Sunlight'],['Which is a geometric shape?',['Triangle','River','Cloud','Forest'],'Triangle'],['Which measures time?',['Clock','Ruler','Compass','Scale'],'Clock']];const q=sets[(level()+age()-1)%sets.length];begin('classification',`<h3>${q[0]}</h3><p>Choose the item that fits the category.</p>`,choices(q[2],q[1].filter(x=>x!==q[2])),q[2])}
+function deduction(){const sets=[['All red blocks are circles.','This block is red.','What must it be?','Circle',['Circle','Square','Triangle','Star']],['Every bird has wings.','Kofi is a bird.','Kofi has…','Wings',['Wings','Wheels','Fins','Roots']],['All planners make lists.','Ama is a planner.','Ama makes…','Lists',['Lists','Cakes','Maps','Songs']],['Every triangle has three sides.','This shape is a triangle.','It has…','Three sides',['Three sides','Four sides','Five sides','No sides']]];const q=sets[(level()+age()-1)%sets.length];begin('deduction',`<div class="deduction-box">${q[0]}<br>${q[1]}<h3>${q[2]}</h3></div>`,choices(q[3],q[4].filter(x=>x!==q[3])),q[3])}
+function ranking(){const base=5+(level()%6),step=1+(level()%4);const nums=[base,base+step*2,base+step,base+step*3];const correct=[...nums].sort((a,b)=>a-b).join(' < ');const variants=[[...nums].reverse().join(' < '),[nums[0],nums[2],nums[1],nums[3]].join(' < '),[nums[1],nums[0],nums[3],nums[2]].join(' < ')];begin('ranking',`<h3>Which order is smallest to largest?</h3><div class="logic-sequence">${nums.map(x=>`<span>${x}</span>`).join('')}</div>`,choices(correct,variants),correct)}
+function constraint(){const sets=[['Which number is even, greater than 20, and less than 30?','24',['15','27','31']],['Which shape has 4 equal sides and 4 corners?','Square',['Triangle','Circle','Oval']],['Which number is a multiple of 5 and greater than 40?','45',['42','43','48']],['Which choice is both a vehicle and used on water?','Boat',['Bicycle','Train','Car']],['Which number is odd, greater than 10 and less than 20?','15',['12','18','20']]];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('constraint',`<h3>${q[0]}</h3><p>Check every condition before choosing.</p>`,choices(q[1],q[2]),q[1])}
+function probability(){const sets=[['A bag has 3 red balls and 1 blue ball. Which colour is more likely?','Red',['Blue','Equal','Neither']],['A spinner has 2 green sections and 6 yellow sections. Which colour is more likely?','Yellow',['Green','Equal','Neither']],['There are 5 sunny cards and 2 rainy cards. Which is more likely?','Sunny',['Rainy','Equal','Cannot tell']],['A box has 4 large blocks and 4 small blocks. Which size is more likely?','Equal',['Large','Small','Neither']]];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('probability',`<h3>${q[0]}</h3>`,choices(q[1],q[2]),q[1])}
+function data(){const sets=[{title:'Weekly Reading',rows:[['Ama',4],['Kojo',6],['Esi',5]],q:'Who read the most pages?',a:'Kojo',o:['Ama','Esi','They were equal']},{title:'Seeds Planted',rows:[['Team A',12],['Team B',9],['Team C',15]],q:'Which team planted the most?',a:'Team C',o:['Team A','Team B','They were equal']},{title:'Water Collected',rows:[['Monday',8],['Tuesday',11],['Wednesday',7]],q:'Which day had the highest amount?',a:'Tuesday',o:['Monday','Wednesday','All equal']}];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('data',`<h3>${q.title}</h3><div class="logic-sequence">${q.rows.map(r=>`<span>${r[0]}: ${r[1]}</span>`).join('')}</div><p>${q.q}</p>`,choices(q.a,q.o),q.a)}
+function chain(){const sets=[['Ama has more books than Kojo. Esi has fewer than Kojo. Who must have the most?','Ama',['Kojo','Esi','They are equal']],['A number is greater than 20 and less than 30. It is even and divisible by 4. Which fits?','24',['22','26','28']],['Blue comes before Green. Red is not first. Which order works?','Blue → Green → Red',['Red → Blue → Green','Green → Blue → Red','Blue → Red → Green']],['A trip is longer than 2 hours but shorter than 5 hours. It is not 3. How long?','4 hours',['2 hours','3 hours','5 hours']]];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('chain',`<span class="detective-task-label">LINKED CLUES</span><h3>${q[0]}</h3><p>Use every part of the clue before choosing.</p>`,choices(q[1],q[2]),q[1])}
+function logicGrid(){const sets=[['Ama','book','Kofi','ball'],['Kojo','pencil','Esi','drum'],['Yaw','kite','Mia','camera'],['Nana','map','Kofi','guitar']];const q=sets[(level()+age()-1)%sets.length];const correct=`${q[0]} → ${q[1]}`;begin('logicGrid',`<div class="clue-box"><b>${q[0]}</b> chose the first item. <b>${q[2]}</b> chose the other item. Which pairing is correct?</div>`,choices(correct,[`${q[0]} → ${q[3]}`,`${q[2]} → ${q[1]}`,`${q[2]} → ${q[3]}`]),correct)}
+function elimination(){const sets=[['Which item fits all three clues?','It is larger than 5, even, and less than 10.','6',['4','8','11']],['Which animal can fly, has feathers, and is not a penguin?','Eagle','', ['Dog','Cat','Turtle']],['Which number is odd, greater than 7, and less than 12?','9','',['6','8','12']],['Which shape has 3 sides and no curved edges?','Triangle','',['Circle','Square','Oval']]];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('elimination',`<span class="detective-task-label">ELIMINATION CLUES</span><h3>${q[0]}</h3><div class="clue-box"><p>${q[1]}</p></div><p>Eliminate every option that breaks a clue.</p>`,choices(q[2]||q[1],q[3]),q[2]||q[1])}
+function estimate(){const l=level(),a=age(),base=18+l*7+a*5,step=l<8?10:l<15?25:50,correct=Math.round(base/step)*step;begin('estimate',`<div class="logic-sequence"><span>${base}</span><b>≈</b><span>?</span></div><p>Which value is the closest sensible estimate?</p>`,choices(correct,[correct-step,correct+step,correct+step*2].filter(x=>x>0)),correct)}
+function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'classification':classification();break;case'deduction':deduction();break;case'ranking':ranking();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'chain':chain();break;case'logicGrid':logicGrid();break;case'elimination':elimination();break;case'estimate':estimate();break;default:sequence()}}
+function start(){S.detectiveActivity=Number(S.detectiveActivity)||0;S.detectiveCorrect=Number(S.detectiveCorrect)||0;window.MQDetective={run:()=>{const type=plans[level()-1]?.[S.detectiveActivity]||'sequence';instruction(type)}}}
 start();
 })();

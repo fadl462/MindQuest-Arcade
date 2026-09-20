@@ -47,7 +47,7 @@
 </div>
 <script src="app.js?v=6.7"></script>
 <script>(()=>{const mq=window.MQ;if(!mq)return;const key='mindquest-age-pathway',stored=Number(localStorage.getItem(key));const age=Number.isInteger(stored)&&stored>=0&&stored<mq.ages.length?stored:0;mq.state.age=age;document.querySelectorAll('.age-btn').forEach((b,i)=>b.classList.toggle('active',i===age));document.getElementById('path-label').textContent='Ages '+mq.ages[age].range;mq.updateGlobal();const account=mq.state.account;if(account){document.getElementById('account-home-name').textContent=account.displayName;document.getElementById('account-home-note').textContent='Player account active on this device. Longer-term progress tracking is enabled.';document.getElementById('account-home-badge').textContent='PLAYER';const n=document.getElementById('player-identity-name');if(n)n.textContent=account.displayName;}})();</script>
-<script src="memory-lab.js?v=7.0"></script><script src="detective.js?v=6.7"></script><script src="reflex-arena.js?v=6.9"></script><script src="builder.js?v=6.7"></script><script src="team-quest.js?v=6.7"></script><script src="world-explorer.js?v=6.9"></script><script src="money-mission.js?v=6.7"></script><script src="progress.js?v=6.7"></script>
+<script src="memory-lab.js?v=7.0"></script><script src="detective.js?v=7.1"></script><script src="reflex-arena.js?v=6.9"></script><script src="builder.js?v=6.7"></script><script src="team-quest.js?v=6.7"></script><script src="world-explorer.js?v=6.9"></script><script src="money-mission.js?v=6.7"></script><script src="progress.js?v=6.7"></script>
 <script>document.addEventListener('click',e=>{const b=e.target.closest('.plan-btn');if(b&&window.MQ?.choosePremiumPlan)window.MQ.choosePremiumPlan(b.dataset.plan);});</script>
 <script>
 (()=>{
