@@ -8,7 +8,7 @@ const expected=['choice','order','match','plan','empathy','responsibility','comm
 for(const t of expected)ok(`Team Quest mechanic: ${t}`,types.includes(`'${t}'`)||types.includes(`"${t}"`));
 ok('Team Quest has a real action-sequence activity',/type==='actionSequence'/.test(team)&&/order\(type,ORDERS/.test(team));
 ok('Team Quest includes plausible communication scenarios',/COMMUNICATION=/.test(team)&&/Could you explain/.test(team));
-ok('World Explorer avoids the reviewed Accra/Kumasi ambiguity',!/Which direction takes you from Accra toward Kumasi\?/.test(world));
+ok('World Explorer uses globally distributed direction examples',/Berlin is east of Paris/.test(world)&&/Toronto is west of New York City/.test(world));
 ok('World Explorer uses distinct distance distractors',/vals=\[base,base\+5\+\(activity\(\)\*2\),base\+13\]/.test(world));
 ok('Money Mission guarantees four savings options',/\[correct,wk\(weeks\+1\),wk\(weeks\+2\),weeks>1\?wk\(weeks-1\):wk\(weeks\+3\)\]/.test(money));
 ok('Money Mission exact change supports undo and clear',/change-undo/.test(money)&&/change-clear/.test(money));

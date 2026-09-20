@@ -1,3 +1,10 @@
+# v8.2 — Global Product Localization
+
+- Removed country-specific product copy and examples from the core experience.
+- Money Mission now uses neutral currency values and generic financial scenarios rather than a country-specific currency.
+- World Explorer replaced country-specific places, culture, climate, direction, route and time-zone examples with globally distributed examples.
+- Updated regression tests to verify the globalized content.
+
 # Changelog
 
 ## v8.1 — Independent Review Hardening + v7.12 Integration
@@ -9,7 +16,7 @@
 - Added the reviewer regression-test concept and converted it into dependency-free checks suitable for this static prototype.
 
 ### Preserved or strengthened beyond v7.12
-- Kept the stronger Exact Change implementation with Undo, Clear, higher denominations and pesewas.
+- Kept the stronger Exact Change implementation with Undo, Clear, higher denominations and fractional currency units.
 - Kept the expanded Detective probability bank rather than reverting to the smaller reviewer bank.
 - Kept the adult/guardian account gate.
 - Kept export/delete local-data controls.

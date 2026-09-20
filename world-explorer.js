@@ -6,7 +6,7 @@ const shuffle=a=>{const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.
 const TYPES=["place","landmark","clue","route","capital","culture","hemisphere","direction","climate","landform","compass","distance","timeZone","coordinates"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const PLACES=[
- ["Ghana","Africa","Accra"],["Kenya","Africa","Nairobi"],["Egypt","Africa","Cairo"],["Nigeria","Africa","Abuja"],
+ ["United Kingdom","Europe","London"],["Kenya","Africa","Nairobi"],["Egypt","Africa","Cairo"],["Nigeria","Africa","Abuja"],
  ["Morocco","Africa","Rabat"],["South Africa","Africa","Pretoria — administrative capital"],["Brazil","South America","Brasília"],["Canada","North America","Ottawa"],
  ["Japan","Asia","Tokyo"],["India","Asia","New Delhi"],["Australia","Oceania","Canberra"],["France","Europe","Paris"],
  ["Italy","Europe","Rome"],["Spain","Europe","Madrid"],["Mexico","North America","Mexico City"],["Peru","South America","Lima"],
@@ -16,31 +16,31 @@ const LANDMARKS=[
  ["Pyramids of Giza","Egypt","Africa"],["Eiffel Tower","France","Europe"],["Great Wall","China","Asia"],["Statue of Liberty","United States","North America"],
  ["Taj Mahal","India","Asia"],["Christ the Redeemer","Brazil","South America"],["Sydney Opera House","Australia","Oceania"],["Acropolis","Greece","Europe"],
  ["Table Mountain","South Africa","Africa"],["Mount Fuji","Japan","Asia"],["Machu Picchu","Peru","South America"],["Golden Gate Bridge","United States","North America"],
- ["Kakum National Park","Ghana","Africa"],["Victoria Falls","Zambia/Zimbabwe","Africa"],["Sagrada Família","Spain","Europe"],["Burj Khalifa","United Arab Emirates","Asia"]
+ ["Stonehenge","United Kingdom","Europe"],["Victoria Falls","Zambia/Zimbabwe","Africa"],["Sagrada Família","Spain","Europe"],["Burj Khalifa","United Arab Emirates","Asia"]
 ];
 const CLUES=[
- ["I am a country in West Africa. My capital is Accra. What am I?","Ghana",["Ghana","Kenya","India","Brazil"]],
+ ["I am a country in Europe whose capital is London. What am I?","United Kingdom",["United Kingdom","Kenya","India","Brazil"]],
  ["I am an island country in East Asia. My capital is Tokyo. What am I?","Japan",["Japan","Egypt","Peru","Canada"]],
  ["I am famous for the Pyramids of Giza. What country am I in?","Egypt",["Egypt","France","Greece","Australia"]],
  ["I am in South America and my capital is Lima. What country am I?","Peru",["Peru","Italy","Morocco","Japan"]],
- ["I am a European country whose capital is Paris. What am I?","France",["France","India","Brazil","Ghana"]],
+ ["I am a European country whose capital is Paris. What am I?","France",["France","India","Brazil","Canada"]],
  ["I am in North America and my capital is Ottawa. What country am I?","Canada",["Canada","Spain","Kenya","China"]],
  ["I am a landmark in India known for its white marble. What am I?","Taj Mahal",["Taj Mahal","Eiffel Tower","Great Wall","Acropolis"]],
  ["I am a landmark in Brazil with a huge statue overlooking Rio. What am I?","Christ the Redeemer",["Christ the Redeemer","Machu Picchu","Table Mountain","Sydney Opera House"]],
  ["I am in Australia and am famous for my sail-like roof. What am I?","Sydney Opera House",["Sydney Opera House","Golden Gate Bridge","Pyramids of Giza","Burj Khalifa"]],
  ["I am a famous mountain in Japan. What am I?","Mount Fuji",["Mount Fuji","Table Mountain","Mount Everest","Kilimanjaro"]],
  ["I am a famous ancient site in Peru high in the Andes. What am I?","Machu Picchu",["Machu Picchu","Acropolis","Taj Mahal","Great Wall"]],
- ["I am a national park in Ghana known for a canopy walkway. What am I?","Kakum National Park",["Kakum National Park","Serengeti","Kruger National Park","Yellowstone"]]
+ ["I am an ancient stone circle in England. What am I?","Stonehenge",["Stonehenge","Serengeti","Kruger National Park","Yellowstone"]]
 ];
 const ROUTES=[
- ["Travel from Ghana to Kenya. Which continent do you stay on?","Africa",["Africa","Europe","Asia","South America"]],
+ ["Travel from Kenya to Egypt. Which continent do you stay on?","Africa",["Africa","Europe","Asia","South America"]],
  ["Travel from France to Italy. Which continent do you stay on?","Europe",["Europe","Africa","Asia","Oceania"]],
  ["Travel from Japan to India. Which continent do you stay on?","Asia",["Asia","Europe","Africa","North America"]],
  ["Travel from Brazil to Peru. Which continent do you stay on?","South America",["South America","Africa","Europe","Asia"]],
  ["Put these in a sensible journey order: airport → hotel → sightseeing. What comes first?","Airport",["Airport","Hotel","Sightseeing","Dinner"]],
  ["A map route is: start → river → bridge → town. What comes after the river?","Bridge",["Bridge","Start","Town","Airport"]],
  ["You are planning a trip. Which should usually happen before choosing a hotel?","Choose the destination",["Choose the destination","Pack souvenirs","Take photos","Return home"]],
- ["Which direction takes you from Accra toward Tamale?","North",["North","South","East","West"]]
+ ["Which direction takes you from Paris toward London?","Northwest",["Northwest","Southeast","Northeast","Southwest"]]
 ];
 const INFO={
  place:["Place Finder","Identify a country, continent or capital.","Read the clue and choose the place that fits."],
@@ -74,19 +74,19 @@ function compass(){
 }
 function direction(){
  const BANK=[
-  ['Accra is east of Cape Coast. From Cape Coast, which direction is Accra?','East'],
-  ['Tamale is north of Accra. From Accra, which direction is Tamale?','North'],
-  ['Cape Coast is west of Accra. From Accra, which direction is Cape Coast?','West'],
-  ['Tamale is north of Kumasi. From Kumasi, which direction is Tamale?','North'],
-  ['Tema is east of Accra. From Accra, which direction is Tema?','East'],
-  ['Takoradi is west of Cape Coast. From Cape Coast, which direction is Takoradi?','West']
+  ['Berlin is east of Paris. From Paris, which direction is Berlin?','East'],
+  ['Toronto is west of New York City. From New York City, which direction is Toronto?','West'],
+  ['Tokyo is east of Seoul. From Seoul, which direction is Tokyo?','East'],
+  ['Cairo is north of Nairobi. From Nairobi, which direction is Cairo?','North'],
+  ['Sydney is southeast of Melbourne. From Melbourne, which direction is Sydney?','Southeast'],
+  ['Madrid is southwest of Paris. From Paris, which direction is Madrid?','Southwest']
  ];
  const q=BANK[(S.level+activity()+S.age)%BANK.length];
  choice(head('direction'),q[0],['North','South','East','West'],q[1]);
 }
 
 function climate(){
- const BANK=[['Ghana','warm and tropical',['warm and tropical','polar and icy','very cold all year','desert everywhere']],['Canada','cold winters in many regions',['cold winters in many regions','tropical rainforest everywhere','hot all year everywhere','polar desert everywhere']],['Egypt','hot and dry in much of the country',['hot and dry in much of the country','cold and wet all year','tropical snow climate','cool rainforest climate']],['Brazil','many regions are warm, with tropical climates',['many regions are warm, with tropical climates','polar climate everywhere','cold tundra everywhere','snow all year']]];
+ const BANK=[['Indonesia','warm and tropical',['warm and tropical','polar and icy','very cold all year','desert everywhere']],['Canada','cold winters in many regions',['cold winters in many regions','tropical rainforest everywhere','hot all year everywhere','polar desert everywhere']],['Egypt','hot and dry in much of the country',['hot and dry in much of the country','cold and wet all year','tropical snow climate','cool rainforest climate']],['Brazil','many regions are warm, with tropical climates',['many regions are warm, with tropical climates','polar climate everywhere','cold tundra everywhere','snow all year']]];
  const q=BANK[(S.level+activity()+S.age)%BANK.length];choice(head('climate'),`Which broad climate clue fits <b>${q[0]}</b>?`,q[2],q[1]);
 }
 function landform(){
@@ -105,7 +105,7 @@ function distance(){
 function choiceWorld(type,prompt,choices,correct){$('game-stage').innerHTML=`<div class="world-stage">${head(type)}<div class="world-question">${prompt}</div><div class="team-options" id="world-options"></div></div>`;const box=$('world-options');S.active=true;shuffle(choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
 
 function timeZone(){
- const qs=[['Accra is UTC+0 and City B is UTC+3. If it is 10:00 in Accra, what time is it in City B?','13:00',['11:00','13:00','15:00','07:00']],['Accra is UTC+0 and City C is UTC-5. If it is 14:00 in Accra, what time is it in City C?','09:00',['09:00','19:00','12:00','04:00']],['A city is UTC+2. If it is 08:00 UTC, what is the local time?','10:00',['06:00','08:00','10:00','12:00']]];
+ const qs=[['City A is UTC+0 and City B is UTC+3. If it is 10:00 in City A, what time is it in City B?','13:00',['11:00','13:00','15:00','07:00']],['City A is UTC+0 and City C is UTC-5. If it is 14:00 in City A, what time is it in City C?','09:00',['09:00','19:00','12:00','04:00']],['A city is UTC+2. If it is 08:00 UTC, what is the local time?','10:00',['06:00','08:00','10:00','12:00']]];
  const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('timeZone'),q[0],q[2],q[1]);
 }
 
@@ -124,19 +124,19 @@ function capital(){
 
 function culture(){
  const BANK=[
-  ['Which country is famous for Adinkra symbols?', 'Ghana', ['Ghana','Japan','Brazil','Canada']],
-  ['Which country is famous for the Maasai people?', 'Kenya', ['Kenya','France','India','Peru']],
+  ['Which country is strongly associated with the Maasai people?', 'Kenya', ['Kenya','France','India','Peru']],
   ['Which natural feature is shared by Zambia and Zimbabwe?', 'Victoria Falls', ['Victoria Falls','Sahara Desert','Mount Fuji','Amazon River']],
   ['Which country is strongly associated with samba and Carnival?', 'Brazil', ['Brazil','Egypt','Greece','Canada']],
-  ['Which country is famous for the ancient city of Petra?', 'Jordan', ['Jordan','Ghana','Australia','Spain']],
-  ['Which ocean borders Ghana to the south?', 'Atlantic Ocean', ['Atlantic Ocean','Indian Ocean','Pacific Ocean','Arctic Ocean']],
+  ['Which country is famous for the ancient city of Petra?', 'Jordan', ['Jordan','Australia','Spain','Mexico']],
+  ['Which country is famous for the ancient city of Machu Picchu?', 'Peru', ['Peru','Japan','Canada','Italy']],
   ['Which African country is famous for the Serengeti?', 'Tanzania', ['Tanzania','Portugal','China','Mexico']],
-  ['Which country is famous for the Great Barrier Reef?', 'Australia', ['Australia','Italy','Morocco','Peru']]
+  ['Which country is famous for the Great Barrier Reef?', 'Australia', ['Australia','Italy','Morocco','Peru']],
+  ['Which country is famous for the Taj Mahal?', 'India', ['India','Brazil','Greece','Canada']]
  ];
  const q=BANK[(S.level+activity()*2+S.age)%BANK.length];
  choice(head('culture'),ageText(q[0]),q[2],q[1]);
 }
-function hemisphere(){const BANK=[['Ghana','Northern Hemisphere'],['Kenya','Southern Hemisphere'],['Brazil','Southern Hemisphere'],['Canada','Northern Hemisphere'],['Australia','Southern Hemisphere'],['Japan','Northern Hemisphere'],['Egypt','Northern Hemisphere'],['Argentina','Southern Hemisphere']];const q=BANK[(S.level+activity()+S.age)%BANK.length];choice(head('hemisphere'),`Which hemisphere is <b>${q[0]}</b> in?`,['Northern Hemisphere','Southern Hemisphere'],q[1]);}
+function hemisphere(){const BANK=[['United Kingdom','Northern Hemisphere'],['Kenya','Southern Hemisphere'],['Brazil','Southern Hemisphere'],['Canada','Northern Hemisphere'],['Australia','Southern Hemisphere'],['Japan','Northern Hemisphere'],['Egypt','Northern Hemisphere'],['Argentina','Southern Hemisphere']];const q=BANK[(S.level+activity()+S.age)%BANK.length];choice(head('hemisphere'),`Which hemisphere is <b>${q[0]}</b> in?`,['Northern Hemisphere','Southern Hemisphere'],q[1]);}
 function continent(){const p=PLACES[(S.level*3+activity()*2+S.age)%PLACES.length],others=shuffle([...new Set(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[1]))]).filter(x=>x!==p[1]).slice(0,3);choice(head('continent'),`Which continent is <b>${p[0]}</b> in?`,[p[1],...others],p[1]);}
 function route(){const r=ROUTES[(levelIndex()+activity()*2)%ROUTES.length];choice(head("route"),ageText(r[0]),r[2],r[1])}
 window.MQWorldExplorer={run:instruction};

@@ -8,7 +8,7 @@ const games=[
 {id:"builder",icon:"🧩",name:"Builder",skill:"COGNITIVE",desc:"Plan and construct structures with limited spaces."},
 {id:"team",icon:"🤝",name:"Team Quest",skill:"BEHAVIOURAL",desc:"Navigate social situations and constructive choices."},
 {id:"world",icon:"🌍",name:"World Explorer",skill:"COGNITIVE",desc:"Explore countries, landmarks, maps and journeys."},
-{id:"money",icon:"💰",name:"Money Mission",skill:"COGNITIVE",desc:"Count, compare, budget and make change with Ghana cedis."}
+{id:"money",icon:"💰",name:"Money Mission",skill:"COGNITIVE",desc:"Count, compare, budget and make change using currency values."}
 ];
 const state={age:0,game:"memory",level:1,lives:3,streak:0,bestStreak:0,xp:0,score:0,earnedThisRun:0,active:false,timer:null,skills:{cognitive:0,behavioural:0,psychomotor:0},skillStats:{memory:0,attention:0,logic:0,problemSolving:0,reaction:0,precision:0,teamwork:0,empathy:0,responsibility:0,financialLiteracy:0,geography:0},milestonePending:false,account:null,premium:false,premiumPlan:"",premiumTrialUntil:0,retryCount:0};
 const $=id=>document.getElementById(id); const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));

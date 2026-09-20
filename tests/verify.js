@@ -18,7 +18,7 @@ ok('adult gate present',/adult-check-answer/.test(index)&&/adult-confirm/.test(i
 ok('data export and delete controls exist',/Export My Data/.test(progress)&&/Delete Local Profile/.test(progress));
 ok('Team Quest has 14 mechanics',/const TYPES=\[[\s\S]*?activeListening['"]\s*,\s*['"]perspective/.test(team));
 ok('Team Quest choice signature fixed',/function choice\(type,prompt,choices,correct\)/.test(team));
-ok('World Explorer Accra to Tamale direction',/Accra toward Tamale/.test(world)&&/['"]North['"]/.test(world));
+ok('World Explorer global direction example',/Paris toward London/.test(world)&&/Northwest/.test(world));
 ok('World Explorer distance values distinct',/vals=\[base,base\+5\+\(activity\(\)\*2\),base\+13\]/.test(world));
 ok('Money Mission savings pluralisation',/const wk=n=>`\$\{n\} week\$\{n===1\?'':'s'\}`/.test(money));
 ok('Money Mission exact-change Clear',/id="change-clear"/.test(money));
