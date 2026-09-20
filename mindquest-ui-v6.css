@@ -1,0 +1,72 @@
+/* MindQuest v6.2 — three-stage experience system
+   Guest = discovery/playful
+   Player = progress/dashboard
+   Premium = focused mastery/luxury
+*/
+:root{--mq-ui-accent:#5b5ce2;--mq-ui-ink:#171a2b;--mq-ui-muted:#697087;--mq-ui-line:#e6e8f1;--mq-ui-surface:#fff;--mq-ui-bg:#f7f8fc}
+body{transition:background .35s ease,color .25s ease}
+/* Shared polish */
+.topbar{transition:background .3s ease,border-color .3s ease,box-shadow .3s ease;backdrop-filter:saturate(130%) blur(14px)}
+.topbar-right{flex-wrap:nowrap}.player-identity{transition:.25s ease}.stat-pill{transition:.2s ease}.stat-pill:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(25,32,70,.08)}
+.mq-mode-badge{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.07em;white-space:nowrap;transition:.25s ease}
+.mq-mode-badge i{width:6px;height:6px;border-radius:50%;display:block;background:currentColor}
+/* 1 — Before account: welcoming, exploratory, low-pressure */
+body.mq-guest-mode{background:linear-gradient(180deg,#fbfbff 0%,#f5f7fc 100%);color:var(--mq-ui-ink)}
+body.mq-guest-mode .topbar{background:rgba(255,255,255,.9);border-bottom:1px solid #eef0f7}
+body.mq-guest-mode .brand-mark{box-shadow:0 8px 24px rgba(91,92,226,.12)}
+body.mq-guest-mode .mq-mode-badge{color:#5960b9;background:#eef0ff;border:1px solid #dfe2ff}
+body.mq-guest-mode .player-identity{background:#fff;border-color:#e9ebf4}
+body.mq-guest-mode #home .hero{border:1px solid #e8eaf8;box-shadow:0 22px 60px rgba(65,70,130,.08);background:linear-gradient(135deg,#ffffff,#f3f4ff)}
+body.mq-guest-mode #home .hero-orb{box-shadow:0 16px 36px rgba(91,92,226,.18)}
+body.mq-guest-mode #home .account-strip{border-style:dashed;background:#fcfcff}
+body.mq-guest-mode #home .account-strip .status-badge{background:#f1f2f8;color:#697087}
+body.mq-guest-mode #home .game-tile{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+body.mq-guest-mode #home .game-tile:hover{transform:translateY(-4px);box-shadow:0 18px 36px rgba(35,42,90,.10);border-color:#d9dcf8}
+body.mq-guest-mode .primary-btn{box-shadow:0 9px 22px rgba(91,92,226,.16)}
+/* 2 — Account created: confident player dashboard */
+body.mq-player-mode{background:#f4f6fb;color:#16192a}
+body.mq-player-mode .topbar{background:rgba(248,250,255,.94);border-bottom:1px solid #e2e6f1;box-shadow:0 4px 24px rgba(32,40,80,.06)}
+body.mq-player-mode .mq-mode-badge{color:#27704d;background:#e9f7ef;border:1px solid #cdebd9}
+body.mq-player-mode .player-identity{background:#fff;border-color:#dfe4ef;box-shadow:0 6px 18px rgba(28,38,80,.07)}
+body.mq-player-mode .player-identity .player-avatar{background:#e9eaff}
+body.mq-player-mode .stat-pill{background:#fff;border-color:#dfe4ef}
+body.mq-player-mode #home .hero{background:linear-gradient(135deg,#eef0ff,#ffffff);border:1px solid #dde1f4;box-shadow:0 22px 55px rgba(42,49,105,.08)}
+body.mq-player-mode #home .account-strip{background:#fff;border-color:#dfe4ef;box-shadow:0 8px 26px rgba(28,38,80,.05)}
+body.mq-player-mode #home .account-strip .status-badge{background:#e9f7ef;color:#27704d;border-color:#cdebd9}
+body.mq-player-mode #resume-progress-wrap .mq-resume-card{border-color:#d7dbef;background:#fff;box-shadow:0 10px 30px rgba(31,38,86,.07)}
+body.mq-player-mode .game-card{box-shadow:0 20px 55px rgba(31,38,86,.08)}
+body.mq-player-mode .game-head .level-box{border-color:#d9dded}
+/* Player journey marker */
+body.mq-player-mode #home .account-strip:before{content:'ACTIVE PLAYER';display:block;position:absolute;opacity:0}
+/* 3 — Premium: distinct mastery studio */
+body.mq-premium-mode{background:#0e1020;color:#f8f9ff}
+body.mq-premium-mode .topbar{background:rgba(13,15,31,.9);border-bottom:1px solid rgba(255,255,255,.09);box-shadow:0 5px 30px rgba(0,0,0,.22)}
+body.mq-premium-mode .brand-name,body.mq-premium-mode .brand-mark{color:#fff}
+body.mq-premium-mode .stat-pill,body.mq-premium-mode .player-identity{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);color:#fff}
+body.mq-premium-mode .stat-pill small,body.mq-premium-mode .player-identity small{color:#aeb4d1}
+body.mq-premium-mode .player-identity .player-avatar{background:rgba(255,255,255,.12)}
+body.mq-premium-mode .mq-mode-badge{color:#f4d98a;background:rgba(213,170,72,.13);border:1px solid rgba(229,194,105,.28)}
+body.mq-premium-mode main{background:radial-gradient(circle at 75% 0%,rgba(91,92,226,.18),transparent 34%),linear-gradient(180deg,#0e1020,#12152a)}
+body.mq-premium-mode #premium{color:#f7f8ff}
+body.mq-premium-mode .premium-shell{padding-bottom:60px}
+body.mq-premium-mode .premium-hero{background:linear-gradient(135deg,#191b3c,#292d69 55%,#171a35);border:1px solid rgba(255,255,255,.1);box-shadow:0 25px 80px rgba(0,0,0,.3);position:relative;overflow:hidden}
+body.mq-premium-mode .premium-hero:after{content:'';position:absolute;width:260px;height:260px;right:-90px;top:-120px;border-radius:50%;background:radial-gradient(circle,rgba(239,204,112,.2),transparent 66%);pointer-events:none}
+body.mq-premium-mode .premium-orb{background:rgba(239,204,112,.12);border:1px solid rgba(239,204,112,.22);box-shadow:0 0 45px rgba(239,204,112,.1)}
+body.mq-premium-mode .premium-banner,body.mq-premium-mode .price-card,body.mq-premium-mode .school-pricing,body.mq-premium-mode .premium-card{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.11);color:#f8f9ff;box-shadow:0 12px 40px rgba(0,0,0,.15)}
+body.mq-premium-mode .premium-banner p,body.mq-premium-mode .price-card p,body.mq-premium-mode .school-pricing p,body.mq-premium-mode .premium-card p,body.mq-premium-mode .price-card li{color:#b8bdd5}
+body.mq-premium-mode .pricing-note{background:rgba(65,181,119,.12);color:#91e1b1;border:1px solid rgba(99,213,145,.15)}
+body.mq-premium-mode .price-badge{background:rgba(255,255,255,.08);color:#cfd3e8}
+body.mq-premium-mode .featured .price-badge{background:rgba(239,204,112,.12);color:#f2d783}
+body.mq-premium-mode .price-card.featured{border-color:rgba(239,204,112,.55);box-shadow:0 20px 55px rgba(0,0,0,.25),0 0 0 1px rgba(239,204,112,.08)}
+body.mq-premium-mode .annual-price{background:rgba(255,255,255,.06)}
+body.mq-premium-mode .annual-price strong{color:#f4f5fb}
+body.mq-premium-mode .premium-checkout-note{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:#aeb4d1}
+body.mq-premium-mode .premium-grid-heading h2,body.mq-premium-mode .premium-pricing-head h2{color:#fff}
+body.mq-premium-mode .premium-card span{color:#f0d477}
+body.mq-premium-mode .primary-btn{box-shadow:0 10px 28px rgba(91,92,226,.25)}
+/* Premium only on premium screen; keep gameplay readable */
+body.mq-premium-mode .screen:not(#premium){display:none!important}
+/* Mobile */
+@media(max-width:760px){.mq-mode-badge{display:none}.topbar-right{gap:5px}.player-identity{min-width:92px}.player-identity b{max-width:72px}}
+@media(max-width:560px){body.mq-premium-mode .premium-hero{border-radius:22px;padding:22px}.topbar{height:66px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
