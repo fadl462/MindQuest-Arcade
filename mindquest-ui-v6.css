@@ -165,9 +165,35 @@ body.mq-premium-mode .topbar{background:rgba(11,13,28,.9)!important;border-color
   background:linear-gradient(180deg,#fff 0%,#fcfcff 100%);
   border:1px solid #dfe3ee;
   border-radius:22px;
-  padding:14px 16px 12px;
+  padding:12px 16px 10px;
   box-shadow:0 18px 55px rgba(29,36,78,.075);
+  display:flex;
+  flex-direction:column;
+  min-height:0;
 }
+#game.active .game-card>.hud{order:0}
+#game.active .game-card>#game-stage{order:1}
+#game.active .game-card>.game-message{order:2}
+#game.active .game-message{
+  display:block;
+  min-height:0;
+  margin:6px auto 2px;
+  width:min(820px,100%);
+  font-size:11px;
+  line-height:1.35;
+  text-align:center;
+}
+#game.active .game-message:empty{display:none}
+#game.active .game-message:not(:empty){
+  padding:7px 12px;
+  border:1px solid #dfe3ee;
+  border-radius:12px;
+  background:#f7f8fc;
+  color:#525d74;
+  box-shadow:0 3px 10px rgba(31,39,82,.035);
+}
+#game.active .game-message:not(:empty)::first-letter{font-weight:900}
+
 #game.active .hud{
   width:max-content;max-width:100%;margin:0 auto 8px;
   padding:5px 10px;border:1px solid #e7e9f1;border-radius:999px;
@@ -182,7 +208,9 @@ body.mq-premium-mode .topbar{background:rgba(11,13,28,.9)!important;border-color
   overflow-x:hidden;
   scrollbar-width:thin;
   scrollbar-color:#d8dbea transparent;
-  padding:8px 10px 12px;
+  padding:7px 10px 8px;
+  min-height:0;
+  max-height:calc(100vh - 390px);
 }
 #game.active #game-stage::-webkit-scrollbar{width:6px}
 #game.active #game-stage::-webkit-scrollbar-thumb{background:#d8dbea;border-radius:99px}
@@ -330,11 +358,9 @@ body.mq-premium-mode .topbar{background:rgba(11,13,28,.9)!important;border-color
 #game.active .money-stage button{transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
 #game.active .money-stage button:hover{transform:translateY(-2px)}
 
-/* Success/failure feedback stays visible and calm */
-#game.active .game-message{
-  min-height:22px;margin-top:3px;font-size:11px;color:#626c82;
-}
-#game.active .game-message:not(:empty){padding:4px 10px;border-radius:999px;background:#f7f8fc}
+/* v7.4 — feedback stays directly below the activity, close enough to remain in the same visual flow */
+#game.active .game-message{color:#626c82}
+#game.active .game-stage + .game-message:not(:empty){margin-top:6px}
 
 @media(max-width:700px){
   #game.active .game-card{padding:11px 10px 9px}
