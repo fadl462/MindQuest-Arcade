@@ -40,7 +40,7 @@ const ROUTES=[
  ["Put these in a sensible journey order: airport → hotel → sightseeing. What comes first?","Airport",["Airport","Hotel","Sightseeing","Dinner"]],
  ["A map route is: start → river → bridge → town. What comes after the river?","Bridge",["Bridge","Start","Town","Airport"]],
  ["You are planning a trip. Which should usually happen before choosing a hotel?","Choose the destination",["Choose the destination","Pack souvenirs","Take photos","Return home"]],
- ["Which direction takes you from Accra toward Kumasi?","West",["North","South","East","West"]]
+ ["Which direction takes you from Accra toward Tamale?","North",["North","South","East","West"]]
 ];
 const INFO={
  place:["Place Finder","Identify a country, continent or capital.","Read the clue and choose the place that fits."],
@@ -74,8 +74,8 @@ function compass(){
 }
 function direction(){
  const BANK=[
-  ['Accra is east of Kumasi. From Kumasi, which direction is Accra?','East'],
-  ['Tamale is north of Kumasi. From Kumasi, which direction is Tamale?','North'],
+  ['Accra is east of Cape Coast. From Cape Coast, which direction is Accra?','East'],
+  ['Tamale is north of Accra. From Accra, which direction is Tamale?','North'],
   ['Cape Coast is west of Accra. From Accra, which direction is Cape Coast?','West'],
   ['Tamale is north of Kumasi. From Kumasi, which direction is Tamale?','North'],
   ['Tema is east of Accra. From Accra, which direction is Tema?','East'],
@@ -100,7 +100,7 @@ function landform(){
 }
 
 function distance(){
- const base=10+S.level*3,vals=[base,base+7+(activity()*2),base+15+(activity()*3)];const order=[...vals].sort((a,b)=>a-b);const correct=order.join(' → ');const distractors=[[...order].reverse().join(' → '),`${order[1]} → ${order[0]} → ${order[2]}`,`${order[2]} → ${order[1]} → ${order[0]}`].filter(x=>x!==correct);choiceWorld('distance',`Three routes are ${vals[0]} km, ${vals[1]} km and ${vals[2]} km. Which order is shortest to longest?`,[correct,...distractors],correct)
+ const base=10+S.level*3,vals=[base,base+5+(activity()*2),base+13];const order=[...vals].sort((a,b)=>a-b);const correct=order.join(' → ');choiceWorld('distance',`Three routes are ${vals[0]} km, ${vals[1]} km and ${vals[2]} km. Which order is shortest to longest?`,[correct,[...order].reverse().join(' → '),`${vals[1]} → ${vals[0]} → ${vals[2]}`,`${vals[2]} → ${vals[0]} → ${vals[1]}`],correct)
 }
 function choiceWorld(type,prompt,choices,correct){$('game-stage').innerHTML=`<div class="world-stage">${head(type)}<div class="world-question">${prompt}</div><div class="team-options" id="world-options"></div></div>`;const box=$('world-options');S.active=true;shuffle(choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
 

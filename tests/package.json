@@ -1,0 +1,5 @@
+{
+  "name": "mindquest-tests",
+  "private": true,
+  "scripts": {"test":"node verify.js && node solvability.js"}
+}

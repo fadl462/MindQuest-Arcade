@@ -1,10 +1,11 @@
 (() => {
 'use strict';
 const MQ=window.MQ;if(!MQ)return;
-const STORE='mindquest-progress-v4',PLAYER_KEY='mindquest-player-v1',SESSION='mindquest-session-v4',AGE_KEY='mindquest-age-pathway',VIEW_KEY='mindquest-current-view-v4',ACCOUNT_KEY='mindquest-account-v1',INTEL_KEY='mindquest-intelligence-v2';
+const STORE='mindquest-progress-v5',PLAYER_KEY='mindquest-player-v2',PROFILE_KEY='mindquest-profile-v2',SESSION='mindquest-session-v5',AGE_KEY='mindquest-age-pathway',VIEW_KEY='mindquest-current-view-v5',ACCOUNT_KEY='mindquest-account-v1',INTEL_KEY='mindquest-intelligence-v3';
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(STORE)||'{}')}catch{return {}}})();
-const legacySaved=(()=>{try{return JSON.parse(localStorage.getItem('mindquest-progress-v3')||'{}')}catch{return {}}})();
-const player=(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY)||'{}')}catch{return {}}})();
+const legacySaved=(()=>{try{return JSON.parse(localStorage.getItem('mindquest-progress-v4')||localStorage.getItem('mindquest-progress-v3')||'{}')}catch{return {}}})();
+const legacyPlayer=(()=>{try{return JSON.parse(localStorage.getItem('mindquest-player-v1')||localStorage.getItem('mindquest-profile-v1')||'{}')}catch{return {}}})();
+const player=(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY)||localStorage.getItem('mindquest-player-v1')||localStorage.getItem(PROFILE_KEY)||localStorage.getItem('mindquest-profile-v1')||'{}')}catch{return {}}})();
 const intel=(()=>{try{return JSON.parse(localStorage.getItem(INTEL_KEY)||'{}')}catch{return {}}})();
 let arcadeExitSave=false;
 const keyFor=(age,game)=>`${age}:${game}`;
@@ -13,10 +14,11 @@ const skillLabels={memory:'Memory',attention:'Attention',logic:'Logic',problemSo
 const allSkills=Object.keys(skillLabels);
 const checkpoint=()=>{const s=MQ.state;return {version:4,age:s.age,game:s.game,level:s.level,lives:s.lives,streak:s.streak,bestStreak:s.bestStreak,retryCount:Number(s.retryCount||0),milestonePending:!!s.milestonePending,milestoneLevel:s.milestoneLevel||0,detectiveActivity:s.detectiveActivity||0,memoryActivity:s.memoryActivity||0,reflexActivity:s.reflexActivity||0,builderActivity:s.builderActivity||0,teamActivity:s.teamActivity||0,worldActivity:s.worldActivity||0,moneyActivity:s.moneyActivity||0,savedAt:new Date().toISOString()}};
 const playerSnapshot=()=>{const s=MQ.state;return {version:1,xp:Number(s.xp||0),score:Number(s.score||0),earnedThisRun:Number(s.earnedThisRun||0),bestStreak:Number(s.bestStreak||0),skills:{...(s.skills||{})},skillStats:{...(s.skillStats||{})},account:s.account||null,premium:!!s.premium,premiumPlan:s.premiumPlan||"",premiumTrialUntil:Number(s.premiumTrialUntil||0)}};
-const savePlayer=()=>{try{Object.assign(player,playerSnapshot());localStorage.setItem(PLAYER_KEY,JSON.stringify(player));if(MQ.state.account)persistAccount(MQ.state.account);localStorage.setItem(INTEL_KEY,JSON.stringify(intel))}catch{}};
-const saveCheckpoint=()=>{if(arcadeExitSave||!MQ.state.game)return false;try{saved[keyFor(MQ.state.age,MQ.state.game)]=checkpoint();localStorage.setItem(STORE,JSON.stringify(saved));localStorage.setItem(SESSION,JSON.stringify({age:MQ.state.age,game:MQ.state.game}));localStorage.setItem(AGE_KEY,String(MQ.state.age));savePlayer();return true}catch{return false}};
-const migrateLegacy=()=>{try{if(Object.keys(saved).length===0&&Object.keys(legacySaved).length){for(const [k,p] of Object.entries(legacySaved)){if(!p||!p.game)continue;player.xp=Math.max(Number(player.xp||0),Number(p.xp||0));player.score=Math.max(Number(player.score||0),Number(p.score||0));player.bestStreak=Math.max(Number(player.bestStreak||0),Number(p.bestStreak||0));if(p.account&&!player.account)player.account=p.account;if(p.premium)player.premium=true;saved[k]={version:4,age:p.age,game:p.game,level:p.level,lives:p.lives,streak:p.streak,bestStreak:p.bestStreak,retryCount:Number(p.retryCount||0),milestonePending:!!p.milestonePending,milestoneLevel:p.milestoneLevel||0,detectiveActivity:p.detectiveActivity||0,memoryActivity:p.memoryActivity||0,reflexActivity:p.reflexActivity||0,builderActivity:p.builderActivity||0,teamActivity:p.teamActivity||0,worldActivity:p.worldActivity||0,moneyActivity:p.moneyActivity||0,savedAt:new Date().toISOString()};}localStorage.setItem(STORE,JSON.stringify(saved));localStorage.setItem(PLAYER_KEY,JSON.stringify(player));}}catch{}};
-const saveAndExit=()=>{if(!MQ.state.game)return;saveCheckpoint();try{localStorage.setItem(VIEW_KEY,'home')}catch{}arcadeExitSave=true;try{if(typeof MQ.goHome==='function')MQ.goHome();}finally{MQ.state.game=MQ.state.game;setTimeout(()=>arcadeExitSave=false,200)} };
+const savePlayer=()=>{try{Object.assign(player,playerSnapshot());localStorage.setItem(PLAYER_KEY,JSON.stringify(player));localStorage.setItem(PROFILE_KEY,JSON.stringify({version:2,...playerSnapshot()}));if(MQ.state.account)persistAccount(MQ.state.account);localStorage.setItem(INTEL_KEY,JSON.stringify(intel))}catch{}};
+const hasProgress=p=>!!(p&&p.game&&(Number(p.level)>1||p.milestonePending||Number(p[p.game+'Activity']||0)>0));
+const saveCheckpoint=()=>{if(arcadeExitSave||!MQ.state.game)return false;const c=checkpoint();if(!hasProgress(c))return false;try{saved[keyFor(MQ.state.age,MQ.state.game)]=c;localStorage.setItem(STORE,JSON.stringify(saved));localStorage.setItem(SESSION,JSON.stringify({age:MQ.state.age,game:MQ.state.game}));localStorage.setItem(AGE_KEY,String(MQ.state.age));savePlayer();return true}catch{return false}};
+const migrateLegacy=()=>{try{if(Object.keys(saved).length===0&&Object.keys(legacySaved).length){for(const [k,p] of Object.entries(legacySaved)){if(!p||!p.game)continue;player.xp=Math.max(Number(player.xp||0),Number(p.xp||0));player.score=Math.max(Number(player.score||0),Number(p.score||0));player.bestStreak=Math.max(Number(player.bestStreak||0),Number(p.bestStreak||0));if(p.account&&!player.account)player.account=p.account;if(p.premium)player.premium=true;saved[k]={version:4,age:p.age,game:p.game,level:p.level,lives:p.lives,streak:p.streak,bestStreak:p.bestStreak,retryCount:Number(p.retryCount||0),milestonePending:!!p.milestonePending,milestoneLevel:p.milestoneLevel||0,detectiveActivity:p.detectiveActivity||0,memoryActivity:p.memoryActivity||0,reflexActivity:p.reflexActivity||0,builderActivity:p.builderActivity||0,teamActivity:p.teamActivity||0,worldActivity:p.worldActivity||0,moneyActivity:p.moneyActivity||0,savedAt:new Date().toISOString()};}localStorage.setItem(STORE,JSON.stringify(saved));localStorage.setItem(PLAYER_KEY,JSON.stringify(player));localStorage.setItem(PROFILE_KEY,JSON.stringify({version:2,...player}));}}catch{}};
+const saveAndExit=()=>{if(!MQ.state.game)return;try{saveCheckpoint();localStorage.setItem(VIEW_KEY,'home');arcadeExitSave=true;if(typeof MQ.goHome==='function')MQ.goHome();}finally{setTimeout(()=>arcadeExitSave=false,1200)}};
 const restore=p=>{if(!p)return;const global={...player};Object.assign(MQ.state,global);MQ.state.age=Number(p.age||0);MQ.state.game=p.game;MQ.state.level=Number(p.level||1);MQ.state.lives=Number(p.lives||3);MQ.state.streak=Number(p.streak||0);MQ.state.bestStreak=Math.max(Number(MQ.state.bestStreak||0),Number(p.bestStreak||0));MQ.state.retryCount=Number(p.retryCount||0);MQ.state.milestonePending=!!p.milestonePending;MQ.state.milestoneLevel=Number(p.milestoneLevel||0);MQ.state.detectiveActivity=Number(p.detectiveActivity||0);MQ.state.memoryActivity=Number(p.memoryActivity||0);MQ.state.reflexActivity=Number(p.reflexActivity||0);MQ.state.builderActivity=Number(p.builderActivity||0);MQ.state.teamActivity=Number(p.teamActivity||0);MQ.state.worldActivity=Number(p.worldActivity||0);MQ.state.moneyActivity=Number(p.moneyActivity||0);MQ.state.active=false;MQ.state.timer=null;MQ.updateGlobal();syncPlayerIdentity()};
 function injectStyles(){if(document.getElementById('mq-intel-styles'))return;const s=document.createElement('style');s.id='mq-intel-styles';s.textContent=`
 /* v7.11 dashboard refinement: one identity source + clearly separated checkpoints */
@@ -126,7 +128,7 @@ function recordMilestone(level){
 }
 function recordLevel(level,game){
   ensureIntel();
-  const g=game||MQ.state.game,n=Number(level||0),now=new Date().toISOString(),eventKey=`${g}:${MQ.state.age}:${n}:${now}`;
+  const g=game||MQ.state.game,n=Number(level||0),now=new Date().toISOString(),eventKey=`${MQ.state.age}:${g}:${n}`;if(recordLevel._last&&recordLevel._last.key===eventKey&&Date.now()-recordLevel._last.at<3000)return;recordLevel._last={key:eventKey,at:Date.now()};
   const skillMap={memory:['memory','attention'],detective:['logic','problemSolving'],reflex:['reaction','precision'],builder:['problemSolving','precision'],team:['teamwork','empathy','responsibility'],world:['geography','problemSolving'],money:['financialLiteracy','problemSolving']};
   const pool=skillMap[g]||[];const delta={};
   const primary=pool.length?pool[(n-1)%pool.length]:null;
@@ -289,6 +291,8 @@ MQ.levelComplete=function(){
   if(before%5===0)recordMilestone(before);
   savePlayer();saveCheckpoint();renderIntelligenceConsole();
 };
+window.addEventListener('beforeunload',()=>{savePlayer();if(document.querySelector('.screen.active')?.id==='game')saveCheckpoint()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){savePlayer();if(document.querySelector('.screen.active')?.id==='game')saveCheckpoint()}});
 function syncHomePathway(){const age=Number(MQ.state.age);document.querySelectorAll('.age-btn').forEach((b,i)=>b.classList.toggle('active',i===age));const label=document.getElementById('path-label');if(label&&MQ.ages[age])label.textContent='Ages '+MQ.ages[age].range;}
 syncHomePathway();
 // Saved challenges are rendered inside the Player Intelligence Console only.

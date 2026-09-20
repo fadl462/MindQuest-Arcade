@@ -1,36 +1,27 @@
-# MindQuest Arcade — Memory Lab v0.2
+# MindQuest Arcade
 
-## What is included
-- 20 progressive Memory Lab levels.
-- 4 mini-activities per level = 80 activities.
-- Automatic level progression after all 4 activities are passed.
-- A failed activity fails the level and restarts it from Activity 1.
-- Six memory activity types: Visual Recall, Sequence Recall, Location Memory, Pair Memory, Feature Memory and Working Memory.
-- Age-specific memory loads and timing for ages 3–5, 6–8, 9–11, 12–14 and 15–18.
-- Difficulty progressively increases through memory load, distractors, sequence length, spatial grids, feature combinations and response windows.
-- No external libraries.
+MindQuest Arcade is a browser-based game-learning prototype for ages 3–18. It currently contains seven game worlds, five age pathways, 20 progressive levels per world and four activities per level.
 
-## Timing approach
-The timing is deliberately conservative: younger learners receive longer study and response windows, while older pathways gradually receive shorter windows and higher memory loads. These settings are intended for a playable educational prototype and should be tuned further using real learner performance data rather than treated as a clinically validated optimum.
+## Current architecture
+- Static web app suitable for GitHub Pages.
+- Player-wide profile storage is separated from per-game, per-age checkpoints.
+- Checkpoints are created only after meaningful progress and are saved on events/explicit save, not on a continuous timer.
+- Practice Insights explicitly describe gameplay practice signals; they are not IQ, clinical or academic assessments.
+- Level completion, failure, milestone and account events feed the local intelligence layer.
+- Basic accessibility support remains in the free/core experience.
+- Premium screens describe roadmap functionality honestly; payment processing and inactive premium modules are not presented as live features.
 
-## Files
-- index.html
-- styles.css
-- app.js
-- memory-lab.js
+## Game worlds
+Memory Lab, Detective, Reflex Arena, Builder, Team Quest, World Explorer and Money Mission.
 
-## Deploy
-Replace the corresponding files in the MindQuest-Arcade GitHub Pages repository and commit/push them to `main`.
+## Development status
+This remains a prototype. It is not yet a production child-data service, cloud account platform, payment system, teacher platform or validated educational assessment. Real-device testing, educator review and observed child usability testing remain required before production use.
 
-## v0.3 interaction update
-Each Memory Lab activity now opens with a dedicated instruction screen before the timed challenge begins. The learner sees the objective, how to play, timing and pass condition, then chooses “Start Activity”.
+## Regression checks
+Run:
 
+```bash
+npm test
+```
 
-## v0.7 hotfix
-- Fixed Memory Lab Start Activity event handling.
-- Added visible Starting state and guarded launch.
-- Added cache-busting query strings to app.js and memory-lab.js so GitHub Pages receives the new scripts.
-
-
-## v0.9 — Guaranteed home navigation
-The MindQuest brand is a real `index.html` link, so it returns to the home page independently of JavaScript. Script version numbers were also bumped to force browser cache refresh.
+The included tests are dependency-free static/regression checks. They are intentionally lightweight and should be complemented by browser/device end-to-end testing as the product moves toward pilot deployment.

@@ -32,14 +32,14 @@ function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=I
 function budgetMax(){
  const budget=S.level<8?20:S.level<15?40:70;const qs=[
   {a:`2 notebooks + 2 pencils for ${money(14)}`,b:`1 notebook + 4 pencils for ${money(12)}`,c:'B'},
-  {a:`4 pencils for ${money(8)}`,b:`6 pencils for ${money(15)}`,c:'A'},
+  {a:`3 fruit + 1 juice for ${money(18)}`,b:`4 fruit + 1 juice for ${money(16)}`,c:'B'},
   {a:`2 books for ${money(30)}`,b:`1 book + 3 notebooks for ${money(28)}`,c:'B'}
- ];const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('budgetMax',`Budget: ${money(budget)}. Which basket costs less?`),`Compare the stated basket totals. Do not assume one item is more useful than another.<div class="money-compare"><b>A: ${q.a}</b><span>vs</span><b>B: ${q.b}</b></div>`,['A','B'],q.c)
+ ];const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('budgetMax',`Budget: ${money(budget)}. Which basket gives more items for less money?`),`Compare the stated totals and item counts.<div class="money-compare"><b>A: ${q.a}</b><span>vs</span><b>B: ${q.b}</b></div>`,['A','B'],q.c)
 }
 function savingPlan(){
  const start=S.level<7?10:25+(S.level%4)*5, goal=start+20+(S.level%5)*10, weekly=S.level<8?5:10+(S.level%3)*5;
- const weeks=Math.ceil((goal-start)/weekly); const correct=`${weeks} ${weeks===1?'week':'weeks'}`;
- choice(head('savingPlan'),`You have <b>${money(start)}</b> and want <b>${money(goal)}</b>. If you save <b>${money(weekly)}</b> each week, about how long will it take?`,[correct,`${Math.max(1,weeks-1)} ${Math.max(1,weeks-1)===1?'week':'weeks'}`,`${weeks+1} weeks`,`${weeks+2} weeks`],correct);
+ const weeks=Math.ceil((goal-start)/weekly); const wk=n=>`${n} week${n===1?'':'s'}`,correct=wk(weeks);
+ choice(head('savingPlan'),`You have <b>${money(start)}</b> and want <b>${money(goal)}</b>. If you save <b>${money(weekly)}</b> each week, about how long will it take?`,[correct,wk(weeks+1),wk(weeks+2),weeks>1?wk(weeks-1):wk(weeks+3)],correct);
 }
 
 function exactChange(){
