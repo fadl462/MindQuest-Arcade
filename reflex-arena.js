@@ -38,9 +38,17 @@ function begin(){S.active=false;clearTimeout(S.timer);S.reflexToken=(S.reflexTok
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four reflex challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next challenge…`;if(last){S.reflexActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.reflexActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){
- const type=["target","color","avoid","sequence","go","double","multitap","switch","delay","rhythm","precision"][(S.level-1+activity())%11],i=INFO[type];S.active=false;clearTimeout(S.timer);
+ const type=["target","color","avoid","sequence","go","double","multitap","switch","delay","rhythm","precision","alternate"][(S.level-1+activity())%12],i=INFO[type];S.active=false;clearTimeout(S.timer);
  $("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">⚡</div><span class="ui-skill">PSYCHOMOTOR</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>⚡ Faster as you advance</span><span>✓ Four activities per level</span></div><button id="reflex-start" class="primary-btn ui-start">Start Activity →</button></div>`;
  $("reflex-start").onclick=()=>runActivity(type);
+}
+function alternate(){
+ const token=begin(),steps=clamp(4+Math.floor(S.level/5)+activity(),4,8);let hit=0,side=0;
+ $('game-stage').innerHTML=`<div class="reflex-stage">${head('alternate','Hit the highlighted side, then alternate sides.')}<div id="alt-area" style="display:flex;justify-content:center;gap:24px;margin:22px auto;max-width:520px"><button class="reflex-target" id="alt-left">LEFT</button><button class="reflex-target" id="alt-right">RIGHT</button></div><div id="alt-count" class="reflex-target">0 / ${steps}</div></div>`;
+ const left=$('alt-left'),right=$('alt-right'),count=$('alt-count');S.active=true;
+ const arm=()=>{if(!S.active||token!==S.reflexToken)return;left.classList.toggle('good',side===0);right.classList.toggle('good',side===1);S.timer=setTimeout(fail,responseWindow(1.05))};
+ const tap=(which)=>{if(!S.active)return;if(which!==side){fail();return}clearTimeout(S.timer);hit++;count.textContent=`${hit} / ${steps}`;if(hit>=steps){complete();return}side=1-side;arm()};
+ left.onclick=()=>tap(0);right.onclick=()=>tap(1);arm();
 }
 function switchSignal(){const dirs=[['←','LEFT'],['→','RIGHT'],['↑','UP'],['↓','DOWN']];const d=dirs[(S.level+activity()+S.age)%dirs.length];const token=begin();$('game-stage').innerHTML=`<div class="reflex-stage">${head('switch')}<div class="reflex-target">GET READY</div><div class="reflex-controls"><button class="reflex-key" data-v="LEFT">←</button><button class="reflex-key" data-v="RIGHT">→</button><button class="reflex-key" data-v="UP">↑</button><button class="reflex-key" data-v="DOWN">↓</button></div></div>`;const delay=signalDelay();S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const t=performance.now();document.querySelector('.reflex-target').textContent=d[0];S.active=true;S.timer=setTimeout(()=>fail(),responseWindow());document.querySelectorAll('.reflex-key').forEach(b=>b.onclick=()=>{if(!S.active)return;clearTimeout(S.timer);b.dataset.v===d[1]?complete():fail();});},delay)}
 function delayedTap(){
@@ -62,7 +70,7 @@ function precision(){
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;b.disabled=false;S.active=true;S.timer=setTimeout(fail,responseWindow(.85))},signalDelay());
 }
 
-function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else if(type==="double")doubleTarget();else if(type==="multitap")multiTap();else if(type==="switch")switchSignal();else if(type==="delay")delayedTap();else if(type==="rhythm")rhythm();else if(type==="precision")precision();else if(type==="chase")chase();else sequence()}
+function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else if(type==="double")doubleTarget();else if(type==="multitap")multiTap();else if(type==="switch")switchSignal();else if(type==="delay")delayedTap();else if(type==="rhythm")rhythm();else if(type==="precision")precision();else if(type==="chase")chase();else if(type==="alternate")alternate();else sequence()}
 function goNoGo(){
  const token=begin(),go=Math.random()>.38;
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('go','Wait for the signal. Tap GO, but do not tap NO-GO.')}<div class="reflex-signal" id="go-signal">Get ready…</div><div id="go-button-wrap" class="reflex-options"><button id="go-button" class="reflex-target" disabled>GO</button></div></div>`;

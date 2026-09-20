@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict","leadership","actionSequence"];
+const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict","leadership","actionSequence","tradeoff"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const BANK=[
  ["A friend drops their crayons. What could you do?",["Help pick them up","Laugh","Walk away"]],
@@ -84,7 +84,9 @@ const INFO={
  communication:["Communication Check","Choose a clear and respectful message for the situation.","Be specific, calm and constructive."],
  negotiation:["Negotiation Check","Choose a fair way to reach agreement when people want different things.","Listen, compare options and agree on a workable next step."],
  conflict:["Conflict Resolution","Choose a calm response that helps a disagreement move forward.","Focus on the problem, listen to both sides and look for a fair next step."],
- leadership:["Leadership Check","Match tasks to people and help a team use its strengths.","Good delegation considers skills, fairness and the shared goal."]
+ leadership:["Leadership Check","Match tasks to people and help a team use its strengths.","Good delegation considers skills, fairness and the shared goal."],
+actionSequence:["Action Sequence","Choose the best order for completing a team task.","Put the actions in a sensible sequence before the team begins."],
+tradeoff:["Team Trade-off","Choose a fair solution when the team has competing needs.","Balance fairness, time and the needs of the whole group."]
 };
 function activity(){return Number.isInteger(S.teamActivity)?S.teamActivity:0}
 function levelIndex(){return (S.level-1)%20}
@@ -116,7 +118,14 @@ function leadership(){
  const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('leadership'),q[0],q[2],q[1]);
 }
 
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else if(type==="leadership")leadership();else if(type==="actionSequence")actionSequence();else plan()}
+function tradeoff(){
+ const qs=[
+  ['Your team has 10 minutes left. One person wants to perfect the poster while another wants to finish the presentation. What is the fairest first move?',['Agree on the most important tasks and split the remaining time','Let the loudest person decide','Ignore the presentation','Start over'], 'Agree on the most important tasks and split the remaining time'],
+  ['Two teammates both need the only tablet. What is a fair response?',['Create a turn-taking plan','Give it to the fastest person','Hide the tablet','Argue until someone leaves'], 'Create a turn-taking plan'],
+  ['The group has limited materials. What should the team do first?',['Decide together how to share them','Keep materials with one person','Use everything immediately','Choose randomly'], 'Decide together how to share them']
+ ];const q=qs[(S.level+activity()+S.age)%qs.length];choice(q[0],q[0],q[1],q[2]);
+}
+function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else if(type==="leadership")leadership();else if(type==="actionSequence")actionSequence();else if(type==="tradeoff")tradeoff();else plan()}
 
 function negotiation(){
  const qs=[

@@ -2,7 +2,7 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$,shuffle=a=>[...a].sort(()=>Math.random()-.5),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan","compareShop","basketBuild"];
+const TYPES=["count","compare","change","budget","discount","unit","savings","needs","savingPlan","compareShop","basketBuild","budgetMax"];
 const INFO={
  count:["Money Match","Count Ghana cedi coins and notes.","Add the values carefully, then choose the total."],
  compare:["Price Detective","Compare prices and decide which amount is greater, smaller or equal.","Read both amounts before choosing."],
@@ -13,7 +13,9 @@ const INFO={
  savings:["Savings Mission","Calculate how much more you need to reach a savings goal.","Compare your current savings with the target."],
  needs:["Needs & Wants","Choose the purchase that best matches a stated need and budget.","Think about the purpose of the money before choosing a purchase."],
  savingPlan:["Savings Planner","Choose the plan that reaches a goal while leaving a realistic amount to save each time.","Compare the goal, starting amount and regular saving amount."],
- compareShop:["Smart Price Compare","Compare two products using both price and quantity.","Check the total price and how many items you receive before deciding."]
+ compareShop:["Smart Price Compare","Compare two products using both price and quantity.","Check the total price and how many items you receive before deciding."],
+budgetMax:["Budget Builder","Choose the basket that gives the most value without exceeding the budget.","Check the total cost first, then compare what each basket gives you."],
+basketBuild:["Basket Builder","Build a useful basket while meeting the item requirement and budget.","Select the required number of items without exceeding the budget."]
 };
 const VALUES=[1,2,5,10,20,50,100];
 function activity(){return Number.isInteger(S.moneyActivity)?S.moneyActivity:0}
@@ -25,12 +27,19 @@ function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);con
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$('game-stage').innerHTML=`<div class="universal-instruction"><div class="ui-icon">💰</div><span class="ui-skill">COGNITIVE</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>💵 Use Ghana cedis</span><span>✓ 4 activities per level</span></div><button id="money-start" class="primary-btn ui-start">Start Activity →</button></div>`;$('money-start').onclick=()=>runActivity(type)}
 
+function budgetMax(){
+ const budget=S.level<8?20:S.level<15?40:70;const qs=[
+  {a:`2 notebooks + 2 pencils for ${money(14)}`,b:`1 notebook + 4 pencils for ${money(12)}`,c:'B'},
+  {a:`3 fruit + 1 juice for ${money(18)}`,b:`2 fruit + 2 juice for ${money(16)}`,c:'A'},
+  {a:`2 books for ${money(30)}`,b:`1 book + 3 notebooks for ${money(28)}`,c:'B'}
+ ];const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('budgetMax',`Budget: ${money(budget)}. Which basket gives more useful items for less money?`),`Choose the better-value basket.<div class="money-compare"><b>A: ${q.a}</b><span>vs</span><b>B: ${q.b}</b></div>`,['A','B'],q.c)
+}
 function savingPlan(){
  const start=S.level<7?10:25+(S.level%4)*5, goal=start+20+(S.level%5)*10, weekly=S.level<8?5:10+(S.level%3)*5;
  const weeks=Math.ceil((goal-start)/weekly); const correct=`${weeks} weeks`;
  choice(head('savingPlan'),`You have <b>${money(start)}</b> and want <b>${money(goal)}</b>. If you save <b>${money(weekly)}</b> each week, about how long will it take?`,[correct,`${Math.max(1,weeks-1)} weeks`,`${weeks+1} weeks`,`${weeks+2} weeks`],correct);
 }
-function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else if(type==="compareShop")compareShop();else if(type==="basketBuild")basketBuild();else budget()}
+function runActivity(type){if(type==="count")count();else if(type==="compare")compare();else if(type==="change")change();else if(type==="discount")discount();else if(type==="unit")unit();else if(type==="savings")savings();else if(type==="needs")needs();else if(type==="savingPlan")savingPlan();else if(type==="compareShop")compareShop();else if(type==="basketBuild")basketBuild();else if(type==="budgetMax")budgetMax();else budget()}
 function money(n){return `GH₵${Number(n).toFixed(n%1?2:0)}`}
 function options(correct,others){const out=[String(correct)];for(const x of others.map(String)){if(!out.includes(x))out.push(x);if(out.length===4)break}return shuffle(out)}
 function choice(title,prompt,choices,correct){$('game-stage').innerHTML=`<div class="team-stage money-stage">${title}<div class="team-question">${prompt}</div><div id="money-options" class="team-options"></div></div>`;const box=$('money-options');S.active=true;options(correct,choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===String(correct)?complete():fail();box.appendChild(b)})}

@@ -45,7 +45,8 @@ const INFO={
  count:['Count & Recall','Remember how many times each object appeared.','QUANTITY MEMORY'],
  direction:['Direction Memory','Remember the direction sequence, then repeat it exactly.','DIRECTIONAL MEMORY'],
  temporal:['Temporal Recall','Remember the order and timing of events, then rebuild the sequence.','TIME-ORDER MEMORY'],
- reverse:['Reverse Recall','Remember a sequence, then reproduce it from last to first.','REVERSE MEMORY']
+ reverse:['Reverse Recall','Remember a sequence, then reproduce it from last to first.','REVERSE MEMORY'],
+interference:['Interference Recall','Remember the target sequence while ignoring a brief distractor sequence.','DISTRACTION-RESISTANT MEMORY']
 };
 function cfg(){
  const base=[{show:5200,response:18000,count:3},{show:4300,response:15000,count:4},{show:3600,response:12500,count:5},{show:3200,response:10500,count:6},{show:2900,response:9500,count:6}][S.age];
@@ -186,12 +187,18 @@ const RULES={
  reverse:'Remember the sequence, then reproduce it from last to first.',
  temporal:'Remember the event order, then reproduce the sequence from first to last.'
 };
+function interference(){begin((sp,t)=>{
+ const count=clamp(3+Math.floor(S.level/5),3,8);
+ const target=shuffle(ICONS).slice(0,count), distract=shuffle(ICONS.filter(x=>!target.includes(x))).slice(0,Math.min(4,2+Math.floor(S.level/6)));
+ $('game-stage').innerHTML=`<div class="memory-wrap">${header('interference','Remember the TARGET sequence. Ignore the distractors.')}<div class="memory-timer">Target sequence</div><div class="sequence-display">${target.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div class="memory-timer" style="margin-top:14px">Distractor flash</div><div class="sequence-display">${distract.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div></div>`;
+ S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;$('game-stage').innerHTML=`<div class="memory-wrap">${header('interference','Tap the target objects in the original order.')}<div id="interference-choices" class="memory-items"></div><div id="interference-picked" class="picked-sequence"></div></div>`;const box=$('interference-choices'),picked=$('interference-picked');let n=0;S.active=true;shuffle(target.concat(distract)).forEach(x=>{const b=document.createElement('button');b.className='choice';b.textContent=x;b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==target[n]){b.classList.add('bad');fail()}else{b.disabled=true;b.classList.add('good');picked.textContent+=(n?' ':'')+x;if(++n===target.length)complete()}};box.appendChild(b)});deadline(sp.response)},Math.max(1800,sp.show+900))
+})}
 function instructions(type){
  const i=INFO[type],sp=cfg();
  $('game-stage').innerHTML=`<div class="memory-instruction-screen"><div class="instruction-icon">🧠</div><span class="memory-kind">${i[2]}</span><div class="instruction-activity">Activity ${(S.memoryActivity||0)+1} of 4</div><h2>${i[0]}</h2><p class="instruction-purpose">${i[1]}</p><div class="instruction-rule"><strong>How to play</strong><p>${RULES[type]}</p></div><div class="instruction-timing"><span>⏱️ Study: ${(sp.show/1000).toFixed(1)} sec • Response: ${Math.round(sp.response/1000)} sec</span><span>🎯 Pass with no incorrect response</span></div><button id="start-memory-activity" type="button" class="primary-btn instruction-start">Start Activity →</button></div>`;
  S.active=false;clearTimeout(S.timer);
  $('start-memory-activity').onclick=()=>{START[type]();};
 }
-function run(){S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;let type=PLANS[S.level-1]?.[S.memoryActivity]||'visual';if(S.level>=10 && S.memoryActivity===3) type='grid';instructions(type)}
+function run(){S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;let type=PLANS[S.level-1]?.[S.memoryActivity]||'visual';if(S.level>=10 && S.memoryActivity===3) type='grid';if(S.level>=14 && S.memoryActivity===2) type='interference';instructions(type)}
 window.MQMemoryLab={run};
 })();

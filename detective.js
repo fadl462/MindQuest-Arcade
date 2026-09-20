@@ -9,8 +9,8 @@ const plans=[
  ['clue','pattern','analogy','odd'],['rule','sequence','math','clue'],['order','analogy','pattern','deduction'],['math','clue','sequence','rule'],
  ['deduction','pattern','order','analogy'],['sequence','rule','clue','math'],['visual','odd','deduction','order'],['pattern','math','analogy','clue'],
  ['rule','deduction','sequence','visual'],['analogy','order','math','pattern'],['clue','rule','deduction','sequence'],['visual','math','order','analogy'],
- ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','data'],
- ['estimate','classify','compare','ranking'],['classify','estimate','constraint','probability']
+ ['deduction','pattern','clue','rule'],['sequence','visual','analogy','math'],['order','deduction','pattern','clue'],['rule','math','visual','chain'],
+ ['estimate','classify','compare','ranking'],['classify','estimate','constraint','probability'],['chain','data','ranking','constraint']
 ];
 const info={
  sequence:['Sequence Detective','Find what comes next in the sequence.','Look for the change between each item, then choose the item that continues the rule.'],
@@ -31,7 +31,8 @@ const info={
  probability:['Probability Detective','Compare simple chances and choose the outcome that is most likely.','Count the possible outcomes and compare how often each can occur.'],
  estimate:['Estimate Detective','Choose the closest sensible estimate.','Use the scale and information given. An estimate should be close, not exact.'],
  classify:['Classification Detective','Group an item by its defining property.','Look at the rule for the group and choose the item that belongs.'],
- data:['Data Detective','Read a small table and identify the correct comparison.','Compare the values in the table before choosing the answer.']
+ data:['Data Detective','Read a small table and identify the correct comparison.','Compare the values in the table before choosing the answer.'],
+chain:['Multi-Clue Chain','Solve two linked clues before choosing the final answer.','Use the first clue to narrow the options, then use the second clue to confirm the answer.']
 };
 function age(){return S.age}
 function difficulty(){return S.level + age()*.7}
@@ -193,7 +194,16 @@ function data(){
  begin('data',`<div class="detective-prompt"><h3>${q.q}</h3><div class="logic-sequence">${q.rows.map(r=>`<span>${r[0]}: ${r[1]}</span>`).join('')}</div></div>`,q.o.map(x=>({value:x,label:`<strong>${x}</strong>`})),q.a);
 }
 
-function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'rankOrder':rankOrder();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'deduction':deduction();}}
+function chain(){
+ const sets=[
+  {q:'Four friends have different numbers of books. Ama has more than Kojo. Esi has fewer than Kojo. Who must have the most?',c:'Ama',o:['Ama','Kojo','Esi','They are equal']},
+  {q:'A number is greater than 20 and less than 30. It is even and divisible by 4. Which number fits?',c:'24',o:['22','24','26','28']},
+  {q:'Three boxes are red, blue and green. The red box is not first. Blue comes before green. Which order works?',c:'Blue → Green → Red',o:['Blue → Green → Red','Red → Blue → Green','Green → Blue → Red','Blue → Red → Green']},
+  {q:'A trip is longer than 2 hours but shorter than 5 hours. It takes a whole number of hours and is not 3. How long is it?',c:'4 hours',o:['2 hours','3 hours','4 hours','5 hours']}
+ ];
+ const q=sets[(S.level+S.detectiveActivity+S.age)%sets.length];choice(q.q,q.q,q.o,q.c)
+}
+function run(type){switch(type){case'sequence':sequence();break;case'odd':odd();break;case'pattern':pattern();break;case'analogy':analogy();break;case'math':math();break;case'clue':clue();break;case'order':order();break;case'rule':rule();break;case'visual':visual();break;case'compare':compare();break;case'estimate':estimate();break;case'classify':classification();break;case'classification':classification();break;case'ranking':ranking();break;case'rankOrder':rankOrder();break;case'constraint':constraint();break;case'probability':probability();break;case'data':data();break;case'chain':chain();break;case'deduction':deduction();}}
 function start(){S.detectiveActivity=0;S.detectiveCorrect=0;window.MQDetective={run:()=>{const type=plans[S.level-1][S.detectiveActivity]||'sequence';renderInstruction(type)}}}
 start();
 })();
