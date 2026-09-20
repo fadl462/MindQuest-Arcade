@@ -25,7 +25,7 @@ function syncPlayerIdentity(){const n=document.getElementById('player-identity-n
 function addProfileButton(){injectStyles();let box=document.querySelector('.header-actions');if(box&&!document.getElementById('mq-profile-open')){const b=document.createElement('button');b.id='mq-profile-open';b.className='header-action profile-action';b.type='button';b.title='Player Profile';b.setAttribute('aria-label','Open player profile');b.innerHTML='<span>📊</span><small>Profile</small>';b.onclick=openProfile;box.insertBefore(b,box.firstChild)}if(!document.getElementById('mq-profile-overlay')){const d=document.createElement('div');d.id='mq-profile-overlay';d.className='mq-profile-overlay';document.body.appendChild(d)}}
 try{const age=Number(localStorage.getItem(AGE_KEY));if(Number.isInteger(age)&&age>=0&&age<MQ.ages.length)MQ.state.age=age;const a=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||'null');if(a)MQ.state.account=a;}catch{}
 try{const trialUntil=Number(localStorage.getItem('mindquest-premium-trial-until')||0);if(trialUntil>Date.now()){MQ.state.premium=true;MQ.state.premiumTrialUntil=trialUntil;MQ.state.premiumPlan='7-day-preview';}}catch{}
-function setView(view){try{localStorage.setItem(VIEW_KEY,view)}catch{}}
+function setView(view){try{localStorage.setItem(VIEW_KEY,view)}catch{};requestAnimationFrame(()=>requestAnimationFrame(()=>{try{window.scrollTo({top:0,left:0,behavior:'auto'})}catch{window.scrollTo(0,0)}document.documentElement.scrollTop=0;document.body.scrollTop=0;const app=document.getElementById('app');if(app)app.scrollTop=0;}))}
 function activeSavedCheckpoint(){
   try{
     const session=JSON.parse(localStorage.getItem(SESSION)||'null');

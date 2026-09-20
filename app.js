@@ -12,7 +12,18 @@ const games=[
 ];
 const state={age:0,game:"memory",level:1,lives:3,streak:0,bestStreak:0,xp:0,score:0,earnedThisRun:0,active:false,timer:null,skills:{cognitive:0,behavioural:0,psychomotor:0},skillStats:{memory:0,attention:0,logic:0,problemSolving:0,reaction:0,precision:0,teamwork:0,empathy:0,responsibility:0,financialLiteracy:0,geography:0},milestonePending:false,account:null,premium:false,premiumPlan:"",premiumTrialUntil:0};
 const $=id=>document.getElementById(id); const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');}
+function scrollToTop(){
+ try{window.scrollTo({top:0,left:0,behavior:'auto'});}catch{window.scrollTo(0,0)}
+ const app=document.getElementById('app');
+ if(app)app.scrollTop=0;
+ document.documentElement.scrollTop=0;
+ document.body.scrollTop=0;
+}
+function show(id){
+ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+ $(id)?.classList.add('active');
+ requestAnimationFrame(()=>requestAnimationFrame(scrollToTop));
+}
 function difficulty(){return (1+(state.level-1)*.11)*ages[state.age].factor;}
 function updateGlobal(){
  $("xp").textContent=state.xp;$("streak").textContent=state.streak;$("badges").textContent=Math.floor(state.xp/500);$("level").textContent=state.level;$("lives").textContent=state.lives;$("game-streak").textContent=state.streak;$("score").textContent=state.score;$("difficulty").textContent=difficulty().toFixed(1)+"×";$("progress").style.width=(state.level/20*100)+"%";$("progress-label").textContent=`Level ${state.level} of 20`;
