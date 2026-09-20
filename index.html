@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111827"><title>MindQuest Arcade</title>
-<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="arcade-games.css?v=1.0"><link rel="stylesheet" href="mindquest-v3.css?v=3.6">
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="arcade-games.css?v=1.0"><link rel="stylesheet" href="mindquest-v3.css?v=3.7">
 </head>
 <body><div id="app">
 <header class="topbar">
@@ -12,9 +12,6 @@
     <div class="stat-pill"><span class="stat-icon xp-icon">⭐</span><span><b id="xp">0</b><small>XP</small></span></div>
     <div class="stat-pill"><span class="stat-icon streak-icon">🔥</span><span><b id="streak">0</b><small>Streak</small></span></div>
     <div class="stat-pill"><span class="stat-icon badge-icon">🏅</span><span><b id="badges">0</b><small>Badges</small></span></div>
-  </div>
-  <div class="header-actions">
-    <button id="settings-open" class="header-action" type="button" aria-label="Open settings"><span>⚙️</span><small>Settings</small></button>
   </div>
 </div>
 </header>
@@ -33,18 +30,8 @@
 <section id="premium" class="screen"><div class="premium-shell"><div class="premium-hero"><div><p class="eyebrow">LEVEL 20+ • PREMIUM VAULT</p><h1>The MindQuest Infinity Layer</h1><p class="lead">The core pathway is complete. Beyond Level 20, MindQuest becomes an adaptive mastery system with deeper analytics, advanced challenges and expanded player controls.</p></div><div class="premium-orb">✦</div></div><div class="premium-banner"><span id="premium-status">PREMIUM ACCESS REQUIRED</span><strong>Core pathway complete</strong><p>Premium content is intentionally separated from the free 20-level journey.</p></div><div id="premium-grid" class="premium-grid"></div></div></section>
 <section id="result" class="screen"><div class="result-card"><div id="result-icon" class="result-icon">🏆</div><p class="eyebrow">MISSION COMPLETE</p><h1 id="result-title">Amazing work!</h1><p id="result-text"></p><div class="result-stats"><div><span>XP earned</span><b id="result-xp">0</b></div><div><span>Levels</span><b id="result-levels">20</b></div><div><span>Best streak</span><b id="result-streak">0</b></div></div><div class="result-actions"><button id="play-again" class="primary-btn">Play Again</button><button id="result-home" class="ghost-btn">Back to Arcade</button></div></div></section>
 </main>
-<div id="settings" class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" aria-hidden="true">
-  <div class="settings-inner" role="document">
-    <div class="settings-head"><div><p class="eyebrow">PLAYER CONTROLS</p><h2 id="settings-title">MindQuest Settings</h2><p class="settings-subtitle">Shape the way MindQuest feels while you play.</p></div><button id="settings-close" class="icon-btn settings-close" type="button" aria-label="Close settings">✕</button></div>
-    <div class="settings-section-label">AUDIO EXPERIENCE</div>
-    <button class="setting-card" id="sound-setting-card" type="button"><span class="setting-leading">🎧</span><span class="setting-copy"><strong>Focus soundscape</strong><small>Soft ambient tones designed for thinking activities.</small></span><span class="switch"><input id="sound-toggle" type="checkbox" tabindex="-1"><span class="switch-track"></span></span></button>
-    <button class="setting-card" id="sfx-setting-card" type="button"><span class="setting-leading">✨</span><span class="setting-copy"><strong>Game sound effects</strong><small>Short feedback sounds for correct answers and milestones.</small></span><span class="switch"><input id="sfx-toggle" type="checkbox" tabindex="-1"><span class="switch-track"></span></span></button>
-    <div class="setting-card volume-card"><span class="setting-leading">🔊</span><span class="setting-copy"><strong>Sound level</strong><small>Keep the focus sound comfortable and subtle.</small><div class="range-wrap"><input id="volume-control" type="range" min="0" max="1" step="0.01" value="0.18" aria-label="Sound level"><div class="range-labels"><span>Quiet</span><span id="volume-value">18%</span><span>Full</span></div></div></span></div>
-    <div class="settings-footer"><span>🛡️</span><div><strong>Your choice, always.</strong><p>Sound never controls gameplay. You can change these controls at any time.</p></div></div>
-  </div>
 </div>
-</div>
-<script src="app.js?v=3.6"></script>
+<script src="app.js?v=3.7"></script>
 <script>(()=>{const mq=window.MQ;if(!mq)return;const key='mindquest-age-pathway',stored=Number(localStorage.getItem(key));const age=Number.isInteger(stored)&&stored>=0&&stored<mq.ages.length?stored:0;mq.state.age=age;document.querySelectorAll('.age-btn').forEach((b,i)=>b.classList.toggle('active',i===age));document.getElementById('path-label').textContent='Ages '+mq.ages[age].range;mq.updateGlobal();const account=mq.state.account;if(account){document.getElementById('account-home-name').textContent=account.displayName;document.getElementById('account-home-note').textContent='Player account active on this device. Longer-term progress tracking is enabled.';document.getElementById('account-home-badge').textContent='PLAYER';}})();</script>
-<script src="memory-lab.js?v=3.5"></script><script src="detective.js?v=1.4"></script><script src="reflex-arena.js?v=3.5"></script><script src="builder.js?v=3.5"></script><script src="team-quest.js?v=1.0"></script><script src="world-explorer.js?v=3.5"></script><script src="money-mission.js?v=3.5"></script><script src="progress.js?v=3.6"></script>
+<script src="memory-lab.js?v=3.5"></script><script src="detective.js?v=1.4"></script><script src="reflex-arena.js?v=3.5"></script><script src="builder.js?v=3.5"></script><script src="team-quest.js?v=1.0"></script><script src="world-explorer.js?v=3.5"></script><script src="money-mission.js?v=3.5"></script><script src="progress.js?v=3.7"></script>
 </body></html>
