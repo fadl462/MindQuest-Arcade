@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111827"><title>MindQuest Arcade</title>
-<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="arcade-games.css?v=1.0"><link rel="stylesheet" href="mindquest-v3.css?v=4.2"><link rel="stylesheet" href="mindquest-ui-v6.css?v=6.6">
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="arcade-games.css?v=1.0"><link rel="stylesheet" href="mindquest-v3.css?v=4.2"><link rel="stylesheet" href="mindquest-ui-v6.css?v=6.7">
 </head>
 <body><div id="app">
 <header class="topbar">
@@ -23,7 +23,7 @@
 <div class="card"><h2>Choose your age pathway</h2><div id="age-options" class="age-grid"></div></div>
 <div class="card"><div class="section-heading"><div><p class="eyebrow">GAME ARCADE</p><h2>Choose a challenge</h2></div><span id="path-label" class="pill">Ages 3–5</span></div><div id="game-list" class="game-grid"></div></div></section>
 <section id="game" class="screen"><div class="game-head">
-  <div class="game-head-left"><button id="back-home" class="ghost-btn back-btn">← <span>Arcade</span></button></div>
+  <div class="game-head-left"><button id="back-home" class="ghost-btn back-btn">← <span>Arcade</span></button><button id="save-game" class="ghost-btn save-game-btn" type="button" title="Save your progress and return to Arcade">Save &amp; Arcade</button></div>
   <div class="game-title"><span id="game-icon">🧠</span><div><p id="game-skill" class="eyebrow">COGNITIVE</p><h2 id="game-name">Memory Lab</h2></div></div>
   <div class="game-head-right"><div class="level-box"><span>LEVEL</span><b id="level">1</b><small>/ 20</small></div></div>
 </div><div class="progress-wrap"><div class="progress-line"><span id="progress"></span></div><div class="progress-meta"><span id="progress-label">Level 1 of 20</span><span id="difficulty">Difficulty 1.0×</span></div></div><div class="game-card"><div class="hud"><span>❤️ <b id="lives">3</b></span><span>🔥 <b id="game-streak">0</b></span><span>⭐ <b id="score">0</b></span></div><div id="game-stage"></div><div id="game-message" class="game-message" aria-live="polite"></div></div></section>
@@ -45,9 +45,9 @@
 <section id="result" class="screen"><div class="result-card"><div id="result-icon" class="result-icon">🏆</div><p class="eyebrow">MISSION COMPLETE</p><h1 id="result-title">Amazing work!</h1><p id="result-text"></p><div class="result-stats"><div><span>XP earned</span><b id="result-xp">0</b></div><div><span>Levels</span><b id="result-levels">20</b></div><div><span>Best streak</span><b id="result-streak">0</b></div></div><div class="result-actions"><button id="play-again" class="primary-btn">Play Again</button><button id="result-home" class="ghost-btn">Back to Arcade</button></div></div></section>
 </main>
 </div>
-<script src="app.js?v=6.4"></script>
+<script src="app.js?v=6.7"></script>
 <script>(()=>{const mq=window.MQ;if(!mq)return;const key='mindquest-age-pathway',stored=Number(localStorage.getItem(key));const age=Number.isInteger(stored)&&stored>=0&&stored<mq.ages.length?stored:0;mq.state.age=age;document.querySelectorAll('.age-btn').forEach((b,i)=>b.classList.toggle('active',i===age));document.getElementById('path-label').textContent='Ages '+mq.ages[age].range;mq.updateGlobal();const account=mq.state.account;if(account){document.getElementById('account-home-name').textContent=account.displayName;document.getElementById('account-home-note').textContent='Player account active on this device. Longer-term progress tracking is enabled.';document.getElementById('account-home-badge').textContent='PLAYER';const n=document.getElementById('player-identity-name');if(n)n.textContent=account.displayName;}})();</script>
-<script src="memory-lab.js?v=6.4"></script><script src="detective.js?v=6.4"></script><script src="reflex-arena.js?v=6.4"></script><script src="builder.js?v=6.4"></script><script src="team-quest.js?v=6.4"></script><script src="world-explorer.js?v=6.4"></script><script src="money-mission.js?v=6.4"></script><script src="progress.js?v=6.6"></script>
+<script src="memory-lab.js?v=6.7"></script><script src="detective.js?v=6.7"></script><script src="reflex-arena.js?v=6.7"></script><script src="builder.js?v=6.7"></script><script src="team-quest.js?v=6.7"></script><script src="world-explorer.js?v=6.7"></script><script src="money-mission.js?v=6.7"></script><script src="progress.js?v=6.7"></script>
 <script>document.addEventListener('click',e=>{const b=e.target.closest('.plan-btn');if(b&&window.MQ?.choosePremiumPlan)window.MQ.choosePremiumPlan(b.dataset.plan);});</script>
 <script>
 (()=>{

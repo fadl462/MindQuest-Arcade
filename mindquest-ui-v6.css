@@ -368,3 +368,66 @@ body.mq-premium-mode .topbar{background:rgba(11,13,28,.9)!important;border-color
 body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom>div{background:rgba(255,255,255,.05);border-color:#353a60}.mq-premium-mode .mq-console-insight span,.mq-premium-mode .mq-console-insight small,.mq-premium-mode .mq-console-subhead span,.mq-premium-mode .mq-console-mission span,.mq-premium-mode .mq-empty{color:#bfc5ea}
 @media(max-width:1050px){.mq-console-grid-6{grid-template-columns:repeat(3,1fr)!important}}
 @media(max-width:720px){.mq-console-grid-6{grid-template-columns:repeat(2,1fr)!important}.mq-console-insight-row,.mq-console-bottom{grid-template-columns:1fr}.mq-console-insight-row{gap:7px}}
+
+/* v6.7 universal interaction feedback — every game control gets an immediate visual response */
+#game.active button.good,
+#game.active .choice.good,
+#game.active .memory-option.good,
+#game.active .memory-card.good,
+#game.active .location-icon.good,
+#game.active .reflex-target.good,
+#game.active .reflex-color.good,
+#game.active .reflex-symbol.good,
+#game.active .scenario-option.good,
+#game.active .word-option.good,
+#game.active .builder-cell.good,
+#game.active .team-option.good,
+#game.active .team-option.selected,
+#game.active .builder-option.good,
+#game.active .builder-option.selected,
+#game.active .memory-cell.good,
+#game.active .memory-cell.placed,
+#game.active .pair-card.flipped,
+#game.active .pair-card.matched{
+  border-color:#7bc89e !important;
+  background:#effaf4 !important;
+  color:#1f6b46 !important;
+  box-shadow:0 0 0 2px rgba(123,200,158,.16),0 7px 18px rgba(43,110,76,.10) !important;
+}
+#game.active button.bad,
+#game.active .choice.bad,
+#game.active .memory-option.bad,
+#game.active .memory-card.bad,
+#game.active .location-icon.bad,
+#game.active .reflex-target.bad,
+#game.active .reflex-color.bad,
+#game.active .reflex-symbol.bad,
+#game.active .scenario-option.bad,
+#game.active .word-option.bad,
+#game.active .builder-cell.bad,
+#game.active .team-option.bad,
+#game.active .builder-option.bad,
+#game.active .memory-cell.bad{
+  border-color:#e39aa5 !important;
+  background:#fff3f5 !important;
+  color:#9a3343 !important;
+  box-shadow:0 0 0 2px rgba(227,154,165,.15) !important;
+}
+#game.active button.good:disabled,
+#game.active button.bad:disabled{opacity:1;cursor:default}
+#game.active button.selected,
+#game.active .choice.selected,
+#game.active .memory-card.selected,
+#game.active .memory-option.selected,
+#game.active .location-icon.selected{
+  border-color:#7777e8 !important;
+  background:#f1f1ff !important;
+  color:#35368b !important;
+  box-shadow:0 0 0 2px rgba(91,92,226,.14),0 7px 18px rgba(91,92,226,.10) !important;
+}
+#game.active button:active:not(:disabled){transform:translateY(1px) scale(.99)}
+#game.active button:focus-visible{outline:3px solid rgba(91,92,226,.22);outline-offset:2px}
+.save-game-btn{white-space:nowrap}
+.save-status{display:inline-flex;align-items:center;min-height:34px;padding:0 10px;border-radius:10px;color:#536079;background:#f6f8fc;border:1px solid #e1e5ef;font-size:10px;font-weight:800;opacity:0;transform:translateY(-2px);transition:opacity .18s ease,transform .18s ease}
+.save-status.visible{opacity:1;transform:translateY(0)}
+@media(max-width:700px){.save-game-btn{display:none}.save-status{display:none}}
