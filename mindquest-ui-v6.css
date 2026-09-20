@@ -594,3 +594,35 @@ body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom
 .mq-console .mq-saved-icon{width:30px;height:30px;font-size:15px}
 .mq-console .mq-saved-main p{font-size:8px}
 @media(max-width:700px){.mq-saved-list{grid-template-columns:1fr}.mq-resume-heading{align-items:flex-start}.mq-saved-card{grid-template-columns:34px minmax(0,1fr)}.mq-resume-saved{grid-column:2;width:max-content}.mq-console .mq-resume-saved{grid-column:auto;width:auto}}
+
+
+/* v7.7 — Memory Lab compact grid controls
+   Keep spatial-memory boards visually compact so the task, board and feedback
+   remain together in the normal desktop viewport. */
+#game.active .memory-board{
+  width:min(260px,100%)!important;
+  max-width:260px!important;
+  margin:7px auto!important;
+  gap:5px!important;
+}
+#game.active .memory-board .memory-cell{
+  min-height:0!important;
+  width:auto!important;
+  aspect-ratio:1/1!important;
+  font-size:18px!important;
+}
+#game.active .memory-board .recall-cell{
+  min-height:0!important;
+}
+#game.active .pair-grid{
+  width:min(300px,100%)!important;
+  max-width:300px!important;
+  margin:7px auto!important;
+}
+#game.active .pair-card{
+  min-height:50px!important;
+}
+@media(max-width:700px){
+  #game.active .memory-board{width:min(250px,100%)!important;max-width:250px!important}
+  #game.active .pair-grid{width:min(280px,100%)!important;max-width:280px!important}
+}
