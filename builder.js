@@ -2,7 +2,7 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
-const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+const shuffle=a=>{const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out};
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const TYPES=["fill","pattern","path","mirror","count","rotate","balance","sequence","symmetry","packing","allocate","weight","maze","tileMatch"];
 const INFO={

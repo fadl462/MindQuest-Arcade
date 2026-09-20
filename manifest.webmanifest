@@ -1,0 +1,10 @@
+{
+  "name": "MindQuest Arcade",
+  "short_name": "MindQuest",
+  "description": "A game adventure for ages 3–18 with progressive challenges across memory, reasoning, coordination, teamwork, geography and financial thinking.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f7f8fc",
+  "theme_color": "#111827",
+  "icons": [{"src":"./favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

@@ -3,7 +3,7 @@
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
-const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+const shuffle=a=>{const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out};
 const plans=[
  ['sequence','odd','pattern','analogy'],
  ['math','clue','order','rule'],
@@ -103,9 +103,15 @@ function probability(){
    ['A spinner has 2 yellow sections and 8 green sections of equal size. Which outcome is more likely?','Green',['Yellow','They are equally likely','It cannot be determined']],
    ['A box contains 9 triangle cards and 3 square cards. Which shape has the greater probability?','Triangle',['Square','They are equally likely','It cannot be determined']],
    ['A jar contains 7 black beads and 7 white beads. How do their chances compare?','They are equally likely',['Black is more likely','White is more likely','It cannot be determined']]
+  ],
+  [
+   ['A bag has 3 red and 2 blue counters. If you draw one counter, what is the probability of red?','3/5',['2/5','1/2','3/2']],
+   ['A spinner has 4 equal green sections and 6 equal yellow sections. What is the probability of green?','2/5',['3/5','4/6','1/5']],
+   ['A box has 5 red and 5 blue cards. You draw one card, replace it, then draw again. Which outcome has the greatest chance?','Red then red',['Red then blue','Blue then red','All are equally likely']],
+   ['A bag has 2 red, 3 blue and 5 green counters. What is the probability of not drawing green?','1/2',['1/5','3/10','2/3']]
   ]
  ];
- const q=banks[Math.min(a,3)][idx];
+ const q=banks[Math.min(a,4)][idx];
  begin('probability',`<h3>${q[0]}</h3><p>Compare the number of possible outcomes before choosing.</p>`,choices(q[1],q[2]),q[1]);
 }
 function data(){const sets=[{title:'Weekly Reading',rows:[['Ama',4],['Kojo',6],['Esi',5]],q:'Who read the most pages?',a:'Kojo',o:['Ama','Esi','They were equal']},{title:'Seeds Planted',rows:[['Team A',12],['Team B',9],['Team C',15]],q:'Which team planted the most?',a:'Team C',o:['Team A','Team B','They were equal']},{title:'Water Collected',rows:[['Monday',8],['Tuesday',11],['Wednesday',7]],q:'Which day had the highest amount?',a:'Tuesday',o:['Monday','Wednesday','All equal']}];const q=sets[(level()+S.detectiveActivity+age()-1)%sets.length];begin('data',`<h3>${q.title}</h3><div class="logic-sequence">${q.rows.map(r=>`<span>${r[0]}: ${r[1]}</span>`).join('')}</div><p>${q.q}</p>`,choices(q.a,q.o),q.a)}

@@ -1,197 +1,111 @@
 (() => {
-"use strict";
+'use strict';
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
-const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const TYPES=["choice","order","match","plan","empathy","responsibility","communication","negotiation","conflict","leadership","actionSequence","tradeoff","activeListening","perspective"];
+const shuffle=a=>{const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out};
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
-const BANK=[
- ["A friend drops their crayons. What could you do?",["Help pick them up","Laugh","Walk away"]],
- ["Two children want the same toy. What is fair?",["Take turns","Grab it","Hide it"]],
- ["Someone is alone during a game. What can you do?",["Invite them to join","Ignore them","Tell them to leave"]],
- ["A teammate has a different idea. What should you do?",["Listen to the idea","Shout","Refuse to listen"]],
- ["Your group has a small job to finish. What helps?",["Share the work","Let one person do everything","Argue"]],
- ["A teammate is nervous. What is kind?",["Encourage them","Make fun of them","Rush them"]],
- ["You finish your part early. What is responsible?",["Ask if anyone needs help","Distract everyone","Leave without telling the group"]],
- ["Someone gives you a helpful suggestion. What should you do?",["Listen and think about it","Get angry","Ignore it"]],
- ["Your team succeeds. What shows teamwork?",["Thank everyone","Take all the credit","Tease others"]],
- ["Your team makes a mistake. What is constructive?",["Fix it together","Blame one person","Hide it"]],
- ["There are two good ideas. What should the group do?",["Compare them together","Hide one","Choose without listening"]],
- ["A teammate does not understand the instructions. What helps?",["Explain calmly","Tell them to guess","Ignore them"]],
- ["A rule is unclear. What should the team do?",["Ask for clarification","Invent a secret rule","Ignore the rule"]],
- ["A shared item is damaged by accident. What is responsible?",["Tell the group and help fix it","Hide it","Blame someone else"]],
- ["The plan needs to change. What is best?",["Discuss the change together","Change everything secretly","Refuse to talk"]],
- ["A teammate is working slowly. What shows patience?",["Give them time","Rush them","Leave them behind"]],
- ["Someone is talking. What shows respect?",["Listen until they finish","Interrupt","Talk louder"]],
- ["A teammate asks for help. What is cooperative?",["Help if you can","Ignore them","Tell others not to help"]],
- ["You disagree about a game rule. What should you do?",["Talk and check the rule","Start shouting","Make up a new rule"]],
- ["A new person joins the group. What helps them feel included?",["Welcome them","Ignore them","Tell them they cannot join"]]
+const TYPES=['choice','order','match','plan','empathy','responsibility','communication','negotiation','conflict','leadership','actionSequence','tradeoff','activeListening','perspective'];
+const INFO={
+ choice:['Team Decision','Choose the response that best supports the group.'],order:['Team Order','Put the steps in a sensible order.'],match:['Team Match','Match the situation with the response that fits it.'],plan:['Team Plan','Select the actions that create a strong team plan.'],empathy:['Empathy Check','Choose the response that recognises another person’s feelings or needs.'],responsibility:['Responsibility Check','Choose the action that shows ownership and reliability.'],communication:['Communication Check','Choose the clearest and most respectful message.'],negotiation:['Negotiation Check','Choose a fair way to reach agreement.'],conflict:['Conflict Resolution','Choose the calm response that helps a disagreement move forward.'],leadership:['Leadership Check','Choose the delegation or leadership response that fits the shared goal.'],actionSequence:['Action Sequence','Put the actions in the best order before acting.'],tradeoff:['Team Trade-off','Choose a solution that balances competing needs.'],activeListening:['Active Listening','Choose the response that shows you understood before reacting.'],perspective:['Perspective Check','Choose the response that best considers another person’s point of view.']
+};
+const CHOICES=[
+ ['Two teammates want the same resource. What is fair?',['Take turns and agree on a schedule','Hide the resource','Let the loudest person take it','Ignore the problem']],
+ ['A teammate has a different idea. What should you do first?',['Ask them to explain the idea','Interrupt them','Reject it immediately','Tell everyone to stop talking']],
+ ['Your group is behind schedule. What helps?',['Share the remaining tasks and agree on priorities','Blame the slowest person','Leave the group','Hide the deadline']],
+ ['A teammate is confused about a task. What helps most?',['Explain the step and check their understanding','Tell them to guess','Ignore them','Take over without explaining']],
+ ['A shared item is damaged by accident. What is responsible?',['Tell the group and help fix or replace it','Hide the damage','Blame someone else','Leave it for another person']],
+ ['Two people disagree about a rule. What is a good next step?',['Check the agreed rule and discuss it calmly','Shout until someone gives in','Invent a new rule secretly','Stop the activity without talking']],
+ ['A new member joins the group. What helps them participate?',['Welcome them and explain the task','Keep them out of the discussion','Give them no role','Tell them to watch silently']],
+ ['You finish your part while a teammate is still working. What is constructive?',['Ask whether they need useful help','Distract them','Delete their work','Leave without telling anyone']]
 ];
 const ORDERS=[
- ["Notice the problem","Listen to the team","Choose a plan","Act together"],
- ["Set the goal","Share the tasks","Do the tasks","Check the result"],
- ["Hear each idea","Compare the ideas","Choose together","Try the plan"],
- ["Invite everyone","Explain the activity","Play together","Thank the team"],
- ["Find what is wrong","Ask for ideas","Try a solution","Review what happened"],
- ["Choose a goal","Decide who does what","Work on the task","Check the work"],
- ["Listen carefully","Ask a question","Agree on the next step","Do the next step"],
- ["Spot the missing item","Tell the team","Search together","Put it back"],
- ["Learn the rules","Share roles","Start the game","Resolve problems fairly"],
- ["Collect the materials","Plan the build","Build together","Clean up"],
- ["Identify the deadline","Divide the work","Complete the parts","Review before sharing"],
- ["Hear the concern","Explain your view","Find common ground","Agree on an action"],
- ["Welcome the new member","Explain the goal","Give them a role","Work together"],
- ["Notice someone needs help","Ask what they need","Help appropriately","Check that they are okay"],
- ["Define the problem","List possible solutions","Choose one","Test it"],
- ["Receive feedback","Ask for an example","Make an adjustment","Try again"],
- ["Decide the destination","Choose the route","Travel together","Check the plan"],
- ["Set a shared rule","Explain why it matters","Use the rule","Review whether it works"],
- ["Share the materials","Take turns","Finish the activity","Return the materials"],
- ["Recognize the conflict","Stay calm","Talk through the issue","Agree on a fair solution"]
+ ['Identify the goal','Share roles','Do the work','Check the result'],
+ ['Notice the problem','Listen to the people involved','Choose a plan','Act and review'],
+ ['Welcome the new member','Explain the goal','Give them a role','Work together'],
+ ['Hear each idea','Compare the ideas','Choose together','Try the plan'],
+ ['Spot the issue','Ask what is needed','Offer appropriate help','Check that it helped'],
+ ['Receive feedback','Ask for an example','Make an adjustment','Try again']
 ];
 const MATCH=[
- ["A teammate is confused","Explain the instructions"],["The team disagrees","Listen and discuss"],["Someone is left out","Invite them to join"],["The deadline is close","Share the remaining tasks"],["A mistake happens","Fix it together"],["A teammate is nervous","Encourage them"],["Someone is speaking","Listen without interrupting"],["A rule is unclear","Ask for clarification"],["A new member arrives","Welcome them"],["A teammate asks for help","Offer useful help"],["Two people need one item","Take turns"],["A plan is not working","Discuss an adjustment"],["A teammate has feedback","Listen and consider it"],["The group wins","Celebrate together"],["The group loses","Learn and try again"],["Someone has a different idea","Ask them to explain it"],["The group is rushed","Prioritize the task"],["A shared item is broken","Report it and help repair it"],["A disagreement grows","Stay calm and talk"],["A teammate finishes early","Offer help to the group"]
+ ['A teammate is confused','Explain the instructions and check understanding'],
+ ['Two people need one item','Agree on turn-taking'],
+ ['Someone is left out','Invite them to join'],
+ ['The deadline is close','Share and prioritise the remaining tasks'],
+ ['A mistake happens','Tell the team and fix it together'],
+ ['Someone is speaking','Listen without interrupting'],
+ ['A rule is unclear','Check the agreed rule'],
+ ['A new member arrives','Welcome them and explain the activity']
 ];
 const PLANS=[
- ["Listen to everyone's ideas","Share clear roles"],
- ["Take turns","Check that everyone understands"],
- ["Agree on the goal","Divide the work","Check progress"],
- ["Invite quieter members","Compare ideas","Choose together"],
- ["Set a deadline","Share tasks","Review the result"],
- ["Ask for help when needed","Communicate changes","Finish your part"],
- ["Listen first","Explain your view respectfully","Find common ground"],
- ["Welcome new members","Give clear instructions","Make space for questions"],
- ["Check the rules","Assign fair roles","Resolve problems calmly"],
- ["Collect materials","Plan the steps","Work together","Clean up"],
- ["Define the problem","Suggest options","Choose a solution","Test it"],
- ["Share progress","Offer support","Ask for clarification","Review together"],
- ["Set a shared goal","Use each person's strengths","Check quality","Celebrate contributions"],
- ["Notice who needs help","Ask before helping","Give appropriate support"],
- ["Compare two ideas","Discuss trade-offs","Choose transparently","Review the outcome"],
- ["Receive feedback","Ask questions","Make a change","Try again"],
- ["Make a simple plan","Tell everyone the plan","Do the work","Check completion"],
- ["Stay calm","Let each person speak","Agree on a fair next step"],
- ["Share resources","Take turns","Encourage effort","Return resources"],
- ["Review what happened","Identify what worked","Choose one improvement","Try it next time"]
+ ['Agree on the goal','Share clear roles','Set a check-in point','Review the result'],
+ ['Listen to ideas','Compare options','Choose together','Tell everyone the decision'],
+ ['Identify the problem','List possible solutions','Choose one','Test it'],
+ ['Set a deadline','Divide the work','Share progress','Check completion']
 ];
-const INFO={
- choice:["Team Decision","Choose the response that helps the group work well.","Look for cooperation, communication, fairness and responsibility."],
- order:["Team Order","Put the teamwork steps in the most useful order.","Think about what must happen first, what follows, and what should be checked at the end."],
- match:["Team Match","Match the situation with the helpful response.","Choose the response that best fits the situation."],
- plan:["Team Plan","Select actions that create a strong team plan.","Choose useful actions and avoid actions that create conflict or confusion."],
- responsibility:["Responsibility Check","Choose the action that shows ownership and reliability.","Think about honesty, following through and taking responsibility for shared work."],
- empathy:["Perspective Check","Choose the response that best recognises another person's perspective.","Think about how the other person may feel and what response would help."],
- communication:["Communication Check","Choose a clear and respectful message for the situation.","Be specific, calm and constructive."],
- negotiation:["Negotiation Check","Choose a fair way to reach agreement when people want different things.","Listen, compare options and agree on a workable next step."],
- conflict:["Conflict Resolution","Choose a calm response that helps a disagreement move forward.","Focus on the problem, listen to both sides and look for a fair next step."],
- leadership:["Leadership Check","Match tasks to people and help a team use its strengths.","Good delegation considers skills, fairness and the shared goal."],
-actionSequence:["Action Sequence","Choose the best order for completing a team task.","Put the actions in a sensible sequence before the team begins."],
-tradeoff:["Team Trade-off","Choose a fair solution when the team has competing needs.","Balance fairness, time and the needs of the whole group."],
-activeListening:["Active Listening","Choose the response that shows you understood before reacting.","Listen, reflect the key point, then respond to the issue."],
-perspective:["Perspective Check","Consider how a teammate may experience a situation before responding.","Think about the other person’s viewpoint, then choose the most considerate response."]
-};
+const EMPATHY=[
+ ['A teammate makes a mistake and looks embarrassed.',['Encourage them and help fix it','Tell everyone about the mistake','Laugh at them','Pretend they are not there']],
+ ['Someone is quiet during a discussion.',['Invite them to share if they want','Speak for them without asking','Ignore them completely','Tell them their idea is probably wrong']],
+ ['A teammate says a task is confusing.',['Ask which part needs explaining','Tell them to figure it out alone','Move on without checking','Make fun of the question']],
+ ['A new player is nervous about joining.',['Welcome them and explain the first step','Tell them to watch only','Give them the hardest task immediately','Tell them they are slowing the group down']]
+];
+const RESPONSIBILITY=[
+ ['You forgot materials you promised to bring. What is responsible?',['Tell the team honestly and help find another solution','Pretend you brought them','Blame another person','Say nothing']],
+ ['You cannot finish your part on time.',['Tell the team early and agree on the next step','Wait until the deadline passes','Hide the unfinished work','Delete the task']],
+ ['You notice an error in shared work.',['Point it out and help correct it','Hide it','Change someone else’s work without telling them','Leave it']],
+ ['The group rule applies to everyone.',['Follow it even when it is inconvenient','Break it secretly','Ask others to break it','Follow it only when watched']]
+];
+const COMMUNICATION=[
+ ['A teammate is late. Which message is clearest?',['Are you able to arrive by 3 PM?','You are always late.','Whatever, just come.','Nobody can work with you.']],
+ ['A task is unclear. What should you say?',['Could you explain which part I should complete first?','You did not explain anything.','I will guess.','Forget it.']],
+ ['You need help. Which message is specific?',['I finished step one. Could you help me with step two?','I need everything done.','Someone help!','You should know what I mean.']],
+ ['Plans changed. What is constructive?',['The plan changed; here is the new time and what we need to do.','Everything is ruined.','Do whatever you want.','I will not tell anyone.']]
+];
+const NEGOTIATION=[
+ ['Two teammates want different roles.',['Discuss strengths and agree on roles together','Let the louder person choose','Refuse to discuss it','Give both people the same role']],
+ ['Two people need the same equipment.',['Agree on a turn-taking plan','Hide the equipment','Let one person keep it all day','Cancel the task']],
+ ['Two good ideas compete for limited time.',['Compare both against the shared goal and agree on one','Pick the first idea without discussion','Choose the louder person’s idea','Use both even if neither can be completed']],
+ ['A teammate cannot meet the original deadline.',['Discuss a realistic new deadline and adjust the plan','Pretend the deadline was met','Blame them','Remove them from the task without discussion']]
+];
+const CONFLICT=[
+ ['Two teammates disagree and voices are rising.',['Pause, listen to both views and agree on the issue to solve','Shout louder','Choose a side without listening','Walk away and never address it']],
+ ['A disagreement starts during a game.',['Check the rule and discuss the next fair step','Change the rule secretly','Blame one player','Stop listening']],
+ ['Someone says your idea will not work.',['Ask what concern they have and discuss evidence','Insult them','Tell them they cannot speak','End the meeting immediately']],
+ ['Two people think the other caused the problem.',['Focus on what happened and what can fix it','Choose a person to blame','Hide the problem','Argue about who is worse']]
+];
+const LEADERSHIP=[
+ ['The team needs someone to explain the instructions. Who should lead that task?',['Someone who understands the instructions and can explain clearly','The newest member regardless of experience','Whoever shouts first','Nobody']],
+ ['A task needs careful checking. What is good delegation?',['Give it to someone with strong attention to detail and agree on a check-in','Give it to the first person available without explaining','Keep every task for yourself','Assign it randomly']],
+ ['One teammate is confident speaking; another is good at organising materials.',['Match each role to the relevant strength','Give both the same role','Give all tasks to the confident speaker','Ignore their strengths']],
+ ['The team is tired near the end. What should a leader do?',['Reconfirm priorities, share remaining work and check progress','Add unrelated work','Blame the tired people','Leave without updating anyone']]
+];
+const TRADEOFF=[
+ ['There is one quiet study space and two groups need it. What is fairest?',['Agree on time slots so both groups can use it','Let one group take it all day','Hide the space','Cancel both groups']],
+ ['The team has time for one improvement before sharing work.',['Choose the change that best improves the shared goal and explain why','Choose the easiest change without checking the goal','Let one person decide secretly','Do both even if neither can be finished']],
+ ['Two teammates need the same computer.',['Set a turn-taking schedule and keep the deadline visible','Give it to the first person who asks','Hide the computer','Ask both to stop working']],
+ ['The group must choose between speed and checking accuracy.',['Agree on the minimum check needed before sharing','Skip all checking','Check forever and miss the deadline','Let one person decide without discussion']]
+];
+const ACTIVE=[
+ ['A teammate says, “I do not understand step two.” What shows active listening?',['So step two is the part you want explained — is that right?','You should have listened.','I will do it for you.','Just keep going.']],
+ ['A teammate says, “I think our route is too long.”',['Ask what part seems too long and restate their concern before deciding','Tell them they are wrong','Ignore the comment','Change the route without asking']],
+ ['Someone gives feedback on your work.',['Restate the key point to check you understood it','Argue immediately','Walk away','Tell them their feedback is useless']],
+ ['A teammate says they need more time.',['Confirm what they need time for and discuss the next step','Tell them to hurry','Assume they are avoiding work','Ignore them']]
+];
+const PERSPECTIVE=[
+ ['A teammate is quiet after their idea was not chosen. What should you consider?',['They may feel disappointed; invite them to share if they want','They must be angry','They do not care','They should leave']],
+ ['A new player makes a mistake because they do not know the rules.',['They may need clear instructions before another attempt','They are careless','They should be excluded','They should be given the hardest task']],
+ ['A teammate asks for a different role.',['They may have a reason; ask and discuss the role needs','They are being difficult','Ignore the request','Tell everyone they are unfair']],
+ ['Someone disagrees with your plan.',['Their concern may reveal information you missed; ask about it','They are against you','End the discussion','Tell them to agree']]
+];
 function activity(){return Number.isInteger(S.teamActivity)?S.teamActivity:0}
 function levelIndex(){return (S.level-1)%20}
 function ageBand(){return AGE[S.age]||AGE[0]}
-function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">TEAM QUEST • ${ageBand()}</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
-function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four team challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next team challenge…`;if(last){S.teamActivity=0;S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}else{S.teamActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
+function head(type,sub){const i=INFO[type]||INFO.choice;return `<div class="arcade-lab-head"><div><span class="lab-kind">TEAM QUEST • ${ageBand()}</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
+function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$('game-message').textContent=last?'✓ Four team challenges complete!':`✓ Activity ${activity()+1} complete. Loading the next team challenge…`;if(last){S.teamActivity=0;S.timer=setTimeout(()=>MQ.levelComplete(),650)}else{S.teamActivity=activity()+1;S.timer=setTimeout(()=>{$('game-message').textContent='';MQ.nextChallenge()},650)}}
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
-function ageText(text){
- if(S.age<=1)return text.replace(/deadline/g,"time").replace(/trade-offs/g,"differences").replace(/clarification/g,"help");
- return text;
-}
-function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type];S.active=false;clearTimeout(S.timer);$("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">🤝</div><span class="ui-skill">BEHAVIOURAL</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>🤝 Think about others</span><span>✓ Four activities per level</span></div><button id="team-start" class="primary-btn ui-start">Start Activity →</button></div>`;$("team-start").onclick=()=>runActivity(type)}
-
-function conflict(){
- const qs=[
- ['Two teammates disagree about whose idea to use. What should happen?','Let both explain their ideas, then compare them against the goal.'],
- ['A teammate feels left out of a decision. What helps?','Invite them to share their view before the group decides.'],
- ['A disagreement is becoming heated. What is a constructive next step?','Pause, listen and return to the shared goal.'],
- ['Two people misunderstand each other. What should the team do?','Ask questions and clarify what each person meant.'],
- ['The group cannot agree immediately. What is fair?','Use the agreed team rules to decide the next step.']
- ]; const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('conflict'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'Interrupt and decide for everyone.','Blame one person.','Stop listening.'],q[1]);
-}
-function leadership(){
- const qs=[
-  ['A teammate is good at drawing. Which task fits best?','Ask them to create the poster',['Ask them to create the poster','Give them every task','Tell them to do nothing','Hide the task']],
-  ['Your group has one speaker and one writer. What is a sensible plan?','Let the speaker present and the writer record ideas',['Let the speaker present and the writer record ideas','Make both people do both jobs at once','Let one person do everything','Skip the presentation']],
-  ['A teammate finishes early. What is a helpful next step?','Offer help to someone who is still working',['Offer help to someone who is still working','Take their work away','Leave the team immediately','Change the goal without telling anyone']]
- ];
- const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('leadership'),q[0],q[2],q[1]);
-}
-
-function tradeoff(){
- const qs=[
-  ['Your team has 10 minutes left. One person wants to perfect the poster while another wants to finish the presentation. What is the fairest first move?',['Agree on the most important tasks and split the remaining time','Let the loudest person decide','Ignore the presentation','Start over'], 'Agree on the most important tasks and split the remaining time'],
-  ['Two teammates both need the only tablet. What is a fair response?',['Create a turn-taking plan','Give it to the fastest person','Hide the tablet','Argue until someone leaves'], 'Create a turn-taking plan'],
-  ['The group has limited materials. What should the team do first?',['Decide together how to share them','Keep materials with one person','Use everything immediately','Choose randomly'], 'Decide together how to share them']
- ];const q=qs[(S.level+activity()+S.age)%qs.length];choice(q[0],q[0],q[1],q[2]);
-}
-
-function activeListening(){
- const qs=[
- ['A teammate says, “I am worried we will miss the deadline.” What shows listening?','You are worried about the deadline. Let us check what remains.'],
- ['A teammate explains that they do not understand their task. What should you say first?','I understand. Which part should we clarify together?'],
- ['Someone says they feel left out of the plan. What is a listening response?','I hear that you want a chance to contribute. What idea would you like to add?']
- ];const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('activeListening'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'That is not my problem.','Just do what you were told.','Stop talking.'],q[1]);
-}
-
-function perspective(){const qs=[['A teammate is quiet after an idea is rejected. What is most considerate?','Ask how they feel about the decision'],['A new player is struggling with the rules. What might they need?','A calm explanation and a chance to practise'],['A teammate made a mistake and looks embarrassed. What helps?','Give them space to recover and help fix it'],['Two teammates want different roles. What is fair?','Ask what each person prefers and find a workable split']];const q=qs[(S.level+activity()+S.age)%qs.length];choice(head('perspective'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'Tell them to stop complaining','Choose for them without asking','Ignore the situation'],q[1])}
-function runActivity(type){if(type==="choice")choice();else if(type==="order")order();else if(type==="match")match();else if(type==="empathy")empathy();else if(type==="responsibility")responsibility();else if(type==="communication")communication();else if(type==="negotiation")negotiation();else if(type==="conflict")conflict();else if(type==="leadership")leadership();else if(type==="actionSequence")actionSequence();else if(type==="tradeoff")tradeoff();else if(type==="activeListening")activeListening();else if(type==="perspective")perspective();else plan()}
-
-function negotiation(){
- const qs=[
-  ['Two teammates want different roles. What is fair?','Discuss the strengths of each person and agree on roles together.'],
-  ['Two people want the same equipment. What helps?','Agree on a turn-taking plan so both can use it.'],
-  ['The team has two good ideas but time for one. What should happen?','Compare both ideas against the goal and agree on one.'],
-  ['A teammate cannot meet the original deadline. What is constructive?','Discuss a realistic new deadline and adjust the plan together.'],
-  ['Two teammates disagree about the rules. What should they do?','Check the agreed rules and talk through the disagreement calmly.']
- ];
- const q=qs[(S.level+activity()+S.age)%qs.length];
- choice(head('negotiation'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],'Let the loudest person decide.','Ignore the disagreement.','Blame the other teammate.'],q[1]);
-}
-function actionSequence(){
- const scenarios=[['A teammate is upset after a mistake.','Listen','Blame','Ignore','Support'],['Your group is running late.','Plan','Argue','Hide','Quit'],['You discover an error in shared work.','Tell the team','Hide it','Mock someone','Leave']];
- const q=scenarios[(S.level+activity()+S.age)%scenarios.length],answer=q[1];
- choice(head('communication'),q[0]+` <b>What is the most constructive first action?</b>`,q.slice(1),answer)
-}
-function communication(){const qs=[['A teammate is late. What is the clearest message?','I am waiting. Are you able to arrive by 3 PM?'],['A task is unclear. What should you say?','Could you explain which part I should complete first?'],['A teammate made a mistake. What is constructive?','Let us check what happened and fix it together.'],['You need help. What is clear?','I have finished step one. Could you help me with step two?'],['Plans changed. What should you communicate?','The plan changed. Here is the new time and what we need to do.']];const q=qs[(S.level+activity()+S.age)%qs.length];const distract=['You always do this wrong.','Whatever, just fix it.','Nobody told me anything.'];choice(head('communication'),`<div class="team-question"><b>${q[0]}</b></div>`,[q[1],...distract],q[1])}
-
-function choice(){
- const q=BANK[levelIndex()];$("game-stage").innerHTML=`<div class="team-stage">${head("choice")}<div class="team-question">${ageText(q[0])}</div><div id="team-options" class="team-options"></div></div>`;
- const box=$("team-options");S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});
-}
-function order(){
- const seq=ORDERS[(levelIndex()+activity()*3)%ORDERS.length],sh=shuffle(seq.map((x,i)=>({x,i})));$("game-stage").innerHTML=`<div class="team-stage">${head("order")}<p class="team-question">Put the teamwork steps in the right order.</p><div id="team-order" class="team-order"></div></div>`;
- const box=$("team-order");let n=0;S.active=true;sh.forEach(o=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(o.x);b.onclick=()=>{if(!S.active||b.disabled)return;if(o.i===n){b.disabled=true;b.classList.add("good");n++;if(n===seq.length)complete()}else{b.classList.add("bad");fail()}};box.appendChild(b)});
-}
-function match(){
- const pair=MATCH[(levelIndex()+activity()*5)%MATCH.length],wrong=["Ignore the situation","Make it worse","Do it alone"];const options=shuffle([pair[1],...wrong]);$("game-stage").innerHTML=`<div class="team-stage">${head("match")}<div class="team-match-situation">${ageText(pair[0])}</div><p class="team-question">Which response matches?</p><div id="team-options" class="team-options"></div></div>`;
- const box=$("team-options");S.active=true;options.forEach(x=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(x);b.onclick=()=>x===pair[1]?complete():fail();box.appendChild(b)});
-}
-function empathy(){
- const cases=[
-  ["A teammate makes a mistake and looks embarrassed.",["Encourage them and help fix it","Laugh at them","Tell everyone about the mistake"]],
-  ["Someone is quiet during a group discussion.",["Invite them to share if they want","Ignore them","Speak for them without asking"]],
-  ["A teammate says they are confused.",["Ask what part needs explaining","Tell them to figure it out alone","Move on without checking"]],
-  ["A new player is struggling to join the activity.",["Explain the rules and include them","Tell them to watch only","Give them the hardest task immediately"]],
-  ["Two teammates disagree about an idea.",["Listen to both views and look for common ground","Choose the louder person","Stop the discussion"]]
- ];
- const q=cases[(S.level+activity()+S.age)%cases.length];
- $('game-stage').innerHTML=`<div class="team-stage">${head('empathy')}<div class="team-match-situation">${ageText(q[0])}</div><p class="team-question">Which response shows understanding?</p><div id="team-options" class="team-options"></div></div>`;
- const box=$('team-options');S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement('button');b.className='team-option';b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});
-}
-
-function responsibility(){
- const cases=[["You promised to bring materials but forgot. What is responsible?",["Tell the team honestly and help find a solution","Pretend you brought them","Blame someone else"]],["You notice a mistake in your team's work. What should you do?",["Tell the team and help correct it","Hide it","Wait for someone else to notice"]],["You finish your assigned task. What should you do next?",["Check whether the team needs help","Leave immediately","Delete someone else's work"]],["A group rule applies to everyone. What should you do?",["Follow it consistently","Follow it only when watched","Ask others to follow it while you ignore it"]],["You cannot finish your part on time. What is responsible?",["Tell the team early and discuss a solution","Say nothing","Wait until the deadline passes"]]];
- const q=cases[(S.level+activity()+S.age)%cases.length];$("game-stage").innerHTML=`<div class="team-stage">${head("responsibility")}<div class="team-match-situation">${ageText(q[0])}</div><p class="team-question">Which response shows responsibility?</p><div id="team-options" class="team-options"></div></div>`;
- const box=$("team-options");S.active=true;shuffle(q[1].map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(o.x);b.onclick=()=>o.i===0?complete():fail();box.appendChild(b)});
-}
-function plan(){
- const base=PLANS[(levelIndex()+activity()*2)%PLANS.length],need=S.level<6?Math.min(2,base.length):S.level<13?Math.min(3,base.length):Math.min(4,base.length);const correct=shuffle(base).slice(0,need),distractors=["Hide information","Blame a teammate","Ignore the plan","Interrupt everyone","Keep the goal secret","Change roles without telling anyone"];const options=shuffle(correct.concat(shuffle(distractors).slice(0,4)));
- $("game-stage").innerHTML=`<div class="team-stage">${head("plan",`Choose ${need} actions that belong in a strong team plan.`)}<div id="team-plan" class="team-plan"></div><button id="team-submit" class="primary-btn ui-start">Check Plan ✓</button></div>`;
- const box=$("team-plan"),selected=new Set();S.active=true;options.forEach(x=>{const b=document.createElement("button");b.className="team-option";b.textContent=ageText(x);b.onclick=()=>{if(!S.active)return;if(selected.has(x)){selected.delete(x);b.classList.remove("selected")}else{selected.add(x);b.classList.add("selected")}};box.appendChild(b)});
- $("team-submit").onclick=()=>{if(selected.size!==need)return fail();if([...selected].every(x=>correct.includes(x)))complete();else fail()};
-}
+function choice(type,prompt,choices,correct){$('game-stage').innerHTML=`<div class="team-stage">${head(type)}<div class="team-question">${prompt}</div><div id="team-options" class="team-options"></div></div>`;const box=$('team-options');S.active=true;shuffle(choices).forEach(x=>{const b=document.createElement('button');b.type='button';b.className='team-option';b.textContent=x;b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
+function order(type,steps){const seq=[...steps];$('game-stage').innerHTML=`<div class="team-stage">${head(type)}<p class="team-question">Put the steps in the right order.</p><div id="team-order" class="team-order"></div></div>`;const box=$('team-order');let next=0;S.active=true;shuffle(seq.map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement('button');b.type='button';b.className='team-option';b.textContent=o.x;b.onclick=()=>{if(!S.active||b.disabled)return;if(o.i===next){b.disabled=true;b.classList.add('good');next++;if(next===seq.length)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)})}
+function multiPlan(){const base=PLANS[(levelIndex()+activity())%PLANS.length],need=S.level<6?2:S.level<13?3:4,correct=base.slice(0,Math.min(need,base.length)),bad=['Hide information','Blame a teammate','Ignore the plan','Interrupt everyone','Change roles secretly'];const options=shuffle([...correct,...bad.slice(0,Math.max(1,5-correct.length))]);$('game-stage').innerHTML=`<div class="team-stage">${head('plan',`Choose ${need} actions that belong in a strong team plan.`)}<div id="team-plan" class="team-plan"></div><button id="team-submit" class="primary-btn ui-start">Check Plan ✓</button></div>`;const box=$('team-plan'),selected=new Set();S.active=true;options.forEach(x=>{const b=document.createElement('button');b.type='button';b.className='team-option';b.textContent=x;b.onclick=()=>{if(!S.active)return;if(selected.has(x)){selected.delete(x);b.classList.remove('selected')}else{selected.add(x);b.classList.add('selected')}};box.appendChild(b)});$('team-submit').onclick=()=>{if(selected.size!==need)return;if([...selected].every(x=>correct.includes(x)))complete();else fail()}}
+function run(){const type=TYPES[(S.level-1+activity())%TYPES.length];if(type==='choice'){const q=CHOICES[(levelIndex()+activity())%CHOICES.length];choice(type,q[0],q[1],q[1][0])}else if(type==='order'){order(type,ORDERS[(levelIndex()+activity())%ORDERS.length])}else if(type==='match'){const q=MATCH[(levelIndex()+activity()*2)%MATCH.length];choice(type,`Situation: <b>${q[0]}</b><br>Which response matches?`,[q[1],'Ignore the situation','Do it alone','Make the problem worse'],q[1])}else if(type==='plan')multiPlan();else if(type==='empathy'){const q=EMPATHY[(levelIndex()+activity())%EMPATHY.length];choice(type,q[0],q[1],q[1][0])}else if(type==='responsibility'){const q=RESPONSIBILITY[(levelIndex()+activity())%RESPONSIBILITY.length];choice(type,q[0],q[1],q[1][0])}else if(type==='communication'){const q=COMMUNICATION[(levelIndex()+activity())%COMMUNICATION.length];choice(type,q[0],q[1],q[1][0])}else if(type==='negotiation'){const q=NEGOTIATION[(levelIndex()+activity())%NEGOTIATION.length];choice(type,q[0],q[1],q[1][0])}else if(type==='conflict'){const q=CONFLICT[(levelIndex()+activity())%CONFLICT.length];choice(type,q[0],q[1],q[1][0])}else if(type==='leadership'){const q=LEADERSHIP[(levelIndex()+activity())%LEADERSHIP.length];choice(type,q[0],q[1],q[1][0])}else if(type==='actionSequence'){order(type,ORDERS[(levelIndex()+activity()+2)%ORDERS.length])}else if(type==='tradeoff'){const q=TRADEOFF[(levelIndex()+activity())%TRADEOFF.length];choice(type,q[0],q[1],q[1][0])}else if(type==='activeListening'){const q=ACTIVE[(levelIndex()+activity())%ACTIVE.length];choice(type,q[0],q[1],q[1][0])}else{const q=PERSPECTIVE[(levelIndex()+activity())%PERSPECTIVE.length];choice(type,q[0],q[1],q[1][0])}}
+function instruction(){const type=TYPES[(S.level-1+activity())%TYPES.length],i=INFO[type]||INFO.choice;S.active=false;clearTimeout(S.timer);$('game-stage').innerHTML=`<div class="universal-instruction"><div class="ui-icon">🤝</div><span class="ui-skill">BEHAVIOURAL</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>Read the situation, think about the shared goal and choose or arrange the response that fits.</p></div><div class="ui-meta"><span>🤝 Cooperation and communication</span><span>✓ Four activities per level</span></div><button id="team-start" class="primary-btn ui-start">Start Activity →</button></div>`;$('team-start').onclick=run}
 window.MQTeamQuest={run:instruction};
 })();

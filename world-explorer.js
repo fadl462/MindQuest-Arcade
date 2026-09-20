@@ -2,12 +2,12 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
-const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+const shuffle=a=>{const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out};
 const TYPES=["place","landmark","clue","route","capital","culture","hemisphere","direction","climate","landform","compass","distance","timeZone","coordinates"];
 const AGE=['3–5','6–8','9–11','12–14','15–18'];
 const PLACES=[
  ["Ghana","Africa","Accra"],["Kenya","Africa","Nairobi"],["Egypt","Africa","Cairo"],["Nigeria","Africa","Abuja"],
- ["Morocco","Africa","Rabat"],["South Africa","Africa","Pretoria"],["Brazil","South America","Brasília"],["Canada","North America","Ottawa"],
+ ["Morocco","Africa","Rabat"],["South Africa","Africa","Pretoria — administrative capital"],["Brazil","South America","Brasília"],["Canada","North America","Ottawa"],
  ["Japan","Asia","Tokyo"],["India","Asia","New Delhi"],["Australia","Oceania","Canberra"],["France","Europe","Paris"],
  ["Italy","Europe","Rome"],["Spain","Europe","Madrid"],["Mexico","North America","Mexico City"],["Peru","South America","Lima"],
  ["Greece","Europe","Athens"],["China","Asia","Beijing"],["New Zealand","Oceania","Wellington"],["Argentina","South America","Buenos Aires"]
@@ -40,7 +40,7 @@ const ROUTES=[
  ["Put these in a sensible journey order: airport → hotel → sightseeing. What comes first?","Airport",["Airport","Hotel","Sightseeing","Dinner"]],
  ["A map route is: start → river → bridge → town. What comes after the river?","Bridge",["Bridge","Start","Town","Airport"]],
  ["You are planning a trip. Which should usually happen before choosing a hotel?","Choose the destination",["Choose the destination","Pack souvenirs","Take photos","Return home"]],
- ["Which direction takes you from Accra toward Kumasi?","North",["North","South","East","West"]]
+ ["Which direction takes you from Accra toward Kumasi?","West",["North","South","East","West"]]
 ];
 const INFO={
  place:["Place Finder","Identify a country, continent or capital.","Read the clue and choose the place that fits."],
@@ -74,8 +74,8 @@ function compass(){
 }
 function direction(){
  const BANK=[
-  ['Accra is west of Kumasi. From Kumasi, which direction is Accra?','West'],
-  ['Kumasi is north of Accra. From Accra, which direction is Kumasi?','North'],
+  ['Accra is east of Kumasi. From Kumasi, which direction is Accra?','East'],
+  ['Tamale is north of Kumasi. From Kumasi, which direction is Tamale?','North'],
   ['Cape Coast is west of Accra. From Accra, which direction is Cape Coast?','West'],
   ['Tamale is north of Kumasi. From Kumasi, which direction is Tamale?','North'],
   ['Tema is east of Accra. From Accra, which direction is Tema?','East'],
@@ -100,7 +100,7 @@ function landform(){
 }
 
 function distance(){
- const base=10+S.level*3,vals=[base,base+7+(activity()*2),base+13];const order=[...vals].sort((a,b)=>a-b);const correct=order.join(' → ');choiceWorld('distance',`Three routes are ${vals[0]} km, ${vals[1]} km and ${vals[2]} km. Which order is shortest to longest?`,[correct,[...order].reverse().join(' → '),`${vals[1]} → ${vals[0]} → ${vals[2]}`,`${vals[2]} → ${vals[0]} → ${vals[1]}`],correct)
+ const base=10+S.level*3,vals=[base,base+7+(activity()*2),base+15+(activity()*3)];const order=[...vals].sort((a,b)=>a-b);const correct=order.join(' → ');const distractors=[[...order].reverse().join(' → '),`${order[1]} → ${order[0]} → ${order[2]}`,`${order[2]} → ${order[1]} → ${order[0]}`].filter(x=>x!==correct);choiceWorld('distance',`Three routes are ${vals[0]} km, ${vals[1]} km and ${vals[2]} km. Which order is shortest to longest?`,[correct,...distractors],correct)
 }
 function choiceWorld(type,prompt,choices,correct){$('game-stage').innerHTML=`<div class="world-stage">${head(type)}<div class="world-question">${prompt}</div><div class="team-options" id="world-options"></div></div>`;const box=$('world-options');S.active=true;shuffle(choices).forEach(x=>{const b=document.createElement('button');b.className='team-option';b.textContent=x;b.onclick=()=>x===correct?complete():fail();box.appendChild(b)})}
 
@@ -119,7 +119,7 @@ function clue(){const c=CLUES[levelIndex()%CLUES.length];choice(head("clue"),age
 function capital(){
  const p=PLACES[(S.level*2+activity()*3+S.age)%PLACES.length];
  const others=shuffle(PLACES.filter(x=>x[0]!==p[0]).map(x=>x[2])).filter((x,i,a)=>a.indexOf(x)===i).slice(0,3);
- choice(head('capital'),`What is the capital of <b>${p[0]}</b>?`,[p[2],...others],p[2]);
+ const prompt=p[0]==='South Africa'?`What is the <b>administrative capital</b> of ${p[0]}?`:`What is the capital of <b>${p[0]}</b>?`;choice(head('capital'),prompt,[p[2],...others],p[2]);
 }
 
 function culture(){
