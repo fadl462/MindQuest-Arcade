@@ -68,7 +68,15 @@ function symmetry(){
  }
  const candidates=[];
  for(let r=0;r<n;r++) for(let c=0;c<Math.floor(n/2);c++) if(cells[r*n+c]) candidates.push(r*n+c);
- const source=candidates[(S.level+activity())%Math.max(1,candidates.length)]??0;
+ if(!candidates.length){
+   const fallbackRow=(S.level+activity())%n;
+   const fallbackCol=(S.level+activity())%Math.floor(n/2);
+   const fallback=fallbackRow*n+fallbackCol;
+   cells[fallback]=true;
+   cells[fallbackRow*n+(n-1-fallbackCol)]=true;
+   candidates.push(fallback);
+ }
+ const source=candidates[(S.level+activity())%candidates.length];
  const sr=Math.floor(source/n),sc=source%n,target=sr*n+(n-1-sc);
  cells[target]=false;
  $('game-stage').innerHTML=`<div class="builder-stage">${head('symmetry','Complete the reflected pattern.')}<div class="builder-prompt"><h3>Which cell should be filled?</h3><p>One cell is missing from the reflected side.</p><div class="builder-lab-grid" style="--n:${n}">${cells.map((v,i)=>`<button class="builder-cell ${v?'filled':''}" data-i="${i}">${i===target?'?':''}</button>`).join('')}</div></div></div>`;S.active=true;document.querySelectorAll('.builder-cell').forEach(b=>b.onclick=()=>b.dataset.i===String(target)?complete():fail());
@@ -89,8 +97,14 @@ function tileMatch(){
  const grid=document.querySelectorAll('#tile-grid .builder-cell');target.forEach(i=>grid[i].classList.add('filled'));
  const picked=new Set();let reveal=true;S.active=false;
  const hideAt=Math.max(650,1000-S.level*18);
- S.timer=setTimeout(()=>{reveal=false;if(!S.active)return;target.forEach(i=>grid[i].classList.remove('filled'));$('tile-status').textContent='Rebuild the pattern.';},hideAt);
- setTimeout(()=>{if(reveal){reveal=false;target.forEach(i=>grid[i].classList.remove('filled'));$('tile-status').textContent='Rebuild the pattern.';}S.active=true;},hideAt);
+ const token=Symbol('tile-match');S.builderTileToken=token;
+ S.timer=setTimeout(()=>{
+   if(S.builderTileToken!==token)return;
+   reveal=false;
+   target.forEach(i=>grid[i].classList.remove('filled'));
+   $('tile-status').textContent='Rebuild the pattern.';
+   S.active=true;
+ },hideAt);
  grid.forEach(b=>b.onclick=()=>{if(!S.active)return;const i=+b.dataset.i;if(picked.has(i)){picked.delete(i);b.classList.remove('selected')}else{picked.add(i);b.classList.add('selected')}if(picked.size===target.size&&[...picked].every(i=>target.has(i)))complete();else if(picked.size>target.size)fail()})
 }
 
