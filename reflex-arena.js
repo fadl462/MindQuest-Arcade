@@ -243,10 +243,62 @@ function avoid(){
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("avoid-signal").textContent=`SAFE: ${safe}`;box.querySelectorAll("button").forEach(b=>b.setAttribute("aria-disabled","false"));S.active=true;S.timer=setTimeout(fail,responseWindow(.95))},signalDelay());
 }
 function multiTap(){
- const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+activity()+ageDifficulty(),2,6),positions=shuffle([...Array(6).keys()]).slice(0,len);
- $("game-stage").innerHTML=`<div class="reflex-stage">${head("multitap","Watch the target order, then tap the same positions.")}<div id="multi-board" class="reflex-options"></div></div>`;
- const board=$("multi-board");for(let i=0;i<6;i++){const b=document.createElement("button");b.type="button";b.className="reflex-target";b.textContent="";b.dataset.i=i;b.setAttribute("aria-disabled","true");board.appendChild(b)}
- let show=0;const reveal=()=>{if(token!==S.reflexToken)return;if(show<positions.length){board.querySelectorAll("button").forEach(b=>b.textContent="");board.querySelectorAll("button")[positions[show]].textContent="🎯";show++;S.timer=setTimeout(reveal,Math.max(210,680-S.level*18));}else{let n=0;board.querySelectorAll("button").forEach(b=>{b.setAttribute("aria-disabled","false");b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(i!==positions[n])return fail();b.classList.add("good");if(++n===positions.length)complete()}});S.active=true;S.timer=setTimeout(fail,responseWindow(1.1)+positions.length*180)}};reveal();
+ const token=begin();
+ const age=S.age;
+ const slots=age===0?4:age===1?5:6;
+ const len=age===0?clamp(2+Math.floor((S.level-1)/8)+Math.floor(activity()/2),2,3)
+   :age===1?clamp(3+Math.floor((S.level-1)/7)+Math.floor(activity()/2),3,4)
+   :clamp(3+Math.floor((S.level-1)/5)+activity(),3,6);
+ const positions=shuffle([...Array(slots).keys()]).slice(0,len);
+ const boardColumns=age===0?2:3;
+ const targetSize=age===0?88:age===1?76:68;
+ const boardWidth=age===0?220:age===1?300:340;
+ const instruction=age===0
+   ?'Watch the targets appear, then tap the same positions in order.'
+   :'Watch the target order, then tap the same positions.';
+ const revealMs=age===0?1100:age===1?820:680;
+ const gapMs=age===0?700:age===1?520:Math.max(360,680-S.level*18);
+ const responseMs=responseWindow(age===0?1.3:age===1?1.12:1.05)+len*(age===0?420:age===1?300:220);
+ $('game-stage').innerHTML=`<div class="reflex-stage">${head('multitap',instruction)}<p id="multi-status" class="reflex-count">Watch carefully…</p><div id="multi-board" class="reflex-options" style="display:grid;grid-template-columns:repeat(${boardColumns},${targetSize}px);gap:${age===0?18:14}px;justify-content:center;align-items:center;width:min(100%,${boardWidth}px);margin:18px auto;padding:${age===0?18:16}px;border-radius:24px;background:rgba(99,102,241,.045);border:1px solid rgba(99,102,241,.10)"></div><p id="multi-progress" class="reflex-count">Sequence: 0 / ${len}</p></div>`;
+ const board=$("multi-board"),status=$("multi-status"),progress=$("multi-progress");
+ const buttons=[];
+ for(let i=0;i<slots;i++){
+   const b=document.createElement('button');
+   b.type='button';b.className='reflex-target';b.dataset.i=String(i);
+   b.setAttribute('aria-disabled','true');
+   b.style.cssText=`width:${targetSize}px;height:${targetSize}px;min-width:${targetSize}px;min-height:${targetSize}px;display:flex;align-items:center;justify-content:center;font-size:${age===0?34:30}px;touch-action:manipulation;cursor:pointer;`;
+   buttons.push(b);board.appendChild(b);
+ }
+ let show=0;
+ const reveal=()=>{
+   if(token!==S.reflexToken)return;
+   buttons.forEach(b=>{b.textContent='';b.classList.remove('good','selected','bad');});
+   if(show<positions.length){
+     const b=buttons[positions[show]];
+     b.textContent='🎯';b.classList.add('good');
+     status.textContent=`Remember target ${show+1} of ${len}`;
+     show++;
+     S.timer=setTimeout(reveal,gapMs);
+   }else{
+     buttons.forEach(b=>b.setAttribute('aria-disabled','false'));
+     status.textContent='Your turn — tap the same positions in order.';
+     progress.textContent=`Sequence: 0 / ${len}`;
+     let n=0;
+     const tap=(b)=>{
+       if(!S.active)return;
+       const i=Number(b.dataset.i);
+       if(i!==positions[n]){b.classList.add('bad');fail();return;}
+       b.classList.add('good','selected');
+       n++;
+       progress.textContent=`Sequence: ${n} / ${len}`;
+       if(n===positions.length)complete();
+     };
+     buttons.forEach(b=>{b.onclick=()=>tap(b)});
+     S.active=true;
+     S.timer=setTimeout(()=>{if(S.active)fail()},responseMs);
+   }
+ };
+ reveal();
 }
 function sequence(){
  const token=begin(),age=S.age;
