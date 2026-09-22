@@ -37,6 +37,7 @@ ok('Builder resource allocation uses correct mechanic identity',/head\('allocate
 ok('Reflex rhythm presents real response choices',/id=\"rhythm-controls\"/.test(reflex)&&/data-v=\"●\"/.test(reflex)&&/data-v=\"○\"/.test(reflex));
 ok('Reflex double target positions are distinct',/second=\(first\+2\+activity\(\)\)%count===first\?\(first\+1\)%count/.test(reflex));
 ok('Reflex double target controls become playable',/cells\.forEach\(b=>b\.disabled=false\)/.test(reflex)&&/S\.doubleStep=0/.test(reflex));
+ok('Reflex double target reveals the second target only after the first is tapped',/\(S\.doubleStep\|\|0\)===0&&i===first/.test(reflex)&&/S\.doubleStep=1/.test(reflex)&&/cells\[second\]\.disabled=false/.test(reflex));
 ok('Reflex no-go control uses neutral response label',/id=\"go-button\" class=\"reflex-target\" disabled>RESPOND/.test(reflex));
 ok('Builder rotation expects the fourth clockwise position',/correct=v\[3\]/.test(builder));
 ok('Builder tile match cannot generate an empty target',/if\(!target\.size\)target\.add/.test(builder)&&/highlighted pattern, then rebuild/.test(builder));

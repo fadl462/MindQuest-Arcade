@@ -101,10 +101,39 @@ function goNoGo(){
 
 function doubleTarget(){
  const token=begin(),count=clamp(4+Math.floor(S.level/5),4,8),first=(S.level+activity()*2+S.age)%count,second=(first+2+activity())%count===first?(first+1)%count:(first+2+activity())%count;
- $('game-stage').innerHTML=`<div class=\"reflex-stage\">${head('double','Wait for the two targets. Tap them in the order they appear.')}<p class=\"reflex-count\">Get ready…</p><div id=\"double-board\" class=\"reflex-options\"></div></div>`;
- const board=$('double-board');for(let i=0;i<count;i++){const b=document.createElement('button');b.className='reflex-target';b.style.width='58px';b.style.height='58px';b.disabled=true;b.setAttribute('aria-label',`Target ${i+1}`);b.onclick=()=>{if(!S.active)return;if(i===((S.doubleStep||0)===0?first:second)){S.doubleStep=(S.doubleStep||0)+1;if(S.doubleStep===2){S.doubleStep=0;complete()}}else fail()};board.appendChild(b)}
- S.doubleStep=0;S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const cells=[...board.querySelectorAll('button')];cells.forEach(b=>b.disabled=false);S.active=true;cells[first].textContent='🎯';S.timer=setTimeout(()=>{if(!S.active)return;cells[first].textContent='';cells[second].textContent='🎯';S.timer=setTimeout(()=>{if(S.active)fail()},responseWindow(.8))},Math.max(280,signalDelay()/2));},signalDelay());
+ $('game-stage').innerHTML=`<div class="reflex-stage">${head('double','Wait for the first target. Tap it, then tap the second target when it appears.')}<p id="double-count" class="reflex-count">Get ready…</p><div id="double-board" class="reflex-options"></div></div>`;
+ const board=$('double-board');
+ for(let i=0;i<count;i++){
+   const b=document.createElement('button');
+   b.className='reflex-target';
+   b.style.width='58px';b.style.height='58px';b.disabled=true;
+   b.setAttribute('aria-label',`Target ${i+1}`);
+   b.onclick=()=>{
+     if(!S.active||b.disabled)return;
+     if((S.doubleStep||0)===0&&i===first){
+       S.doubleStep=1;
+       b.textContent='';b.disabled=true;
+       cells[second].textContent='🎯';cells[second].disabled=false;
+       $('double-count').textContent='Target 2 — tap it now';
+       clearTimeout(S.timer);S.timer=setTimeout(()=>fail(),responseWindow(.8));
+     }else if(S.doubleStep===1&&i===second){
+       S.doubleStep=0;complete();
+     }else fail();
+   };
+   board.appendChild(b);
+ }
+ const cells=[...board.querySelectorAll('button')];
+ S.doubleStep=0;
+ S.timer=setTimeout(()=>{
+   if(token!==S.reflexToken)return;
+   cells[first].textContent='🎯';
+   cells[first].disabled=false;
+   S.active=true;
+   $('double-count').textContent='Target 1 — tap it';
+   S.timer=setTimeout(()=>fail(),responseWindow(.9));
+ },signalDelay());
 }
+
 function target(){
  const token=begin(),count=clamp(3+Math.floor((S.level-1)/4)+activity(),3,8),size=clamp(76-Math.floor(S.level/4)*4,48,76);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("target","Wait for the target. Then tap it before time runs out.")}<p class="reflex-count">Get ready…</p><div id="target-board" class="reflex-options"></div></div>`;
