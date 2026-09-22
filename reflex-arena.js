@@ -66,7 +66,7 @@ function delayedTap(){
  const token=begin();
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('delay','Wait for the signal.')}<div class="reflex-signal" id="delay-signal">WAIT…</div><button class="reflex-target" id="delay-button" disabled>TAP</button></div>`;
  const wait=clamp(Math.round(980+activity()*70-difficulty()*9),360,1100);
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const start=performance.now();const b=$('delay-button');$('delay-signal').textContent='NOW';b.disabled=false;S.active=true;S.timer=setTimeout(()=>fail(),responseWindow(1.1));b.onclick=()=>{if(!S.active)return;const rt=performance.now()-start;clearTimeout(S.timer);const window=clamp(175-difficulty()*3.2,55,175);Math.abs(rt-(responseWindow(.65)))<=window?complete():fail();};},wait);
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const b=$('delay-button');$('delay-signal').textContent='NOW';b.disabled=false;S.active=true;const tapWindow=clamp(Math.round((820-difficulty()*14)*ageFactor()),360,820);S.timer=setTimeout(()=>fail(),tapWindow);b.onclick=()=>{if(!S.active)return;clearTimeout(S.timer);complete();};},wait);
 }
 
 function rhythm(){

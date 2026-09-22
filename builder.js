@@ -68,7 +68,14 @@ function symmetry(){
  }
  const candidates=[];
  for(let r=0;r<n;r++) for(let c=0;c<Math.floor(n/2);c++) if(cells[r*n+c]) candidates.push(r*n+c);
- const source=candidates[(S.level+activity())%Math.max(1,candidates.length)]??0;
+ if(!candidates.length){
+   const fallbackRow=(S.level+activity())%n, fallbackCol=Math.max(0,Math.floor(n/2)-1);
+   const fallback=fallbackRow*n+fallbackCol;
+   cells[fallback]=true;
+   cells[fallbackRow*n+(n-1-fallbackCol)]=true;
+   candidates.push(fallback);
+ }
+ const source=candidates[(S.level+activity())%candidates.length];
  const sr=Math.floor(source/n),sc=source%n,target=sr*n+(n-1-sc);
  cells[target]=false;
  $('game-stage').innerHTML=`<div class="builder-stage">${head('symmetry','Complete the reflected pattern.')}<div class="builder-prompt"><h3>Which cell should be filled?</h3><p>One cell is missing from the reflected side.</p><div class="builder-lab-grid" style="--n:${n}">${cells.map((v,i)=>`<button class="builder-cell ${v?'filled':''}" data-i="${i}">${i===target?'?':''}</button>`).join('')}</div></div></div>`;S.active=true;document.querySelectorAll('.builder-cell').forEach(b=>b.onclick=()=>b.dataset.i===String(target)?complete():fail());

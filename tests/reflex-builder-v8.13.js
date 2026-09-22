@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('assert');
+const reflex=fs.readFileSync('../reflex-arena.js','utf8');
+const builder=fs.readFileSync('../builder.js','utf8');
+assert(reflex.includes("const tapWindow=clamp(Math.round((820-difficulty()*14)*ageFactor()),360,820)"));
+assert(reflex.includes("b.onclick=()=>{if(!S.active)return;clearTimeout(S.timer);complete();}"));
+assert(!reflex.includes("Math.abs(rt-(responseWindow(.65)))<=window"));
+assert(builder.includes('if(!candidates.length){'));
+assert(builder.includes('const fallbackRow=(S.level+activity())%n'));
+assert(builder.includes('candidates.push(fallback);'));
+console.log('6/6 Reflex/Builder v8.13 regression checks passed');
