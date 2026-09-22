@@ -150,7 +150,6 @@ function target(){
  const boardStyle=age===0?`display:grid;grid-template-columns:repeat(${Math.min(count,3)},minmax(${size}px,1fr));gap:18px;justify-items:center;align-items:center;width:min(100%,430px);margin:22px auto;padding:18px 12px;border-radius:24px;background:rgba(99,102,241,.055);border:1px solid rgba(99,102,241,.10)`:`display:grid;grid-template-columns:repeat(${Math.min(count,4)},minmax(${size}px,1fr));gap:16px;justify-items:center;align-items:center;width:min(100%,620px);margin:22px auto;padding:20px 14px;border-radius:24px;background:rgba(99,102,241,.045);border:1px solid rgba(99,102,241,.09)`;
  $("game-stage").innerHTML=`<div class="reflex-stage"><div class="arcade-lab-head"><div><span class="lab-kind">REFLEX ARENA</span><h3>${copy.title}</h3><p>${copy.sub}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div><p id="target-status" class="reflex-count">${copy.ready}</p><div id="target-board" class="reflex-options" style="${boardStyle}"></div><div id="target-hint" style="text-align:center;font-size:12px;font-weight:800;color:rgba(30,35,60,.56);min-height:18px"></div></div>`;
  const board=$("target-board"),status=$("target-status"),hint=$("target-hint");
- // Randomize the target on every run so reaction, not memorization of a fixed position, is tested.
  const targetIndex=Math.floor(Math.random()*count);
  const buttons=[];
  for(let i=0;i<count;i++){
@@ -159,34 +158,49 @@ function target(){
    b.className="reflex-target";
    b.style.width=size+"px";b.style.height=size+"px";
    b.style.minWidth=size+"px";b.style.minHeight=size+"px";
-   b.disabled=true;b.textContent="";
+   // Do not use the native disabled state: some touch/browser combinations can
+   // swallow interaction on dynamically enabled controls. aria-disabled keeps
+   // the visual/accessibility state without blocking pointer events.
+   b.textContent="";
    b.dataset.targetIndex=String(i);
    b.setAttribute("aria-label",`Target position ${i+1}`);
    b.setAttribute("aria-disabled","true");
+   b.style.pointerEvents="none";
    buttons.push(b);board.appendChild(b);
  }
- // Use delegated input handling so the target remains reliably clickable across
- // browsers/touch devices even after the buttons are enabled dynamically.
  const handleTargetInput=(event)=>{
    const button=event.target.closest?.("button[data-target-index]");
-   if(!button||!board.contains(button)||!S.active||button.disabled)return;
+   if(!button||!board.contains(button)||!S.active||button.getAttribute("aria-disabled")==="true")return;
+   event.preventDefault();
+   event.stopPropagation();
    const pickedIndex=Number(button.dataset.targetIndex);
    pickedIndex===targetIndex?complete():fail();
  };
- board.addEventListener("click",handleTargetInput);
+ // pointerdown is deliberately handled in addition to click so touch screens
+ // get immediate feedback and mouse clicks retain the normal fallback.
+ board.addEventListener("pointerdown",handleTargetInput,true);
+ board.addEventListener("click",handleTargetInput,true);
  const delay=signalDelay();
  let countdown=Math.max(1,Math.ceil(delay/500));
  status.textContent=age===0?`Get ready… ${countdown}`:copy.ready;
  const countdownTimer=setInterval(()=>{if(token!==S.reflexToken){clearInterval(countdownTimer);return} countdown-=1;if(countdown>0&&age===0)status.textContent=`Get ready… ${countdown}`;},500);
- S.timer=setTimeout(()=>{clearInterval(countdownTimer);if(token!==S.reflexToken)return;buttons.forEach((b,i)=>{
-   b.disabled=false;b.setAttribute("aria-disabled","false");
-   b.style.pointerEvents="auto";
-   if(i===targetIndex){
-     b.textContent="🎯";b.dataset.target="true";
-     b.style.transform="scale(1.04)";
-     b.style.boxShadow="0 12px 30px rgba(79,70,229,.24)";
-   }
- });status.textContent=copy.go;hint.textContent=age===0?"Find 🎯 and tap it!":"React before time runs out.";S.active=true;S.timer=setTimeout(()=>fail(),responseWindow(.9))},delay);
+ S.timer=setTimeout(()=>{
+   clearInterval(countdownTimer);
+   if(token!==S.reflexToken)return;
+   buttons.forEach((b,i)=>{
+     b.setAttribute("aria-disabled","false");
+     b.style.pointerEvents="auto";
+     if(i===targetIndex){
+       b.textContent="🎯";b.dataset.target="true";
+       b.style.transform="scale(1.04)";
+       b.style.boxShadow="0 12px 30px rgba(79,70,229,.24)";
+     }
+   });
+   status.textContent=copy.go;
+   hint.textContent=age===0?"Find 🎯 and tap it!":"React before time runs out.";
+   S.active=true;
+   S.timer=setTimeout(()=>fail(),responseWindow(.9));
+ },delay);
 }
 function color(){
  const token=begin(),correct=COLORS[(S.level*3+activity()*2+S.age)%COLORS.length],optionCount=clamp(4+Math.floor(S.level/7),4,6);
