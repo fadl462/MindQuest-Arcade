@@ -1,0 +1,17 @@
+'use strict';
+const fs=require('fs');
+const reflex=fs.readFileSync(__dirname+'/../reflex-arena.js','utf8');
+const builder=fs.readFileSync(__dirname+'/../builder.js','utf8');
+const tests=[];
+const check=(name,ok)=>tests.push([name,!!ok]);
+check('Reflex chase computes target size before placement',/const targetPx=Math\.max\(34,62-Math\.floor\(S\.level\*1\.35\)\)/.test(reflex));
+check('Reflex chase uses pixel coordinates for bounded placement',/safeX=Math\.max\(targetPx\/2\+6,Math\.min\(areaRect\.width-targetPx\/2-6/.test(reflex)&&/safeY=Math\.max\(targetPx\/2\+6,Math\.min\(areaRect\.height-targetPx\/2-6/.test(reflex));
+check('Reflex chase keeps target inside the playable area',/overflow:hidden/.test(reflex)&&/transform:translate\(-50%,-50%\)/.test(reflex));
+check('Reflex chase preserves responsive target sizing',/width:\$\{targetPx\}px;height:\$\{targetPx\}px/.test(reflex));
+check('Builder maze retains a guaranteed top/right safe route',/const onSafePath=\(i<n\)\|\|\(\(i%n\)===n-1\)/.test(builder));
+check('Builder symmetry still guarantees a source cell',/if\(!candidates\.length\)/.test(builder)&&/candidates\.push\(fallback\)/.test(builder));
+check('Builder Tile Match prevents stale timer generations',/S\.builderTileToken!==token/.test(builder));
+for(const [n,ok] of tests)console.log(`${ok?'PASS':'FAIL'} ${n}`);
+const failed=tests.filter(([,ok])=>!ok).length;
+console.log(`\n${tests.length-failed}/${tests.length} passed`);
+process.exitCode=failed?1:0;
