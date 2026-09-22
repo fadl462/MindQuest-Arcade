@@ -70,13 +70,13 @@ function delayedTap(){
 }
 
 function rhythm(){
- const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+Math.floor(activity()/2)+ageDifficulty(),2,8),beats=Array.from({length:len},(_,i)=>(i+S.level+S.age)%2?'●':'○');
+ const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+Math.floor(activity()/2)+ageDifficulty(),2,8),pool=shuffle(['●','○','▲','■']).slice(0,2+ageDifficulty()),beats=Array.from({length:len},(_,i)=>pool[(i*3+S.level+S.age+activity())%pool.length]);
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('rhythm')}<div class="reflex-target">${beats.join(' ')}</div><p>Watch the pattern…</p></div>`;
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;let n=0;$('game-stage').innerHTML=`<div class="reflex-stage">${head('rhythm','Repeat the beat pattern.')}<div class="reflex-controls" id="rhythm-controls"><button class="reflex-key" data-v="●">●</button><button class="reflex-key" data-v="○">○</button></div></div>`;S.active=true;document.querySelectorAll('#rhythm-controls .reflex-key').forEach(b=>b.onclick=()=>{if(!S.active)return;const expected=beats[n];if(b.dataset.v!==expected){b.classList.add('bad');fail();return}b.classList.add('good');if(++n===beats.length)complete()});S.timer=setTimeout(()=>fail(),responseWindow(1.1)+len*140);},Math.max(450,signalDelay()));
 }
 function precision(){
- const token=begin(),size=clamp(70-Math.floor(S.level*1.8),32,70),x=12+((S.level*17+activity()*23+S.age*11)%70),y=15+((S.level*29+activity()*13+S.age*7)%62);
- $("game-stage").innerHTML=`<div class="reflex-stage">${head("precision","Wait for the target, then tap it once.")}<div class="precision-board" id="precision-board" style="position:relative;min-height:360px;overflow:hidden;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)"><button class="precision-target" style="position:absolute;left:${x}%;top:${y}%;width:${size}px;height:${size}px;border-radius:50%;border:0;cursor:pointer;touch-action:manipulation" aria-label="Precision target"></button></div></div>`;
+ const token=begin(),size=clamp(70-Math.floor(S.level*1.8),32,70),boardW=320,boardH=360,pad=10,x=Math.min(82,12+((S.level*17+activity()*23+S.age*11)%70)),y=Math.min(82,15+((S.level*29+activity()*13+S.age*7)%62));
+ $("game-stage").innerHTML=`<div class="reflex-stage">${head("precision","Wait for the target, then tap it once.")}<div class="precision-board" id="precision-board" style="position:relative;min-height:360px;overflow:hidden;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)"><button class="precision-target" style="position:absolute;left:${x}%;top:${y}%;width:${size}px;height:${size}px;transform:translate(-50%,-50%);border-radius:50%;border:0;cursor:pointer;touch-action:manipulation" aria-label="Precision target"></button></div></div>`;
  const b=$("precision-board").querySelector('button'); b.disabled=true; b.onclick=()=>complete();
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;b.disabled=false;S.active=true;S.timer=setTimeout(fail,responseWindow(.85))},signalDelay());
 }
