@@ -37,7 +37,8 @@ function chase(){
 }
 function activity(){return Number.isInteger(S.reflexActivity)?S.reflexActivity:0}
 function ageFactor(){return [1.35,1.15,1,.88,.78][S.age]||1}
-function difficulty(){return S.level+activity()*.55}
+function ageDifficulty(){return [0,0,0,1,1][S.age]||0}
+function difficulty(){return S.level+activity()*.55+ageDifficulty()*.35}
 function tier(){return S.level<5?0:S.level<9?1:S.level<13?2:S.level<17?3:4}
 function complexity(){return tier()+Math.min(3,activity())}
 
@@ -69,7 +70,7 @@ function delayedTap(){
 }
 
 function rhythm(){
- const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+Math.floor(activity()/2),2,7),beats=Array.from({length:len},(_,i)=>(i+S.level+S.age)%2?'●':'○');
+ const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+Math.floor(activity()/2)+ageDifficulty(),2,8),beats=Array.from({length:len},(_,i)=>(i+S.level+S.age)%2?'●':'○');
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('rhythm')}<div class="reflex-target">${beats.join(' ')}</div><p>Watch the pattern…</p></div>`;
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;let n=0;$('game-stage').innerHTML=`<div class="reflex-stage">${head('rhythm','Repeat the beat pattern.')}<div class="reflex-controls" id="rhythm-controls"><button class="reflex-key" data-v="●">●</button><button class="reflex-key" data-v="○">○</button></div></div>`;S.active=true;document.querySelectorAll('#rhythm-controls .reflex-key').forEach(b=>b.onclick=()=>{if(!S.active)return;const expected=beats[n];if(b.dataset.v!==expected){b.classList.add('bad');fail();return}b.classList.add('good');if(++n===beats.length)complete()});S.timer=setTimeout(()=>fail(),responseWindow(1.1)+len*140);},Math.max(450,signalDelay()));
 }
@@ -82,7 +83,7 @@ function precision(){
 
 
 function combo(){
- const token=begin(),n=clamp(3+Math.floor((S.level-1)/4)+Math.floor(activity()/2),3,9),pool=shuffle(['●','▲','■','◆','★']).slice(0,3),seq=Array.from({length:n},(_,i)=>pool[(i+S.level+S.age)%pool.length]);
+ const token=begin(),n=clamp(3+Math.floor((S.level-1)/4)+Math.floor(activity()/2)+ageDifficulty(),3,10),pool=shuffle(['●','▲','■','◆','★']).slice(0,clamp(3+ageDifficulty(),3,5)),seq=Array.from({length:n},(_,i)=>pool[(i+S.level+S.age)%pool.length]);
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('combo','Memorize the target sequence.')}<div class="reflex-target">${seq.join(' ')}</div></div>`;
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$('game-stage').innerHTML=`<div class="reflex-stage">${head('combo','Hit the targets in order.')}<div class="reflex-controls">${pool.map(x=>`<button class="reflex-key" data-v="${x}">${x}</button>`).join('')}</div></div>`;let i=0;S.active=true;document.querySelectorAll('.reflex-key').forEach(b=>b.onclick=()=>{if(!S.active)return;if(b.dataset.v!==seq[i]){b.classList.add('bad');fail();return}b.classList.add('good','selected');b.dataset.picks=String((Number(b.dataset.picks)||0)+1);if(++i===seq.length)complete()});S.timer=setTimeout(fail,responseWindow(1.1));},Math.max(500,signalDelay()+150));
 }
@@ -100,7 +101,7 @@ function goNoGo(){
 }
 
 function doubleTarget(){
- const token=begin(),count=clamp(4+Math.floor(S.level/5),4,8),first=(S.level+activity()*2+S.age)%count,second=(first+2+activity())%count===first?(first+1)%count:(first+2+activity())%count;
+ const token=begin(),count=clamp(4+Math.floor(S.level/5)+ageDifficulty(),4,9),first=(S.level+activity()*2+S.age)%count,second=(first+2+activity())%count===first?(first+1)%count:(first+2+activity())%count;
  $('game-stage').innerHTML=`<div class="reflex-stage">${head('double','Wait for the first target. Tap it, then tap the second target when it appears.')}<p id="double-count" class="reflex-count">Get ready…</p><div id="double-board" class="reflex-options"></div></div>`;
  const board=$('double-board');
  for(let i=0;i<count;i++){
@@ -135,7 +136,7 @@ function doubleTarget(){
 }
 
 function target(){
- const token=begin(),count=clamp(3+Math.floor((S.level-1)/4)+activity(),3,8),size=clamp(76-Math.floor(S.level/4)*4,48,76);
+ const token=begin(),count=clamp(3+Math.floor((S.level-1)/4)+activity()+ageDifficulty(),3,9),size=clamp(76-Math.floor(S.level/4)*4,48,76);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("target","Wait for the target. Then tap it before time runs out.")}<p class="reflex-count">Get ready…</p><div id="target-board" class="reflex-options"></div></div>`;
  const board=$("target-board"),targetIndex=(S.level*7+activity()*3+S.age)%count;
  for(let i=0;i<count;i++){const b=document.createElement("button");b.className="reflex-target";b.style.width=size+"px";b.style.height=size+"px";b.disabled=true;b.textContent="";b.setAttribute("aria-label",`Target ${i+1}`);b.onclick=()=>i===targetIndex?complete():fail();board.appendChild(b)}
@@ -157,13 +158,13 @@ function avoid(){
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("avoid-signal").textContent=`SAFE: ${safe}`;box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true;S.timer=setTimeout(fail,responseWindow(.95))},signalDelay());
 }
 function multiTap(){
- const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+activity(),2,5),positions=shuffle([...Array(6).keys()]).slice(0,len);
+ const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+activity()+ageDifficulty(),2,6),positions=shuffle([...Array(6).keys()]).slice(0,len);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("multitap","Watch the target order, then tap the same positions.")}<div id="multi-board" class="reflex-options"></div></div>`;
  const board=$("multi-board");for(let i=0;i<6;i++){const b=document.createElement("button");b.className="reflex-target";b.textContent="";b.dataset.i=i;b.disabled=true;board.appendChild(b)}
  let show=0;const reveal=()=>{if(token!==S.reflexToken)return;if(show<positions.length){board.querySelectorAll("button").forEach(b=>b.textContent="");board.querySelectorAll("button")[positions[show]].textContent="🎯";show++;S.timer=setTimeout(reveal,Math.max(210,680-S.level*18));}else{let n=0;board.querySelectorAll("button").forEach(b=>{b.disabled=false;b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(i!==positions[n])return fail();b.classList.add("good");if(++n===positions.length)complete()}});S.active=true;S.timer=setTimeout(fail,responseWindow(1.1)+positions.length*180)}};reveal();
 }
 function sequence(){
- const token=begin(),len=clamp(3+Math.floor((S.level-1)/4)+activity(),3,8),mode=S.level%4;
+ const token=begin(),len=clamp(3+Math.floor((S.level-1)/4)+activity()+ageDifficulty(),3,9),mode=S.level%4;
  const seq=Array.from({length:len},(_,i)=>SHAPES[(S.level*2+i*(mode+1)+activity()*2+S.age)%SHAPES.length]);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("sequence","Memorize the sequence. It will disappear, then repeat it.")}<div class="reflex-sequence">${seq.map(x=>`<span>${x}</span>`).join("")}</div><p class="reflex-count">Memorize…</p></div>`;
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("game-stage").innerHTML=`<div class="reflex-stage">${head("sequence","Repeat the sequence in the same order.")}<div id="reaction-seq" class="reflex-options"></div><div id="reaction-picked" class="picked-sequence"></div></div>`;const box=$("reaction-seq"),picked=$("reaction-picked");let n=0;S.active=true;

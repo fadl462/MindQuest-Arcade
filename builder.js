@@ -25,7 +25,8 @@ function activity(){return Number.isInteger(S.builderActivity)?S.builderActivity
 function ageScale(){return [0.72,0.88,1,1.12,1.24][S.age]||1}
 function size(){return S.level<5?3:S.level<10?4:5}
 function tier(){return S.level<5?0:S.level<9?1:S.level<13?2:S.level<17?3:4}
-function buildComplexity(){return tier()+Math.min(3,activity())}
+function ageComplexity(){return [0,0,0,1,1][S.age]||0}
+function buildComplexity(){return tier()+Math.min(3,activity())+ageComplexity()*.5}
 
 function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">BUILDER</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four building challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next build…`;if(last){S.builderActivity=0;S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}else{S.builderActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
@@ -92,7 +93,7 @@ function tileMatch(){
 }
 function maze(){
  const n=size(),start=0,goal=n*n-1,blocked=new Set();
- for(let i=1;i<goal;i++){const onSafePath=(i<n)||((i%n)===n-1);if(!onSafePath && (i*7+S.level*3+activity()*5)%Math.max(3,6-tier())===0) blocked.add(i);}
+ for(let i=1;i<goal;i++){const onSafePath=(i<n)||((i%n)===n-1);if(!onSafePath && (i*7+S.level*3+activity()*5+S.age*11)%Math.max(3,6-tier()-Math.min(1,ageComplexity()))===0) blocked.add(i);}
  blocked.delete(1);blocked.delete(goal-1);
  $('game-stage').innerHTML=`<div class="builder-stage">${head('maze','Build a route from START to GOAL.')}<div class="builder-lab-grid" id="maze-grid" style="--n:${n}">${Array.from({length:n*n},(_,i)=>`<button class="builder-cell" data-i="${i}" ${blocked.has(i)?'disabled':''}>${i===start?'START':i===goal?'GOAL':''}</button>`).join('')}</div><p id="maze-path">0 steps</p></div>`;
  let pos=start,steps=0;S.active=true;const cells=[...document.querySelectorAll('#maze-grid .builder-cell')];const adjacent=(a,b)=>{const ar=Math.floor(a/n),ac=a%n,br=Math.floor(b/n),bc=b%n;return Math.abs(ar-br)+Math.abs(ac-bc)===1};
@@ -125,13 +126,13 @@ function path(){
  else if(variant===1){for(let r=0;r<n;r++)path.push(r*n);for(let c=1;c<n;c++)path.push((n-1)*n+c)}
  else if(variant===2){let r=0,c=0;path.push(0);while(r<n-1||c<n-1){if(c<n-1){c++;path.push(r*n+c)}if(r<n-1){r++;path.push(r*n+c)}}}
  else {for(let c=0;c<n;c++)path.push(c);for(let r=1;r<n;r++)path.push(r*n+n-1);for(let c=n-2;c>=0;c--)path.push((n-1)*n+c)}
- const blocked=shuffle([...Array(total).keys()].filter(i=>!path.includes(i))).slice(0,clamp(2+Math.floor(S.level/4),2,total-path.length-1));
+ const blocked=shuffle([...Array(total).keys()].filter(i=>!path.includes(i))).slice(0,clamp(2+Math.floor(S.level/4)+ageComplexity(),2,total-path.length-1));
  $("game-stage").innerHTML=`<div class="builder-stage">${head("path","Route ${variant+1}: follow the safe route step by step.")}<p class="builder-task">Start at <b>🚀</b> and reach <b>🏁</b>. Choose the next cell.</p>${makeGrid(n)}</div>`;
  const cells=[...document.querySelectorAll(".builder-cell")];cells[path[0]].textContent="🚀";cells[path[path.length-1]].textContent="🏁";blocked.forEach(i=>cells[i].classList.add("blocked"));let step=1;S.active=true;
  cells.forEach((b,i)=>b.onclick=()=>{if(!S.active||b.disabled||blocked.includes(i))return;if(i===path[step]){b.classList.add("filled");b.disabled=true;step++;if(step===path.length)complete()}else fail()});
 }
 function count(){
- const n=size(),target=clamp(2+Math.floor(S.level/3)+activity(),2,n*n-1);
+ const n=size(),target=clamp(Math.round((2+Math.floor(S.level/3)+activity())*ageScale()),2,n*n-1);
  const choices=[target,target+1,target+2,Math.max(1,target-1)].filter((v,i,a)=>v<=n*n&&a.indexOf(v)===i);
  $('game-stage').innerHTML=`<div class="builder-stage">${head('count',`Build count ${target}: choose the option containing exactly the requested number of blocks.`)}<p class="builder-task">How many blocks should the finished structure contain?</p><div class="builder-count-options">${shuffle(choices).map(v=>`<button class="word-option" data-count="${v}">${v} blocks</button>`).join('')}</div></div>`;
  S.active=true;document.querySelectorAll('.builder-count-options [data-count]').forEach(b=>b.onclick=()=>Number(b.dataset.count)===target?complete():fail());
