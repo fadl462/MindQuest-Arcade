@@ -125,7 +125,7 @@ function path(){
  if(variant===0){for(let c=0;c<n;c++)path.push(c);for(let r=1;r<n;r++)path.push(r*n+n-1)}
  else if(variant===1){for(let r=0;r<n;r++)path.push(r*n);for(let c=1;c<n;c++)path.push((n-1)*n+c)}
  else if(variant===2){let r=0,c=0;path.push(0);while(r<n-1||c<n-1){if(c<n-1){c++;path.push(r*n+c)}if(r<n-1){r++;path.push(r*n+c)}}}
- else {for(let c=0;c<n;c++)path.push(c);for(let r=1;r<n;r++)path.push(r*n+n-1);for(let c=n-2;c>=0;c--)path.push((n-1)*n+c)}
+ else {for(let c=0;c<n;c++)path.push(c);for(let r=1;r<n;r++)path.push(r*n+n-1)}
  const blocked=shuffle([...Array(total).keys()].filter(i=>!path.includes(i))).slice(0,clamp(2+Math.floor(S.level/4)+ageComplexity(),2,total-path.length-1));
  $("game-stage").innerHTML=`<div class="builder-stage">${head("path","Route ${variant+1}: follow the safe route step by step.")}<p class="builder-task">Start at <b>🚀</b> and reach <b>🏁</b>. Choose the next cell.</p>${makeGrid(n)}</div>`;
  const cells=[...document.querySelectorAll(".builder-cell")];cells[path[0]].textContent="🚀";cells[path[path.length-1]].textContent="🏁";blocked.forEach(i=>cells[i].classList.add("blocked"));let step=1;S.active=true;
