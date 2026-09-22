@@ -4,37 +4,8 @@ const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
 // Reflex Arena interaction bridge. All live controls use this common pointer/click
 // path so dynamically-created buttons remain responsive across mouse and touch.
-const reflexPointerHandled=new WeakMap();
-function installInteractionBridge(){
-  if(window.__MQ_REFLEX_INTERACTION_BRIDGE__)return;
-  window.__MQ_REFLEX_INTERACTION_BRIDGE__=true;
-  const dispatch=(event)=>{
-    const button=event.target?.closest?.('#game-stage button');
-    if(!button||button.disabled||button.getAttribute('aria-disabled')==='true')return;
-    const now=performance.now();
-    if(event.type==='click'){
-      const last=reflexPointerHandled.get(button)||0;
-      if(now-last<650)return;
-    }
-    const handler=button.onclick;
-    if(typeof handler!=='function')return;
-    // Handle touch/mouse activation on pointerup instead of pointerdown.
-    // Preventing pointerdown can suppress the browser's synthesized click on
-    // some mobile/trackpad combinations. Pointerup gives the control a
-    // reliable native activation path while click remains the fallback.
-    if(event.type==='pointerup')reflexPointerHandled.set(button,now);
-    event.preventDefault();
-    event.stopPropagation();
-    try{handler.call(button,event)}catch(err){
-      console.error('MindQuest Reflex Arena interaction error:',err);
-      if(S.active)fail();
-    }
-  };
-  document.addEventListener('pointerup',dispatch,true);
-  document.addEventListener('click',dispatch,true);
-}
-installInteractionBridge();
-
+// Native button activation is intentionally used for Reflex controls.
+// Individual activities attach their handlers directly to their live buttons.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const shuffle=a=>{const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out};
 const COLORS=[
@@ -69,14 +40,24 @@ function chase(){
  spawn();
 }
 function activity(){return Number.isInteger(S.reflexActivity)?S.reflexActivity:0}
-function ageFactor(){return [1.35,1.15,1,.88,.78][S.age]||1}
+function ageFactor(){return [1.55,1.25,1,.9,.82][S.age]||1}
 function ageDifficulty(){return [0,0,0,1,1][S.age]||0}
 function difficulty(){return S.level+activity()*.55+ageDifficulty()*.35}
 function tier(){return S.level<5?0:S.level<9?1:S.level<13?2:S.level<17?3:4}
 function complexity(){return tier()+Math.min(3,activity())}
 
-function responseWindow(mult=1){return clamp(Math.round((1750-difficulty()*42)*ageFactor()*mult),520,1750)}
-function signalDelay(){return clamp(Math.round((980-difficulty()*18)*ageFactor()),330,980)}
+// Response time is deliberately age-calibrated. Ages 3–5 receive a substantially
+// longer response window and a longer preparation period so the challenge tests
+// recognition and coordination rather than reading speed.
+function responseWindow(mult=1){
+  const ageBonus=[900,450,0,-180,-320][S.age]||0;
+  const base=2300-difficulty()*35+ageBonus;
+  return clamp(Math.round(base*mult),900,3200);
+}
+function signalDelay(){
+  const ageBonus=[520,260,0,-120,-180][S.age]||0;
+  return clamp(Math.round(1050-difficulty()*14+ageBonus),520,1550);
+}
 function head(type,sub){const i=INFO[type];return `<div class="arcade-lab-head"><div><span class="lab-kind">REFLEX ARENA</span><h3>${i[0]}</h3><p>${sub||i[1]}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div>`}
 function begin(){S.active=false;clearTimeout(S.timer);S.reflexToken=(S.reflexToken||0)+1;return S.reflexToken}
 function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);const last=activity()===3;$("game-message").textContent=last?"✓ Four reflex challenges complete!":`✓ Activity ${activity()+1} complete. Loading the next challenge…`;if(last){S.reflexActivity=0;S.timer=setTimeout(()=>{MQ.state.active=true;MQ.levelComplete()},650)}else{S.reflexActivity=activity()+1;S.timer=setTimeout(()=>{$("game-message").textContent="";MQ.nextChallenge()},650)}}
@@ -268,13 +249,43 @@ function multiTap(){
  let show=0;const reveal=()=>{if(token!==S.reflexToken)return;if(show<positions.length){board.querySelectorAll("button").forEach(b=>b.textContent="");board.querySelectorAll("button")[positions[show]].textContent="🎯";show++;S.timer=setTimeout(reveal,Math.max(210,680-S.level*18));}else{let n=0;board.querySelectorAll("button").forEach(b=>{b.setAttribute("aria-disabled","false");b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(i!==positions[n])return fail();b.classList.add("good");if(++n===positions.length)complete()}});S.active=true;S.timer=setTimeout(fail,responseWindow(1.1)+positions.length*180)}};reveal();
 }
 function sequence(){
- const token=begin(),len=clamp(3+Math.floor((S.level-1)/4)+activity()+ageDifficulty(),3,9),mode=S.level%4;
- const seq=Array.from({length:len},(_,i)=>SHAPES[(S.level*2+i*(mode+1)+activity()*2+S.age)%SHAPES.length]);
- $("game-stage").innerHTML=`<div class="reflex-stage">${head("sequence","Memorize the sequence. It will disappear, then repeat it.")}<div class="reflex-sequence">${seq.map(x=>`<span>${x}</span>`).join("")}</div><p class="reflex-count">Memorize…</p></div>`;
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("game-stage").innerHTML=`<div class="reflex-stage">${head("sequence","Repeat the sequence in the same order.")}<div id="reaction-seq" class="reflex-options"></div><div id="reaction-picked" class="picked-sequence"></div></div>`;const box=$("reaction-seq"),picked=$("reaction-picked");let n=0;S.active=true;
- const options=shuffle(SHAPES.slice(0,clamp(5+Math.floor(S.level/6),5,8)));
- options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-symbol";b.textContent=x;b.onclick=()=>{if(!S.active)return;if(x!==seq[n]){b.classList.add("bad");fail()}else{b.classList.add("good","selected");b.dataset.picks=String((Number(b.dataset.picks)||0)+1);picked.textContent+=(n?" → ":"")+x;if(++n===seq.length)complete()}};box.appendChild(b)});
- S.timer=setTimeout(()=>{if(S.active)fail()},responseWindow(.9)+len*260)},Math.max(700,850+len*90));
+ const token=begin(),age=S.age;
+ // Young children get shorter sequences with more time to encode and reproduce them.
+ const lenByAge=[
+   clamp(2+Math.floor((S.level-1)/8)+Math.floor(activity()/2),2,4),
+   clamp(3+Math.floor((S.level-1)/7)+Math.floor(activity()/2),3,5),
+   clamp(4+Math.floor((S.level-1)/6)+Math.floor(activity()/2),4,6),
+   clamp(5+Math.floor((S.level-1)/5)+activity(),5,8),
+   clamp(5+Math.floor((S.level-1)/4)+activity(),5,9)
+ ];
+ const len=lenByAge[age]||lenByAge[2],mode=S.level%4;
+ const pool=age===0?SHAPES.slice(0,4):age===1?SHAPES.slice(0,5):SHAPES;
+ const seq=Array.from({length:len},(_,i)=>pool[(S.level*2+i*(mode+1)+activity()*2+age)%pool.length]);
+ const displayMs=age===0?Math.max(1800,1450+len*360):age===1?Math.max(1300,1100+len*260):Math.max(900,850+len*150);
+ const options=shuffle(pool.slice(0,Math.min(pool.length,age===0?4:age===1?5:8)));
+ const responseMs=responseWindow(age===0?1.25:age===1?1.08:.9)+len*(age===0?420:age===1?300:260);
+ $('game-stage').innerHTML=`<div class="reflex-stage">${head("sequence",age===0?"Watch carefully, then tap the shapes in the same order.":"Memorize the sequence. It will disappear, then repeat it.")}<div class="reflex-sequence">${seq.map(x=>`<span>${x}</span>`).join("")}</div><p class="reflex-count">${age===0?'Look carefully…':'Memorize…'}</p></div>`;
+ S.timer=setTimeout(()=>{
+   if(token!==S.reflexToken)return;
+   $('game-stage').innerHTML=`<div class="reflex-stage">${head("sequence",age===0?"Tap the shapes in the same order you saw them.":"Repeat the sequence in the same order.")}<div id="reaction-seq" class="reflex-options"></div><div id="reaction-picked" class="picked-sequence" aria-live="polite"></div><p id="sequence-progress" class="reflex-count">0 / ${len}</p></div>`;
+   const box=$("reaction-seq"),picked=$("reaction-picked"),progress=$("sequence-progress");
+   let n=0;S.active=true;
+   options.forEach(x=>{
+     const b=document.createElement("button");
+     b.type="button";b.className="reflex-symbol";b.textContent=x;
+     b.style.touchAction="manipulation";
+     b.onclick=()=>{
+       if(!S.active)return;
+       if(x!==seq[n]){b.classList.add("bad");fail();return;}
+       b.classList.add("good","selected");
+       picked.textContent+=(n?" → ":"")+x;
+       n++;progress.textContent=`${n} / ${len}`;
+       if(n===seq.length)complete();
+     };
+     box.appendChild(b);
+   });
+   S.timer=setTimeout(()=>{if(S.active)fail()},responseMs);
+ },displayMs);
 }
 window.MQReflexArena={run:instruction};
 })();
