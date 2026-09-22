@@ -259,18 +259,50 @@ function activeSavedCheckpoint(){
   return entries[0]||null;
 }
 function restoreSavedView(){
-  // A browser refresh is a fresh entry into the app, not a request to reopen
-  // the last live challenge. Always return to the Arcade homepage. Saved
-  // challenges remain available in the Player Intelligence Console and can
-  // be resumed deliberately with their Resume button.
-  try{localStorage.setItem(VIEW_KEY,'home');}catch{}
-  try{localStorage.removeItem(SESSION);}catch{}
-  const home=document.getElementById('home');
-  if(home){
+  // Preserve the page the player was viewing when the browser refreshes.
+  // A game view is restored from the latest checkpoint so the player returns
+  // to the same game/level instead of being unexpectedly sent to Arcade.
+  let view='home',session=null;
+  try{view=localStorage.getItem(VIEW_KEY)||'home';}catch{}
+  try{session=JSON.parse(localStorage.getItem(SESSION)||'null');}catch{}
+
+  const activate=id=>{
     document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
-    home.classList.add('active');
-    syncHomePathway();
+    const screen=document.getElementById(id);
+    if(screen)screen.classList.add('active');
+  };
+
+  if(view==='game' && session && session.game){
+    const age=Number(session.age||0);
+    const p=saved[keyFor(age,session.game)];
+    if(p){
+      restore(p);
+    }else{
+      MQ.state.age=Number.isInteger(age)&&age>=0&&age<MQ.ages.length?age:MQ.state.age;
+      MQ.state.game=session.game;
+      MQ.state.level=Number(MQ.state.level||1);
+    }
+    const meta={memory:['🧠','Memory Lab','COGNITIVE'],detective:['🔎','Detective','COGNITIVE'],reflex:['⚡','Reflex Arena','PSYCHOMOTOR'],builder:['🧩','Builder','COGNITIVE'],team:['🤝','Team Quest','BEHAVIOURAL'],world:['🌍','World Explorer','COGNITIVE'],money:['💰','Money Mission','COGNITIVE']}[MQ.state.game];
+    if(meta){
+      document.getElementById('game-icon').textContent=meta[0];
+      document.getElementById('game-name').textContent=meta[1];
+      document.getElementById('game-skill').textContent=meta[2];
+      activate('game');
+      setView('game');
+      MQ.nextChallenge();
+      return;
+    }
   }
+
+  if(view==='milestone'){
+    const p=session&&session.game?saved[keyFor(Number(session.age||0),session.game)]:null;
+    if(p&&p.milestonePending){MQ.state.age=Number(p.age||0);MQ.state.game=p.game;restore(p);MQ.showMilestone(p.milestoneLevel||p.level);return;}
+  }
+  if(view==='account'){activate('account-gate');setView('account');return;}
+  if(view==='premium'){activate('premium');setView('premium');return;}
+
+  activate('home');
+  syncHomePathway();
   setView('home');
 }
 ensureIntel();updateBadges();MQ.updateGlobal();addProfileButton();syncPlayerIdentity();renderIntelligenceConsole();
