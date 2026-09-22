@@ -2,6 +2,35 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
+// Reflex Arena interaction bridge. All live controls use this common pointer/click
+// path so dynamically-created buttons remain responsive across mouse and touch.
+const reflexPointerHandled=new WeakMap();
+function installInteractionBridge(){
+  if(window.__MQ_REFLEX_INTERACTION_BRIDGE__)return;
+  window.__MQ_REFLEX_INTERACTION_BRIDGE__=true;
+  const dispatch=(event)=>{
+    const button=event.target?.closest?.('#game-stage button');
+    if(!button||button.disabled||button.getAttribute('aria-disabled')==='true')return;
+    const now=performance.now();
+    if(event.type==='click'){
+      const last=reflexPointerHandled.get(button)||0;
+      if(now-last<650)return;
+    }
+    const handler=button.onclick;
+    if(typeof handler!=='function')return;
+    if(event.type==='pointerdown')reflexPointerHandled.set(button,now);
+    event.preventDefault();
+    event.stopPropagation();
+    try{handler.call(button,event)}catch(err){
+      console.error('MindQuest Reflex Arena interaction error:',err);
+      if(S.active)fail();
+    }
+  };
+  document.addEventListener('pointerdown',dispatch,true);
+  document.addEventListener('click',dispatch,true);
+}
+installInteractionBridge();
+
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const shuffle=a=>{const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out};
 const COLORS=[
@@ -50,12 +79,12 @@ function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);con
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){
  const types=["target","color","avoid","sequence","go","double","multitap","switch","delay","rhythm","precision","alternate","combo","mirror","chase"];const type=types[(S.level-1+activity())%types.length],i=INFO[type];S.active=false;clearTimeout(S.timer);
- $("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">⚡</div><span class="ui-skill">PSYCHOMOTOR</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>⚡ Faster as you advance</span><span>✓ Four activities per level</span></div><button id="reflex-start" class="primary-btn ui-start">Start Activity →</button></div>`;
+ $("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">⚡</div><span class="ui-skill">PSYCHOMOTOR</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>⚡ Faster as you advance</span><span>✓ Four activities per level</span></div><button id="reflex-start" type="button" class="primary-btn ui-start">Start Activity →</button></div>`;
  $("reflex-start").onclick=()=>runActivity(type);
 }
 function alternate(){
  const token=begin(),steps=clamp(4+Math.floor(S.level/4)+Math.floor(activity()/2),4,10);let hit=0,side=0;
- $('game-stage').innerHTML=`<div class="reflex-stage">${head('alternate','Hit the highlighted side, then alternate sides.')}<div id="alt-area" style="display:flex;justify-content:center;gap:24px;margin:22px auto;max-width:520px"><button class="reflex-target" id="alt-left">LEFT</button><button class="reflex-target" id="alt-right">RIGHT</button></div><div id="alt-count" class="reflex-target">0 / ${steps}</div></div>`;
+ $('game-stage').innerHTML=`<div class="reflex-stage">${head('alternate','Hit the highlighted side, then alternate sides.')}<div id="alt-area" style="display:flex;justify-content:center;gap:24px;margin:22px auto;max-width:520px"><button type="button" class="reflex-target" id="alt-left">LEFT</button><button type="button" class="reflex-target" id="alt-right">RIGHT</button></div><div id="alt-count" class="reflex-target">0 / ${steps}</div></div>`;
  const left=$('alt-left'),right=$('alt-right'),count=$('alt-count');S.active=true;
  const arm=()=>{if(!S.active||token!==S.reflexToken)return;left.classList.toggle('good',side===0);right.classList.toggle('good',side===1);S.timer=setTimeout(fail,responseWindow(1.05))};
  const tap=(which)=>{if(!S.active)return;if(which!==side){fail();return}clearTimeout(S.timer);hit++;count.textContent=`${hit} / ${steps}`;if(hit>=steps){complete();return}side=1-side;arm()};
@@ -64,9 +93,9 @@ function alternate(){
 function switchSignal(){const dirs=[['←','LEFT'],['→','RIGHT'],['↑','UP'],['↓','DOWN']];const d=dirs[(S.level+activity()+S.age)%dirs.length];const token=begin();$('game-stage').innerHTML=`<div class="reflex-stage">${head('switch')}<div class="reflex-target">GET READY</div><div class="reflex-controls"><button class="reflex-key" data-v="LEFT">←</button><button class="reflex-key" data-v="RIGHT">→</button><button class="reflex-key" data-v="UP">↑</button><button class="reflex-key" data-v="DOWN">↓</button></div></div>`;const delay=signalDelay();S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const t=performance.now();document.querySelector('.reflex-target').textContent=d[0];S.active=true;S.timer=setTimeout(()=>fail(),responseWindow());document.querySelectorAll('.reflex-key').forEach(b=>b.onclick=()=>{if(!S.active)return;clearTimeout(S.timer);b.dataset.v===d[1]?complete():fail();});},delay)}
 function delayedTap(){
  const token=begin();
- $('game-stage').innerHTML=`<div class="reflex-stage">${head('delay','Wait for the signal.')}<div class="reflex-signal" id="delay-signal">WAIT…</div><button class="reflex-target" id="delay-button" disabled>TAP</button></div>`;
+ $('game-stage').innerHTML=`<div class="reflex-stage">${head('delay','Wait for the signal.')}<div class="reflex-signal" id="delay-signal">WAIT…</div><button class="reflex-target" id="delay-button" type="button" aria-disabled="true">TAP</button></div>`;
  const wait=clamp(Math.round(980+activity()*70-difficulty()*9),360,1100);
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const start=performance.now();const b=$('delay-button');$('delay-signal').textContent='NOW';b.disabled=false;S.active=true;S.timer=setTimeout(()=>fail(),responseWindow(1.1));b.onclick=()=>{if(!S.active)return;const rt=performance.now()-start;clearTimeout(S.timer);const window=clamp(175-difficulty()*3.2,55,175);Math.abs(rt-(responseWindow(.65)))<=window?complete():fail();};},wait);
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;const start=performance.now();const b=$('delay-button');$('delay-signal').textContent='NOW';b.setAttribute("aria-disabled","false");S.active=true;S.timer=setTimeout(()=>fail(),responseWindow(1.1));b.onclick=()=>{if(!S.active)return;const rt=performance.now()-start;clearTimeout(S.timer);const window=clamp(175-difficulty()*3.2,55,175);Math.abs(rt-(responseWindow(.65)))<=window?complete():fail();};},wait);
 }
 
 function rhythm(){
@@ -86,8 +115,8 @@ function rhythm(){
 function precision(){
  const token=begin(),size=clamp(70-Math.floor(S.level*1.8),32,70),boardMin=360,xMin=Math.max(10,(size/boardMin)*100/2+2),xMax=100-xMin,yMin=Math.max(12,(size/boardMin)*100/2+2),yMax=100-yMin,x=(xMin+((S.level*17+activity()*23+S.age*11)%100)/100*(xMax-xMin)),y=(yMin+((S.level*29+activity()*13+S.age*7)%100)/100*(yMax-yMin));
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("precision","Wait for the target, then tap it once.")}<div class="precision-board" id="precision-board" style="position:relative;min-height:360px;overflow:hidden;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)"><button class="precision-target" style="position:absolute;left:${x}%;top:${y}%;width:${size}px;height:${size}px;border-radius:50%;border:0;cursor:pointer;touch-action:manipulation" aria-label="Precision target"></button></div></div>`;
- const b=$("precision-board").querySelector('button'); b.disabled=true; b.onclick=()=>complete();
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;b.disabled=false;S.active=true;S.timer=setTimeout(fail,responseWindow(.85))},signalDelay());
+ const b=$("precision-board").querySelector('button'); b.setAttribute("aria-disabled","true"); b.onclick=()=>complete();
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;b.setAttribute('aria-disabled','false');S.active=true;S.timer=setTimeout(fail,responseWindow(.85))},signalDelay());
 }
 
 
@@ -100,9 +129,9 @@ function combo(){
 function runActivity(type){if(type==="target")target();else if(type==="color")color();else if(type==="avoid")avoid();else if(type==="go")goNoGo();else if(type==="double")doubleTarget();else if(type==="multitap")multiTap();else if(type==="switch")switchSignal();else if(type==="delay")delayedTap();else if(type==="rhythm")rhythm();else if(type==="precision")precision();else if(type==="chase")chase();else if(type==="alternate")alternate();else if(type==="combo")combo();else if(type==="mirror")mirror();else sequence()}
 function goNoGo(){
  const token=begin(),go=Math.random()>.38;
- $('game-stage').innerHTML=`<div class="reflex-stage">${head('go','Wait for the signal. Tap GO, but do not tap NO-GO.')}<div class="reflex-signal" id="go-signal">Get ready…</div><div id="go-button-wrap" class="reflex-options"><button id="go-button" class="reflex-target" disabled>RESPOND</button></div></div>`;
+ $('game-stage').innerHTML=`<div class="reflex-stage">${head('go','Wait for the signal. Tap GO, but do not tap NO-GO.')}<div class="reflex-signal" id="go-signal">Get ready…</div><div id="go-button-wrap" class="reflex-options"><button id="go-button" class="reflex-target" type="button" aria-disabled="true">RESPOND</button></div></div>`;
  const b=$('go-button');
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$('go-signal').textContent=go?'GO':'NO-GO';b.disabled=false;S.active=true;let responded=false;
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$('go-signal').textContent=go?'GO':'NO-GO';b.setAttribute('aria-disabled','false');S.active=true;let responded=false;
  b.onclick=()=>{if(!S.active||responded)return;responded=true;if(go)complete();else fail()};
  if(!go)S.timer=setTimeout(()=>{if(S.active&&!responded)complete()},responseWindow(1.15));
  else S.timer=setTimeout(()=>{if(S.active&&!responded)fail()},responseWindow(.85));
@@ -206,7 +235,7 @@ function color(){
  const token=begin(),correct=COLORS[(S.level*3+activity()*2+S.age)%COLORS.length],optionCount=clamp(4+Math.floor(S.level/7),4,6);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("color","Wait for the color flash, then choose the matching color.")}<div class="reflex-signal" id="reflex-signal">?</div><div id="reflex-colors" class="reflex-options"></div></div>`;
  const box=$("reflex-colors"),options=shuffle([correct,...shuffle(COLORS.filter(x=>x.name!==correct.name)).slice(0,optionCount-1)]);
- options.forEach(x=>{const b=document.createElement("button");b.className="reflex-color";b.innerHTML=`<span style="background:${x.hex}"></span>${x.name}`;b.disabled=true;b.onclick=()=>x.name===correct.name?complete():fail();box.appendChild(b)});
+ options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-color";b.innerHTML=`<span style="background:${x.hex}"></span>${x.name}`;b.disabled=true;b.onclick=()=>x.name===correct.name?complete():fail();box.appendChild(b)});
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("reflex-signal").textContent=correct.emoji;box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true;S.timer=setTimeout(fail,responseWindow(1))},signalDelay());
 }
 function avoid(){
@@ -214,7 +243,7 @@ function avoid(){
  const pool=shuffle(SHAPES.filter(x=>x!==safe&&x!==hazard)).slice(0,count-2);
  const options=shuffle([safe,hazard,...pool]);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("avoid","The safe symbol will be revealed. Tap only that symbol.")}<div class="reflex-signal" id="avoid-signal">?</div><div id="avoid-options" class="reflex-options"></div></div>`;
- const box=$("avoid-options");options.forEach(x=>{const b=document.createElement("button");b.className="reflex-symbol";b.textContent=x;b.disabled=true;b.onclick=()=>x===safe?complete():fail();box.appendChild(b)});
+ const box=$("avoid-options");options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-symbol";b.textContent=x;b.disabled=true;b.onclick=()=>x===safe?complete():fail();box.appendChild(b)});
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("avoid-signal").textContent=`SAFE: ${safe}`;box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true;S.timer=setTimeout(fail,responseWindow(.95))},signalDelay());
 }
 function multiTap(){
@@ -229,7 +258,7 @@ function sequence(){
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("sequence","Memorize the sequence. It will disappear, then repeat it.")}<div class="reflex-sequence">${seq.map(x=>`<span>${x}</span>`).join("")}</div><p class="reflex-count">Memorize…</p></div>`;
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("game-stage").innerHTML=`<div class="reflex-stage">${head("sequence","Repeat the sequence in the same order.")}<div id="reaction-seq" class="reflex-options"></div><div id="reaction-picked" class="picked-sequence"></div></div>`;const box=$("reaction-seq"),picked=$("reaction-picked");let n=0;S.active=true;
  const options=shuffle(SHAPES.slice(0,clamp(5+Math.floor(S.level/6),5,8)));
- options.forEach(x=>{const b=document.createElement("button");b.className="reflex-symbol";b.textContent=x;b.onclick=()=>{if(!S.active)return;if(x!==seq[n]){b.classList.add("bad");fail()}else{b.classList.add("good","selected");b.dataset.picks=String((Number(b.dataset.picks)||0)+1);picked.textContent+=(n?" → ":"")+x;if(++n===seq.length)complete()}};box.appendChild(b)});
+ options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-symbol";b.textContent=x;b.onclick=()=>{if(!S.active)return;if(x!==seq[n]){b.classList.add("bad");fail()}else{b.classList.add("good","selected");b.dataset.picks=String((Number(b.dataset.picks)||0)+1);picked.textContent+=(n?" → ":"")+x;if(++n===seq.length)complete()}};box.appendChild(b)});
  S.timer=setTimeout(()=>{if(S.active)fail()},responseWindow(.9)+len*260)},Math.max(700,850+len*90));
 }
 window.MQReflexArena={run:instruction};
