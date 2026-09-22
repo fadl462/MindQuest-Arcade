@@ -153,12 +153,40 @@ function target(){
  // Randomize the target on every run so reaction, not memorization of a fixed position, is tested.
  const targetIndex=Math.floor(Math.random()*count);
  const buttons=[];
- for(let i=0;i<count;i++){const b=document.createElement("button");b.className="reflex-target";b.style.width=size+"px";b.style.height=size+"px";b.style.minWidth=size+"px";b.style.minHeight=size+"px";b.disabled=true;b.textContent="";b.setAttribute("aria-label",`Target position ${i+1}`);b.setAttribute("aria-disabled","true");b.onclick=()=>{if(!S.active||b.disabled)return;i===targetIndex?complete():fail()};buttons.push(b);board.appendChild(b)}
+ for(let i=0;i<count;i++){
+   const b=document.createElement("button");
+   b.type="button";
+   b.className="reflex-target";
+   b.style.width=size+"px";b.style.height=size+"px";
+   b.style.minWidth=size+"px";b.style.minHeight=size+"px";
+   b.disabled=true;b.textContent="";
+   b.dataset.targetIndex=String(i);
+   b.setAttribute("aria-label",`Target position ${i+1}`);
+   b.setAttribute("aria-disabled","true");
+   buttons.push(b);board.appendChild(b);
+ }
+ // Use delegated input handling so the target remains reliably clickable across
+ // browsers/touch devices even after the buttons are enabled dynamically.
+ const handleTargetInput=(event)=>{
+   const button=event.target.closest?.("button[data-target-index]");
+   if(!button||!board.contains(button)||!S.active||button.disabled)return;
+   const pickedIndex=Number(button.dataset.targetIndex);
+   pickedIndex===targetIndex?complete():fail();
+ };
+ board.addEventListener("click",handleTargetInput);
  const delay=signalDelay();
  let countdown=Math.max(1,Math.ceil(delay/500));
  status.textContent=age===0?`Get ready… ${countdown}`:copy.ready;
  const countdownTimer=setInterval(()=>{if(token!==S.reflexToken){clearInterval(countdownTimer);return} countdown-=1;if(countdown>0&&age===0)status.textContent=`Get ready… ${countdown}`;},500);
- S.timer=setTimeout(()=>{clearInterval(countdownTimer);if(token!==S.reflexToken)return;buttons.forEach((b,i)=>{b.disabled=false;b.setAttribute("aria-disabled","false");if(i===targetIndex){b.textContent="🎯";b.style.transform="scale(1.04)";b.style.boxShadow="0 12px 30px rgba(79,70,229,.24)";}});status.textContent=copy.go;hint.textContent=age===0?"Find 🎯 and tap it!":"React before time runs out.";S.active=true;S.timer=setTimeout(()=>fail(),responseWindow(.9))},delay);
+ S.timer=setTimeout(()=>{clearInterval(countdownTimer);if(token!==S.reflexToken)return;buttons.forEach((b,i)=>{
+   b.disabled=false;b.setAttribute("aria-disabled","false");
+   b.style.pointerEvents="auto";
+   if(i===targetIndex){
+     b.textContent="🎯";b.dataset.target="true";
+     b.style.transform="scale(1.04)";
+     b.style.boxShadow="0 12px 30px rgba(79,70,229,.24)";
+   }
+ });status.textContent=copy.go;hint.textContent=age===0?"Find 🎯 and tap it!":"React before time runs out.";S.active=true;S.timer=setTimeout(()=>fail(),responseWindow(.9))},delay);
 }
 function color(){
  const token=begin(),correct=COLORS[(S.level*3+activity()*2+S.age)%COLORS.length],optionCount=clamp(4+Math.floor(S.level/7),4,6);
