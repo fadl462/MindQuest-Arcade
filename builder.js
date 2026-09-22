@@ -68,14 +68,7 @@ function symmetry(){
  }
  const candidates=[];
  for(let r=0;r<n;r++) for(let c=0;c<Math.floor(n/2);c++) if(cells[r*n+c]) candidates.push(r*n+c);
- if(!candidates.length){
-   const fallbackRow=(S.level+activity())%n, fallbackCol=Math.max(0,Math.floor(n/2)-1);
-   const fallback=fallbackRow*n+fallbackCol;
-   cells[fallback]=true;
-   cells[fallbackRow*n+(n-1-fallbackCol)]=true;
-   candidates.push(fallback);
- }
- const source=candidates[(S.level+activity())%candidates.length];
+ const source=candidates[(S.level+activity())%Math.max(1,candidates.length)]??0;
  const sr=Math.floor(source/n),sc=source%n,target=sr*n+(n-1-sc);
  cells[target]=false;
  $('game-stage').innerHTML=`<div class="builder-stage">${head('symmetry','Complete the reflected pattern.')}<div class="builder-prompt"><h3>Which cell should be filled?</h3><p>One cell is missing from the reflected side.</p><div class="builder-lab-grid" style="--n:${n}">${cells.map((v,i)=>`<button class="builder-cell ${v?'filled':''}" data-i="${i}">${i===target?'?':''}</button>`).join('')}</div></div></div>`;S.active=true;document.querySelectorAll('.builder-cell').forEach(b=>b.onclick=()=>b.dataset.i===String(target)?complete():fail());
@@ -92,13 +85,15 @@ function tileMatch(){
  for(let i=0;i<n*n;i++){if((i*2+S.level+activity()*2)%mod===0)target.add(i)}
  if(!target.size)target.add((S.level+activity())%(n*n));
  const cells=Array.from({length:n*n},(_,i)=>`<button class="builder-cell" data-i="${i}"></button>`).join('');
- $('game-stage').innerHTML=`<div class="builder-stage">${head('tileMatch')}<p>Memorize the highlighted pattern, then rebuild it exactly.</p><div class="builder-lab-grid" style="--n:${n}" id="tile-grid">${cells}</div></div>`;
+ $('game-stage').innerHTML=`<div class="builder-stage">${head('tileMatch')}<p>Memorize the highlighted pattern, then rebuild it exactly.</p><div class="builder-lab-grid" style="--n:${n}" id="tile-grid">${cells}</div><p id="tile-status">Memorize…</p></div>`;
  const grid=document.querySelectorAll('#tile-grid .builder-cell');target.forEach(i=>grid[i].classList.add('filled'));
- S.active=false;
- S.timer=setTimeout(()=>{if(token!==S.builderToken)return;target.forEach(i=>grid[i].classList.remove('filled'));S.active=true;},Math.max(650,1000-S.level*18));
- const picked=new Set();const token=(S.builderToken=(S.builderToken||0)+1);
+ const picked=new Set();let reveal=true;S.active=false;
+ const hideAt=Math.max(650,1000-S.level*18);
+ S.timer=setTimeout(()=>{reveal=false;if(!S.active)return;target.forEach(i=>grid[i].classList.remove('filled'));$('tile-status').textContent='Rebuild the pattern.';},hideAt);
+ setTimeout(()=>{if(reveal){reveal=false;target.forEach(i=>grid[i].classList.remove('filled'));$('tile-status').textContent='Rebuild the pattern.';}S.active=true;},hideAt);
  grid.forEach(b=>b.onclick=()=>{if(!S.active)return;const i=+b.dataset.i;if(picked.has(i)){picked.delete(i);b.classList.remove('selected')}else{picked.add(i);b.classList.add('selected')}if(picked.size===target.size&&[...picked].every(i=>target.has(i)))complete();else if(picked.size>target.size)fail()})
 }
+
 function maze(){
  const n=size(),start=0,goal=n*n-1,blocked=new Set();
  for(let i=1;i<goal;i++){const onSafePath=(i<n)||((i%n)===n-1);if(!onSafePath && (i*7+S.level*3+activity()*5+S.age*11)%Math.max(3,6-tier()-Math.min(1,ageComplexity()))===0) blocked.add(i);}
@@ -133,7 +128,7 @@ function path(){
  if(variant===0){for(let c=0;c<n;c++)path.push(c);for(let r=1;r<n;r++)path.push(r*n+n-1)}
  else if(variant===1){for(let r=0;r<n;r++)path.push(r*n);for(let c=1;c<n;c++)path.push((n-1)*n+c)}
  else if(variant===2){let r=0,c=0;path.push(0);while(r<n-1||c<n-1){if(c<n-1){c++;path.push(r*n+c)}if(r<n-1){r++;path.push(r*n+c)}}}
- else {let r=0,c=0;path.push(0);while(r<n-1||c<n-1){if(r<n-1){r++;path.push(r*n+c)}if(c<n-1){c++;path.push(r*n+c)}}}
+ else {for(let r=0;r<n;r++)path.push(r*n+n-1);for(let c=n-2;c>=0;c--)path.push((n-1)*n+c)}
  const blocked=shuffle([...Array(total).keys()].filter(i=>!path.includes(i))).slice(0,clamp(2+Math.floor(S.level/4)+ageComplexity(),2,total-path.length-1));
  $("game-stage").innerHTML=`<div class="builder-stage">${head("path","Route ${variant+1}: follow the safe route step by step.")}<p class="builder-task">Start at <b>🚀</b> and reach <b>🏁</b>. Choose the next cell.</p>${makeGrid(n)}</div>`;
  const cells=[...document.querySelectorAll(".builder-cell")];cells[path[0]].textContent="🚀";cells[path[path.length-1]].textContent="🏁";blocked.forEach(i=>cells[i].classList.add("blocked"));let step=1;S.active=true;
