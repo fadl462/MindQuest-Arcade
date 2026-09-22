@@ -2,11 +2,28 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
-// Reflex Arena interaction bridge. All live controls use this common pointer/click
+// Reflex Arena interaction bridge v9.1. All live controls use this common pointer/click
 // path so dynamically-created buttons remain responsive across mouse and touch.
 // Native button activation is intentionally used for Reflex controls.
 // Individual activities attach their handlers directly to their live buttons.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+// Reliable Reflex input: pointerup handles mouse + touch consistently, while click
+// remains as a keyboard/accessibility fallback. A per-button guard prevents one
+// physical tap from being processed twice.
+function bindInput(button, handler){
+  let handledAt=0;
+  const invoke=(event)=>{
+    const now=Date.now();
+    if(event.type==='click' && now-handledAt<450)return;
+    handledAt=now;
+    event.preventDefault();
+    event.stopPropagation();
+    handler(event);
+  };
+  button.addEventListener('pointerup',invoke,{capture:true});
+  button.addEventListener('click',invoke,{capture:true});
+  button.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){invoke(e)}},{capture:true});
+}
 const shuffle=a=>{const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out};
 const COLORS=[
  {name:"red",hex:"#ef4444",emoji:"🔴"},{name:"blue",hex:"#3b82f6",emoji:"🔵"},
@@ -231,7 +248,7 @@ function color(){
  const token=begin(),correct=COLORS[(S.level*3+activity()*2+S.age)%COLORS.length],optionCount=clamp(4+Math.floor(S.level/7),4,6);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("color","Wait for the color flash, then choose the matching color.")}<div class="reflex-signal" id="reflex-signal">?</div><div id="reflex-colors" class="reflex-options"></div></div>`;
  const box=$("reflex-colors"),options=shuffle([correct,...shuffle(COLORS.filter(x=>x.name!==correct.name)).slice(0,optionCount-1)]);
- options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-color";b.innerHTML=`<span style="background:${x.hex}"></span>${x.name}`;b.setAttribute("aria-disabled","true");b.onclick=()=>x.name===correct.name?complete():fail();box.appendChild(b)});
+ options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-color";b.innerHTML=`<span style="background:${x.hex}"></span>${x.name}`;b.setAttribute("aria-disabled","true");bindInput(b,()=>{if(!S.active)return;x.name===correct.name?(b.classList.add("good"),complete()):(b.classList.add("bad"),fail())});box.appendChild(b)});
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("reflex-signal").textContent=correct.emoji;box.querySelectorAll("button").forEach(b=>b.setAttribute("aria-disabled","false"));S.active=true;S.timer=setTimeout(fail,responseWindow(1))},signalDelay());
 }
 function avoid(){
@@ -239,7 +256,7 @@ function avoid(){
  const pool=shuffle(SHAPES.filter(x=>x!==safe&&x!==hazard)).slice(0,count-2);
  const options=shuffle([safe,hazard,...pool]);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("avoid","The safe symbol will be revealed. Tap only that symbol.")}<div class="reflex-signal" id="avoid-signal">?</div><div id="avoid-options" class="reflex-options"></div></div>`;
- const box=$("avoid-options");options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-symbol";b.textContent=x;b.setAttribute("aria-disabled","true");b.onclick=()=>x===safe?complete():fail();box.appendChild(b)});
+ const box=$("avoid-options");options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-symbol";b.textContent=x;b.setAttribute("aria-disabled","true");bindInput(b,()=>{if(!S.active)return;x===safe?(b.classList.add("good"),complete()):(b.classList.add("bad"),fail())});box.appendChild(b)});
  S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("avoid-signal").textContent=`SAFE: ${safe}`;box.querySelectorAll("button").forEach(b=>b.setAttribute("aria-disabled","false"));S.active=true;S.timer=setTimeout(fail,responseWindow(.95))},signalDelay());
 }
 function multiTap(){
