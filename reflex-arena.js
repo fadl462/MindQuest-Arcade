@@ -145,11 +145,20 @@ function doubleTarget(){
 }
 
 function target(){
- const token=begin(),count=clamp(3+Math.floor((S.level-1)/4)+activity()+ageDifficulty(),3,9),size=clamp(76-Math.floor(S.level/4)*4,48,76);
- $("game-stage").innerHTML=`<div class="reflex-stage">${head("target","Wait for the target. Then tap it before time runs out.")}<p class="reflex-count">Get ready…</p><div id="target-board" class="reflex-options"></div></div>`;
- const board=$("target-board"),targetIndex=(S.level*7+activity()*3+S.age)%count;
- for(let i=0;i<count;i++){const b=document.createElement("button");b.className="reflex-target";b.style.width=size+"px";b.style.height=size+"px";b.disabled=true;b.textContent="";b.setAttribute("aria-label",`Target ${i+1}`);b.onclick=()=>i===targetIndex?complete():fail();board.appendChild(b)}
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;board.querySelectorAll("button").forEach((b,i)=>{b.disabled=false;if(i===targetIndex)b.textContent="🎯"});S.active=true;S.timer=setTimeout(fail,responseWindow(.9))},signalDelay());
+ const token=begin(),age=S.age,count=clamp(3+Math.floor((S.level-1)/4)+activity()+ageDifficulty(),3,9),size=clamp(82-Math.floor(S.level/4)*4-(age*3),50,82);
+ const copy=age===0?{title:"Catch the Target",sub:"Wait for 🎯. Tap it when it appears!",ready:"Get ready…",go:"Tap the target!"}:age===1?{title:"Target Rush",sub:"Wait for the target, then tap it quickly.",ready:"Get ready…",go:"Target! Tap it!"}:age===2?{title:"Target Rush",sub:"Wait for the target, then react as quickly as you can.",ready:"Get ready…",go:"Target appeared — react!"}:{title:"Target Rush",sub:"Wait for the target, then react as quickly and accurately as possible.",ready:"Prepare…",go:"Target appeared — react now."};
+ const boardStyle=age===0?`display:grid;grid-template-columns:repeat(${Math.min(count,3)},minmax(${size}px,1fr));gap:18px;justify-items:center;align-items:center;width:min(100%,430px);margin:22px auto;padding:18px 12px;border-radius:24px;background:rgba(99,102,241,.055);border:1px solid rgba(99,102,241,.10)`:`display:grid;grid-template-columns:repeat(${Math.min(count,4)},minmax(${size}px,1fr));gap:16px;justify-items:center;align-items:center;width:min(100%,620px);margin:22px auto;padding:20px 14px;border-radius:24px;background:rgba(99,102,241,.045);border:1px solid rgba(99,102,241,.09)`;
+ $("game-stage").innerHTML=`<div class="reflex-stage"><div class="arcade-lab-head"><div><span class="lab-kind">REFLEX ARENA</span><h3>${copy.title}</h3><p>${copy.sub}</p></div><span class="activity-chip">Activity ${activity()+1}/4</span></div><p id="target-status" class="reflex-count">${copy.ready}</p><div id="target-board" class="reflex-options" style="${boardStyle}"></div><div id="target-hint" style="text-align:center;font-size:12px;font-weight:800;color:rgba(30,35,60,.56);min-height:18px"></div></div>`;
+ const board=$("target-board"),status=$("target-status"),hint=$("target-hint");
+ // Randomize the target on every run so reaction, not memorization of a fixed position, is tested.
+ const targetIndex=Math.floor(Math.random()*count);
+ const buttons=[];
+ for(let i=0;i<count;i++){const b=document.createElement("button");b.className="reflex-target";b.style.width=size+"px";b.style.height=size+"px";b.style.minWidth=size+"px";b.style.minHeight=size+"px";b.disabled=true;b.textContent="";b.setAttribute("aria-label",`Target position ${i+1}`);b.setAttribute("aria-disabled","true");b.onclick=()=>{if(!S.active||b.disabled)return;i===targetIndex?complete():fail()};buttons.push(b);board.appendChild(b)}
+ const delay=signalDelay();
+ let countdown=Math.max(1,Math.ceil(delay/500));
+ status.textContent=age===0?`Get ready… ${countdown}`:copy.ready;
+ const countdownTimer=setInterval(()=>{if(token!==S.reflexToken){clearInterval(countdownTimer);return} countdown-=1;if(countdown>0&&age===0)status.textContent=`Get ready… ${countdown}`;},500);
+ S.timer=setTimeout(()=>{clearInterval(countdownTimer);if(token!==S.reflexToken)return;buttons.forEach((b,i)=>{b.disabled=false;b.setAttribute("aria-disabled","false");if(i===targetIndex){b.textContent="🎯";b.style.transform="scale(1.04)";b.style.boxShadow="0 12px 30px rgba(79,70,229,.24)";}});status.textContent=copy.go;hint.textContent=age===0?"Find 🎯 and tap it!":"React before time runs out.";S.active=true;S.timer=setTimeout(()=>fail(),responseWindow(.9))},delay);
 }
 function color(){
  const token=begin(),correct=COLORS[(S.level*3+activity()*2+S.age)%COLORS.length],optionCount=clamp(4+Math.floor(S.level/7),4,6);
