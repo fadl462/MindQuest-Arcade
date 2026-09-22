@@ -18,7 +18,11 @@ function installInteractionBridge(){
     }
     const handler=button.onclick;
     if(typeof handler!=='function')return;
-    if(event.type==='pointerdown')reflexPointerHandled.set(button,now);
+    // Handle touch/mouse activation on pointerup instead of pointerdown.
+    // Preventing pointerdown can suppress the browser's synthesized click on
+    // some mobile/trackpad combinations. Pointerup gives the control a
+    // reliable native activation path while click remains the fallback.
+    if(event.type==='pointerup')reflexPointerHandled.set(button,now);
     event.preventDefault();
     event.stopPropagation();
     try{handler.call(button,event)}catch(err){
@@ -26,7 +30,7 @@ function installInteractionBridge(){
       if(S.active)fail();
     }
   };
-  document.addEventListener('pointerdown',dispatch,true);
+  document.addEventListener('pointerup',dispatch,true);
   document.addEventListener('click',dispatch,true);
 }
 installInteractionBridge();
@@ -79,8 +83,19 @@ function complete(){if(!S.active)return;S.active=false;clearTimeout(S.timer);con
 function fail(){if(!S.active)return;S.active=false;clearTimeout(S.timer);MQ.levelFailed()}
 function instruction(){
  const types=["target","color","avoid","sequence","go","double","multitap","switch","delay","rhythm","precision","alternate","combo","mirror","chase"];const type=types[(S.level-1+activity())%types.length],i=INFO[type];S.active=false;clearTimeout(S.timer);
+ // If the browser was refreshed during the live challenge, rebuild that
+ // challenge directly. Do this before marking the view as an instruction so
+ // a second refresh cannot downgrade the saved phase back to the instruction.
+ if(S.resumeLiveActivity){
+   S.resumeLiveActivity=false;
+   runActivity(type);
+   return;
+ }
+ // A refresh while an instruction is visible should restore this instruction,
+ // not jump into the live challenge. The progress layer records this view.
+ if(window.MQProgressSetLivePhase)MQProgressSetLivePhase('instruction',type);
  $("game-stage").innerHTML=`<div class="universal-instruction"><div class="ui-icon">⚡</div><span class="ui-skill">PSYCHOMOTOR</span><h2>${i[0]}</h2><p class="ui-purpose">${i[1]}</p><div class="ui-rule"><strong>HOW TO PLAY</strong><p>${i[2]}</p></div><div class="ui-meta"><span>⚡ Faster as you advance</span><span>✓ Four activities per level</span></div><button id="reflex-start" type="button" class="primary-btn ui-start">Start Activity →</button></div>`;
- $("reflex-start").onclick=()=>runActivity(type);
+ $("reflex-start").onclick=()=>{if(window.MQProgressSetLivePhase)MQProgressSetLivePhase('active',type);runActivity(type)};
 }
 function alternate(){
  const token=begin(),steps=clamp(4+Math.floor(S.level/4)+Math.floor(activity()/2),4,10);let hit=0,side=0;
@@ -145,14 +160,14 @@ function doubleTarget(){
  for(let i=0;i<count;i++){
    const b=document.createElement('button');
    b.className='reflex-target';
-   b.style.width='58px';b.style.height='58px';b.disabled=true;
+   b.type='button';b.style.width='58px';b.style.height='58px';b.setAttribute('aria-disabled','true');
    b.setAttribute('aria-label',`Target ${i+1}`);
    b.onclick=()=>{
-     if(!S.active||b.disabled)return;
+     if(!S.active||b.getAttribute('aria-disabled')==='true')return;
      if((S.doubleStep||0)===0&&i===first){
        S.doubleStep=1;
-       b.textContent='';b.disabled=true;
-       cells[second].textContent='🎯';cells[second].disabled=false;
+       b.textContent='';b.setAttribute('aria-disabled','true');
+       cells[second].textContent='🎯';cells[second].setAttribute('aria-disabled','false');
        $('double-count').textContent='Target 2 — tap it now';
        clearTimeout(S.timer);S.timer=setTimeout(()=>fail(),responseWindow(.8));
      }else if(S.doubleStep===1&&i===second){
@@ -166,7 +181,7 @@ function doubleTarget(){
  S.timer=setTimeout(()=>{
    if(token!==S.reflexToken)return;
    cells[first].textContent='🎯';
-   cells[first].disabled=false;
+   cells[first].setAttribute('aria-disabled','false');
    S.active=true;
    $('double-count').textContent='Target 1 — tap it';
    S.timer=setTimeout(()=>fail(),responseWindow(.9));
@@ -235,22 +250,22 @@ function color(){
  const token=begin(),correct=COLORS[(S.level*3+activity()*2+S.age)%COLORS.length],optionCount=clamp(4+Math.floor(S.level/7),4,6);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("color","Wait for the color flash, then choose the matching color.")}<div class="reflex-signal" id="reflex-signal">?</div><div id="reflex-colors" class="reflex-options"></div></div>`;
  const box=$("reflex-colors"),options=shuffle([correct,...shuffle(COLORS.filter(x=>x.name!==correct.name)).slice(0,optionCount-1)]);
- options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-color";b.innerHTML=`<span style="background:${x.hex}"></span>${x.name}`;b.disabled=true;b.onclick=()=>x.name===correct.name?complete():fail();box.appendChild(b)});
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("reflex-signal").textContent=correct.emoji;box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true;S.timer=setTimeout(fail,responseWindow(1))},signalDelay());
+ options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-color";b.innerHTML=`<span style="background:${x.hex}"></span>${x.name}`;b.setAttribute("aria-disabled","true");b.onclick=()=>x.name===correct.name?complete():fail();box.appendChild(b)});
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("reflex-signal").textContent=correct.emoji;box.querySelectorAll("button").forEach(b=>b.setAttribute("aria-disabled","false"));S.active=true;S.timer=setTimeout(fail,responseWindow(1))},signalDelay());
 }
 function avoid(){
  const token=begin(),safe=SHAPES[(S.level*2+activity()+S.age)%SHAPES.length],hazard=SHAPES[(S.level*2+activity()+4)%SHAPES.length],count=clamp(4+Math.floor(S.level/6),4,7);
  const pool=shuffle(SHAPES.filter(x=>x!==safe&&x!==hazard)).slice(0,count-2);
  const options=shuffle([safe,hazard,...pool]);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("avoid","The safe symbol will be revealed. Tap only that symbol.")}<div class="reflex-signal" id="avoid-signal">?</div><div id="avoid-options" class="reflex-options"></div></div>`;
- const box=$("avoid-options");options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-symbol";b.textContent=x;b.disabled=true;b.onclick=()=>x===safe?complete():fail();box.appendChild(b)});
- S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("avoid-signal").textContent=`SAFE: ${safe}`;box.querySelectorAll("button").forEach(b=>b.disabled=false);S.active=true;S.timer=setTimeout(fail,responseWindow(.95))},signalDelay());
+ const box=$("avoid-options");options.forEach(x=>{const b=document.createElement("button");b.type="button";b.className="reflex-symbol";b.textContent=x;b.setAttribute("aria-disabled","true");b.onclick=()=>x===safe?complete():fail();box.appendChild(b)});
+ S.timer=setTimeout(()=>{if(token!==S.reflexToken)return;$("avoid-signal").textContent=`SAFE: ${safe}`;box.querySelectorAll("button").forEach(b=>b.setAttribute("aria-disabled","false"));S.active=true;S.timer=setTimeout(fail,responseWindow(.95))},signalDelay());
 }
 function multiTap(){
  const token=begin(),len=clamp(2+Math.floor((S.level-1)/5)+activity()+ageDifficulty(),2,6),positions=shuffle([...Array(6).keys()]).slice(0,len);
  $("game-stage").innerHTML=`<div class="reflex-stage">${head("multitap","Watch the target order, then tap the same positions.")}<div id="multi-board" class="reflex-options"></div></div>`;
- const board=$("multi-board");for(let i=0;i<6;i++){const b=document.createElement("button");b.className="reflex-target";b.textContent="";b.dataset.i=i;b.disabled=true;board.appendChild(b)}
- let show=0;const reveal=()=>{if(token!==S.reflexToken)return;if(show<positions.length){board.querySelectorAll("button").forEach(b=>b.textContent="");board.querySelectorAll("button")[positions[show]].textContent="🎯";show++;S.timer=setTimeout(reveal,Math.max(210,680-S.level*18));}else{let n=0;board.querySelectorAll("button").forEach(b=>{b.disabled=false;b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(i!==positions[n])return fail();b.classList.add("good");if(++n===positions.length)complete()}});S.active=true;S.timer=setTimeout(fail,responseWindow(1.1)+positions.length*180)}};reveal();
+ const board=$("multi-board");for(let i=0;i<6;i++){const b=document.createElement("button");b.type="button";b.className="reflex-target";b.textContent="";b.dataset.i=i;b.setAttribute("aria-disabled","true");board.appendChild(b)}
+ let show=0;const reveal=()=>{if(token!==S.reflexToken)return;if(show<positions.length){board.querySelectorAll("button").forEach(b=>b.textContent="");board.querySelectorAll("button")[positions[show]].textContent="🎯";show++;S.timer=setTimeout(reveal,Math.max(210,680-S.level*18));}else{let n=0;board.querySelectorAll("button").forEach(b=>{b.setAttribute("aria-disabled","false");b.onclick=()=>{if(!S.active)return;const i=Number(b.dataset.i);if(i!==positions[n])return fail();b.classList.add("good");if(++n===positions.length)complete()}});S.active=true;S.timer=setTimeout(fail,responseWindow(1.1)+positions.length*180)}};reveal();
 }
 function sequence(){
  const token=begin(),len=clamp(3+Math.floor((S.level-1)/4)+activity()+ageDifficulty(),3,9),mode=S.level%4;
