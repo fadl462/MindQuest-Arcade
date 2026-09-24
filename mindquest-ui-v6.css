@@ -486,8 +486,8 @@ body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom
 #game.active .location-icon{min-width:54px;min-height:48px;padding:7px;border:1px solid #dfe3ec;border-radius:12px;background:#fff;font-size:23px;cursor:pointer}
 #game.active .location-icon:disabled{opacity:.55;cursor:default}
 #game.active .recall-cell{cursor:pointer;min-height:54px}
-#game.active .memory-board{width:min(520px,100%);grid-template-columns:repeat(var(--grid),minmax(0,1fr));}
-#game.active .memory-board .memory-cell{aspect-ratio:1/1;min-width:0;display:grid;place-items:center;font-size:22px}
+#game.active .memory-board{width:min(260px,100%);grid-template-columns:repeat(var(--grid),minmax(0,1fr));}
+#game.active .memory-board .memory-cell{aspect-ratio:1/1;min-width:0;display:grid;place-items:center;font-size:18px;padding:0}
 @media(max-width:700px){
  #game.active .memory-wrap .memory-lab-head{gap:8px}
  #game.active .memory-wrap .memory-lab-head h3{font-size:18px}
@@ -496,136 +496,10 @@ body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom
  #game.active .count-row{grid-template-columns:48px 1fr}
  #game.active .count-choices{grid-template-columns:repeat(4,1fr)}
  #game.active .feature-grid{grid-template-columns:repeat(2,1fr)}
+ #game.active .memory-board{width:min(220px,100%)}
+ #game.active .memory-board .memory-cell{font-size:16px}
 }
 
 
 /* Independent-review hardening: child-friendly account gate, accessibility and reduced motion */
 .account-card .adult-gate{margin:14px 0;padding:14px;border:1px solid #dfe3ee;border-radius:16px;background:#f8f9fc}.account-card .adult-gate p{margin:4px 0 8px}.account-card .adult-gate input{width:100%;max-width:180px}.account-card .check-row{font-size:12px;line-height:1.45}.header-action{min-height:42px}.game-message{min-height:42px;display:flex;align-items:center;justify-content:center;text-align:center}.universal-instruction .ui-purpose,.universal-instruction .ui-rule p{font-size:14px;line-height:1.55}.universal-instruction .ui-meta{font-size:12px}.team-question,.world-question,.money-stage .team-question{font-size:14px;line-height:1.55}.mq-profile-overlay button:focus-visible,.account-card button:focus-visible,.account-card input:focus-visible,#game button:focus-visible{outline:3px solid rgba(91,92,226,.28);outline-offset:2px}@media (prefers-reduced-motion: reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-
-/* v8.4 — Memory Lab single-screen activity fit
-   Keep every Memory Lab activity compact enough to be understood and completed
-   without an internal up/down scroll on normal desktop and mobile viewports. */
-#game.active .memory-wrap{
-  width:min(820px,100%);
-  padding:0 2px 2px;
-}
-#game.active #game-stage:has(.memory-wrap){
-  overflow:hidden;
-  min-height:0;
-  padding:6px 8px 8px;
-}
-#game.active .memory-wrap .memory-lab-head{
-  margin:0 0 6px;
-  padding:0 2px 6px;
-  gap:10px;
-}
-#game.active .memory-wrap .memory-lab-head h3{font-size:18px;margin:2px 0 2px}
-#game.active .memory-wrap .memory-sub{font-size:10px;line-height:1.3}
-#game.active .memory-wrap .activity-chip{padding:5px 8px;font-size:8px}
-#game.active .memory-wrap .memory-instruction-banner{
-  margin:6px auto 6px;
-  padding:7px 10px;
-  border-radius:10px;
-  font-size:10px;
-  line-height:1.3;
-}
-#game.active .memory-wrap .memory-items{
-  gap:6px;
-  margin:7px auto;
-  max-width:680px;
-}
-#game.active .memory-wrap .memory-item,
-#game.active .memory-wrap .choice{
-  min-height:48px;
-  border-radius:11px;
-  font-size:22px;
-}
-#game.active .memory-wrap .memory-study .memory-item{min-height:52px}
-#game.active .memory-wrap .sequence-display{
-  gap:5px;
-  margin:8px auto;
-}
-#game.active .memory-wrap .sequence-token{
-  min-width:50px;
-  min-height:50px;
-  padding:7px;
-  border-radius:11px;
-  font-size:24px;
-}
-#game.active .memory-wrap .picked-sequence{
-  min-height:30px;
-  margin:6px auto 0;
-  padding:6px 9px;
-  font-size:9px;
-}
-#game.active .memory-wrap .memory-progress{
-  margin:6px auto 0;
-  padding:5px 8px;
-  font-size:9px;
-}
-
-/* Grid Recall: deliberately smaller than the general activity canvas so the
-   complete board remains visible at every difficulty, including 5×5. */
-#game.active .memory-wrap .memory-board{
-  width:min(330px,52vw);
-  max-width:330px;
-  gap:4px;
-  margin:7px auto;
-}
-#game.active .memory-wrap .memory-board .memory-cell{
-  min-height:0;
-  border-radius:8px;
-  font-size:17px;
-}
-#game.active .memory-wrap .recall-cell{min-height:0}
-
-/* Keep the other board/card mechanics equally compact. */
-#game.active .memory-wrap .pair-grid{
-  max-width:390px;
-  gap:5px;
-  margin:7px auto;
-}
-#game.active .memory-wrap .pair-card{
-  min-height:54px;
-  border-radius:10px;
-  font-size:22px;
-}
-#game.active .memory-wrap .location-recall{gap:9px}
-#game.active .memory-wrap .location-icons{gap:5px;margin:6px auto}
-#game.active .memory-wrap .location-icon{min-width:42px;min-height:38px;padding:5px;font-size:19px}
-#game.active .memory-wrap .feature-grid{gap:5px;margin:7px auto}
-#game.active .memory-wrap .feature-token,
-#game.active .memory-wrap .feature-option{min-height:58px;padding:6px;border-radius:10px;gap:3px}
-#game.active .memory-wrap .feature-token span,
-#game.active .memory-wrap .feature-option span{font-size:22px}
-#game.active .memory-wrap .feature-token small,
-#game.active .memory-wrap .feature-option small{font-size:7px}
-#game.active .memory-wrap .dual-streams{gap:6px;margin:7px auto}
-#game.active .memory-wrap .dual-streams>div{padding:7px;font-size:17px;border-radius:10px}
-#game.active .memory-wrap .dual-streams small{margin-bottom:3px;font-size:7px}
-#game.active .memory-wrap .change-scenes{gap:6px;margin:7px auto}
-#game.active .memory-wrap .change-scenes>div{padding:6px;border-radius:10px}
-#game.active .memory-wrap .change-scenes>div>small{margin-bottom:3px;font-size:7px}
-#game.active .memory-wrap .change-scenes .memory-items{gap:4px;margin:0}
-#game.active .memory-wrap .change-scenes .memory-item{min-height:38px;font-size:18px}
-#game.active .memory-wrap .count-list{gap:5px;margin:7px auto}
-#game.active .memory-wrap .count-row{grid-template-columns:48px 1fr;gap:7px;padding:5px 7px;border-radius:10px}
-#game.active .memory-wrap .count-object{font-size:22px}
-#game.active .memory-wrap .count-choices{gap:4px}
-#game.active .memory-wrap .count-choices .word-option{min-height:38px;font-size:12px}
-
-@media(max-width:700px){
-  #game.active #game-stage:has(.memory-wrap){padding:4px 4px 6px}
-  #game.active .memory-wrap .memory-lab-head{gap:6px}
-  #game.active .memory-wrap .memory-lab-head h3{font-size:17px}
-  #game.active .memory-wrap .memory-items{grid-template-columns:repeat(2,1fr);gap:5px}
-  #game.active .memory-wrap .memory-item,
-  #game.active .memory-wrap .choice{min-height:44px;font-size:20px}
-  #game.active .memory-wrap .memory-study .memory-item{min-height:48px}
-  #game.active .memory-wrap .sequence-token{min-width:44px;min-height:44px;font-size:21px}
-  #game.active .memory-wrap .memory-board{width:min(290px,76vw);max-width:290px;gap:3px}
-  #game.active .memory-wrap .memory-board .memory-cell{font-size:15px}
-  #game.active .memory-wrap .pair-grid{max-width:300px;gap:4px}
-  #game.active .memory-wrap .pair-card{min-height:48px;font-size:20px}
-  #game.active .memory-wrap .location-icon{min-width:38px;min-height:35px;font-size:18px}
-}
