@@ -47,11 +47,12 @@
 </div>
 <script src="app.js?v=8.0"></script>
 <script>(()=>{const mq=window.MQ;if(!mq)return;const key='mindquest-age-pathway',stored=Number(localStorage.getItem(key));const age=Number.isInteger(stored)&&stored>=0&&stored<mq.ages.length?stored:0;mq.state.age=age;document.querySelectorAll('.age-btn').forEach((b,i)=>b.classList.toggle('active',i===age));const label=document.getElementById('path-label');if(label)label.textContent='Ages '+mq.ages[age].range;mq.updateGlobal();})();</script>
-<script src="memory-lab.js?v=8.0"></script><script src="detective.js?v=8.0"></script><script src="reflex-arena.js?v=9.1"></script><script src="builder.js?v=8.0"></script><script src="team-quest.js?v=8.0"></script><script src="world-explorer.js?v=8.0"></script><script src="money-mission.js?v=8.0"></script><script src="progress.js?v=10.0"></script>
+<script src="memory-lab.js?v=8.0"></script><script src="detective.js?v=8.0"></script><script src="reflex-arena.js?v=9.2"></script><script src="builder.js?v=8.0"></script><script src="team-quest.js?v=8.0"></script><script src="world-explorer.js?v=8.0"></script><script src="money-mission.js?v=8.0"></script><script src="progress.js?v=10.1"></script>
 <script>document.addEventListener('click',e=>{
  const brand=e.target.closest('#home-brand');
  if(brand){
    e.preventDefault();
+   try{localStorage.setItem('mindquest-current-view-v4','home');}catch{}
    if(window.MQ?.goHome) window.MQ.goHome();
    else window.location.href='./index.html';
    return;
