@@ -247,7 +247,7 @@ function syncExperienceMode(){
  if(identity&&!badge){badge=document.createElement('span');badge.id='mq-mode-badge';badge.className='mq-mode-badge';identity.parentNode.insertBefore(badge,identity);}
  if(badge){badge.innerHTML=isPremium?'<i></i>PREMIUM':hasAccount?'<i></i>PLAYER':'<i></i>EXPLORE';badge.title=isPremium?'MindQuest premium experience':hasAccount?'MindQuest player experience':'MindQuest guest experience';}
 }
-function syncPlayerIdentity(){const n=document.getElementById('player-identity-name');if(n)n.textContent=MQ.state.account?.displayName||'Guest';syncExperienceMode();}
+function syncPlayerIdentity(){const a=MQ.state.account||{};const n=document.getElementById('player-identity-name');if(n)n.textContent=a.displayName||'Guest';const f=document.getElementById('player-identity-flag');if(f){const c=a.countryCode||'';f.textContent=c?String(c).toUpperCase().replace(/[A-Z]/g,x=>String.fromCodePoint(127397+x.charCodeAt(0))):'';f.hidden=!c;}syncExperienceMode();}
 function addProfileButton(){injectStyles();let box=document.querySelector('.header-actions')||document.querySelector('.topbar-right');if(box&&!document.getElementById('mq-profile-open')){const b=document.createElement('button');b.id='mq-profile-open';b.className='header-action profile-action';b.type='button';b.title='Player Profile';b.setAttribute('aria-label','Open player profile');b.innerHTML='<span>📊</span><small>Profile</small>';b.onclick=openProfile;box.insertBefore(b,box.firstChild)}if(!document.getElementById('mq-profile-overlay')){const d=document.createElement('div');d.id='mq-profile-overlay';d.className='mq-profile-overlay';document.body.appendChild(d)}}
 function readStoredAccount(){
   const keys=[ACCOUNT_KEY,'mindquest-account-v0','mindquest-player-account'];

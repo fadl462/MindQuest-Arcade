@@ -822,3 +822,6 @@ body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom
     max-height:160px;
   }
 }
+
+/* Account profile v8.26 */
+.account-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field-help{display:block;margin-top:5px;color:var(--muted);font-size:10px;line-height:1.35;font-weight:600}.account-pathway-preview{margin:10px 0 2px;padding:9px 11px;border:1px solid #dfe3ee;border-radius:12px;background:#f8f9fc;color:#4c5280;font-size:11px;font-weight:800;text-align:left}.account-pathway-preview.is-warning{border-color:#f0c9cf;background:#fff5f6;color:#9b3948}.player-country-flag{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;font-size:15px;vertical-align:-3px;overflow:hidden;box-shadow:0 0 0 1px rgba(20,30,60,.08)}@media(max-width:650px){.account-field-row{grid-template-columns:1fr}.player-country-flag{width:18px;height:18px;font-size:14px}}
