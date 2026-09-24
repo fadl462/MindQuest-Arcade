@@ -712,3 +712,113 @@ body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom
 @media(max-width:700px){
   #game.active .memory-wrap:has(#loc-grid) .location-progress-inline{font-size:8px;margin:2px auto 3px;padding:2px 7px}
 }
+
+/* v8.25 — Memory Lab permanent single-screen grid containment
+   The activity canvas reserves space for the feedback bar before laying out
+   the activity. Boards are capped by type so no final row can sit underneath
+   the message bar or outside the visible activity canvas. */
+#game.active .game-card:has(.memory-wrap),
+#game.active .game-card:has(.memory-instruction-screen){
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  height:clamp(455px,calc(100vh - 190px),620px);
+  overflow:hidden;
+  box-sizing:border-box;
+}
+#game.active .game-card:has(.memory-wrap) .hud{
+  flex:0 0 auto;
+}
+#game.active .game-card:has(.memory-wrap) #game-stage,
+#game.active .game-card:has(.memory-instruction-screen) #game-stage{
+  flex:1 1 auto;
+  min-height:0;
+  height:auto;
+  overflow:hidden;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  box-sizing:border-box;
+  padding:4px 6px 5px;
+}
+#game.active .game-card:has(.memory-wrap) .game-message,
+#game.active .game-card:has(.memory-instruction-screen) .game-message{
+  flex:0 0 auto;
+  min-height:22px;
+  height:auto;
+  margin:2px 0 0;
+  box-sizing:border-box;
+}
+#game.active .memory-wrap{
+  width:min(860px,100%);
+  max-height:100%;
+  height:auto;
+  overflow:hidden;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+#game.active .memory-wrap .memory-lab-head,
+#game.active .memory-wrap .memory-instruction-banner,
+#game.active .memory-wrap .location-icons,
+#game.active .memory-wrap .memory-progress,
+#game.active .memory-wrap .location-progress-inline,
+#game.active .memory-wrap .memory-board,
+#game.active .memory-wrap .memory-items,
+#game.active .memory-wrap .sequence-display,
+#game.active .memory-wrap .pair-grid,
+#game.active .memory-wrap .feature-grid,
+#game.active .memory-wrap .count-list,
+#game.active .memory-wrap .dual-streams,
+#game.active .memory-wrap .change-scenes,
+#game.active .memory-wrap .picked-sequence,
+#game.active .memory-wrap .memory-distractor{
+  flex:0 0 auto;
+}
+/* Grid Recall keeps the approved 200px maximum. */
+#game.active .memory-wrap .memory-board{
+  width:200px;
+  max-width:200px;
+  height:auto;
+  max-height:200px;
+  margin:5px auto 3px;
+  gap:3px;
+}
+#game.active .memory-wrap .memory-board .memory-cell{
+  width:auto;
+  min-width:0;
+  min-height:0;
+  aspect-ratio:1 / 1;
+  box-sizing:border-box;
+}
+/* Location Memory gets a slightly tighter board so its object tray,
+   progress indicator and complete board always coexist in one viewport. */
+#game.active .memory-wrap:has(#loc-grid) .memory-board{
+  width:180px;
+  max-width:180px;
+  max-height:180px;
+  margin:4px auto 2px;
+}
+#game.active .memory-wrap:has(#loc-grid) .memory-progress.location-progress-inline{
+  flex:0 0 auto;
+  margin:2px auto 2px;
+}
+@media(max-width:700px){
+  #game.active .game-card:has(.memory-wrap),
+  #game.active .game-card:has(.memory-instruction-screen){
+    height:clamp(420px,calc(100vh - 170px),560px);
+  }
+  #game.active .game-card:has(.memory-wrap) #game-stage,
+  #game.active .game-card:has(.memory-instruction-screen) #game-stage{padding:3px 3px 4px}
+  #game.active .memory-wrap .memory-board{
+    width:180px;
+    max-width:180px;
+    max-height:180px;
+  }
+  #game.active .memory-wrap:has(#loc-grid) .memory-board{
+    width:160px;
+    max-width:160px;
+    max-height:160px;
+  }
+}
