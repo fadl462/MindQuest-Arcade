@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111827"><title>MindQuest Arcade — Play, Learn, Master</title><meta name="description" content="MindQuest Arcade is a browser-based game adventure for ages 3–18, with progressive challenges in memory, reasoning, coordination, teamwork, geography and financial thinking."><meta name="color-scheme" content="light"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="arcade-games.css?v=8.1"><link rel="stylesheet" href="mindquest-v3.css?v=8.1"><link rel="stylesheet" href="mindquest-ui-v6.css?v=8.6">
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="arcade-games.css?v=8.1"><link rel="stylesheet" href="mindquest-v3.css?v=8.20"><link rel="stylesheet" href="mindquest-ui-v6.css?v=8.1">
 </head>
 <body><div id="app">
 <header class="topbar">
@@ -45,7 +45,7 @@
 <section id="result" class="screen"><div class="result-card"><div id="result-icon" class="result-icon">🏆</div><p class="eyebrow">MISSION COMPLETE</p><h1 id="result-title">Amazing work!</h1><p id="result-text"></p><div class="result-stats"><div><span>XP earned</span><b id="result-xp">0</b></div><div><span>Levels</span><b id="result-levels">20</b></div><div><span>Best streak</span><b id="result-streak">0</b></div></div><div class="result-actions"><button id="play-again" class="primary-btn">Play Again</button><button id="result-home" class="ghost-btn">Back to Arcade</button></div></div></section>
 </main>
 </div>
-<script src="app.js?v=8.0"></script>
+<script src="app.js?v=8.20"></script>
 <script>(()=>{const mq=window.MQ;if(!mq)return;const key='mindquest-age-pathway',stored=Number(localStorage.getItem(key));const age=Number.isInteger(stored)&&stored>=0&&stored<mq.ages.length?stored:0;mq.state.age=age;document.querySelectorAll('.age-btn').forEach((b,i)=>b.classList.toggle('active',i===age));const label=document.getElementById('path-label');if(label)label.textContent='Ages '+mq.ages[age].range;mq.updateGlobal();})();</script>
 <script src="memory-lab.js?v=8.0"></script><script src="detective.js?v=8.0"></script><script src="reflex-arena.js?v=9.2"></script><script src="builder.js?v=8.0"></script><script src="team-quest.js?v=8.0"></script><script src="world-explorer.js?v=8.0"></script><script src="money-mission.js?v=8.0"></script><script src="progress.js?v=10.1"></script>
 <script>document.addEventListener('click',e=>{
