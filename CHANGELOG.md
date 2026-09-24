@@ -1,3 +1,14 @@
+# v8.3 — Memory Lab Engine-Aligned Pathways
+
+- Replaced the single shared Memory Lab level schedule with five pathway-specific 20-level schedules from the Memory Lab V2 master specification.
+- Implemented the documented 16 mechanics using the existing engine keys, including the corrected display name “What’s Missing” instead of “Working Memory”.
+- Added pathway-specific progressive unlock metadata for Tier 2, Tier 3 and Tier 4.
+- Aligned Memory Lab show time, response time and item-count difficulty points with the supplied engine specification and interpolated between documented sample levels.
+- Aligned Grid Recall and Location Memory board sizes with the documented age/level progression.
+- Added recent-content registry protection to reduce immediate replay repetition while preserving runtime randomisation.
+- Added Memory Lab plan validation and a dedicated dependency-free regression test covering all 100 levels, 400 activity slots, unlocks and difficulty checkpoints.
+- Preserved the existing MindQuest persistence, milestone, account-gate and premium architecture.
+
 # v8.2 — Global Product Localization
 
 - Removed country-specific product copy and examples from the core experience.

@@ -24,4 +24,4 @@ Run:
 npm test
 ```
 
-The included tests are dependency-free static/regression checks. They are intentionally lightweight and should be complemented by browser/device end-to-end testing as the product moves toward pilot deployment.
+The included tests are dependency-free static/regression checks. The Memory Lab build also includes a dedicated `tests/memory-lab-verify.js` check covering its five pathway schedules, 100 levels, 400 activity slots, unlock metadata and documented difficulty checkpoints. These checks should be complemented by browser/device end-to-end testing as the product moves toward pilot deployment.

@@ -1,5 +1,8 @@
 {
   "name": "mindquest-tests",
   "private": true,
-  "scripts": {"test":"node verify.js && node solvability.js"}
+  "scripts": {
+    "test": "node verify.js && node solvability.js",
+    "test:memory": "node memory-lab-verify.js"
+  }
 }

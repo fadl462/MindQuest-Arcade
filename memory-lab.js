@@ -9,28 +9,127 @@ const ARROWS=['↑','→','↓','←','↗','↘','↙','↖'];
 const SHAPES=['●','▲','■','◆','★','⬟','♥','✚'];
 const COLORS=['RED','BLUE','GREEN','YELLOW','PURPLE','ORANGE','PINK','BROWN'];
 const COLOR_EMOJI={RED:'🟥',BLUE:'🟦',GREEN:'🟩',YELLOW:'🟨',PURPLE:'🟪',ORANGE:'🟧',PINK:'🩷',BROWN:'🟫'};
-const PLANS=[
- ['visual','sequence','grid','pairs'],
- ['location','feature','direction','category'],
- ['working','count','change','order'],
- ['sequence','reverse','grid','dual'],
- ['visual','location','feature','pairs'],
- ['category','direction','count','change'],
- ['working','sequence','grid','switchback'],
- ['reverse','location','feature','dual'],
- ['visual','sequence','direction','pairs'],
- ['category','change','grid','count'],
- ['working','reverse','feature','interference'],
- ['location','sequence','grid','dual'],
- ['visual','direction','category','pairs'],
- ['change','reverse','count','switchback'],
- ['working','location','feature','interference'],
- ['sequence','grid','direction','dual'],
- ['visual','category','reverse','pairs'],
- ['change','location','count','switchback'],
- ['working','sequence','feature','interference'],
- ['direction','grid','reverse','dual']
+const PLANS_BY_AGE=[
+  [
+    ['category','direction','grid','visual'],
+    ['direction','grid','visual','category'],
+    ['grid','visual','category','direction'],
+    ['visual','category','direction','grid'],
+    ['category','direction','grid','visual'],
+    ['working','category','direction','grid'],
+    ['visual','location','order','sequence'],
+    ['working','category','direction','grid'],
+    ['visual','location','order','sequence'],
+    ['working','category','direction','grid'],
+    ['visual','location','order','sequence'],
+    ['working','category','direction','grid'],
+    ['visual','location','order','sequence'],
+    ['order','sequence','working','change'],
+    ['count','feature','pairs','category'],
+    ['direction','grid','visual','location'],
+    ['order','sequence','working','change'],
+    ['count','feature','pairs','category'],
+    ['direction','grid','visual','location'],
+    ['order','sequence','working','change']
+  ],
+  [
+    ['category','direction','grid','visual'],
+    ['direction','grid','visual','category'],
+    ['location','order','sequence','working'],
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['category','direction','grid','visual'],
+    ['sequence','working','change','count'],
+    ['feature','pairs','category','direction'],
+    ['grid','visual','location','order'],
+    ['sequence','working','change','count'],
+    ['feature','pairs','category','direction'],
+    ['grid','visual','location','order'],
+    ['sequence','working','change','count'],
+    ['feature','pairs','category','direction'],
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['change','count','feature','pairs'],
+    ['dual','interference','reverse','switchback']
+  ],
+  [
+    ['category','direction','grid','visual'],
+    ['visual','location','order','sequence'],
+    ['working','category','direction','grid'],
+    ['visual','location','order','sequence'],
+    ['working','category','direction','grid'],
+    ['count','feature','pairs','category'],
+    ['direction','grid','visual','location'],
+    ['order','sequence','working','change'],
+    ['count','feature','pairs','category'],
+    ['direction','grid','visual','location'],
+    ['order','sequence','working','change'],
+    ['switchback','category','direction','grid'],
+    ['visual','location','order','sequence'],
+    ['working','change','count','feature'],
+    ['pairs','dual','interference','reverse'],
+    ['switchback','category','direction','grid'],
+    ['visual','location','order','sequence'],
+    ['working','change','count','feature'],
+    ['pairs','dual','interference','reverse'],
+    ['switchback','category','direction','grid']
+  ],
+  [
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['feature','pairs','category','direction'],
+    ['grid','visual','location','order'],
+    ['sequence','working','change','count'],
+    ['feature','pairs','category','direction'],
+    ['dual','interference','reverse','switchback'],
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['change','count','feature','pairs'],
+    ['dual','interference','reverse','switchback'],
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['change','count','feature','pairs'],
+    ['dual','interference','reverse','switchback'],
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['change','count','feature','pairs'],
+    ['dual','interference','reverse','switchback'],
+    ['category','direction','grid','visual']
+  ],
+  [
+    ['category','direction','grid','visual'],
+    ['sequence','working','change','count'],
+    ['feature','pairs','category','direction'],
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['change','count','feature','pairs'],
+    ['dual','interference','reverse','switchback'],
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['change','count','feature','pairs'],
+    ['dual','interference','reverse','switchback'],
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['change','count','feature','pairs'],
+    ['dual','interference','reverse','switchback'],
+    ['category','direction','grid','visual'],
+    ['location','order','sequence','working'],
+    ['change','count','feature','pairs'],
+    ['dual','interference','reverse','switchback'],
+    ['category','direction','grid','visual']
+  ]
 ];
+const PLANS=PLANS_BY_AGE[0];
+const UNLOCKS_BY_AGE=[
+  {tier2:6,tier3:14,tier4:null},
+  {tier2:3,tier3:9,tier4:17},
+  {tier2:2,tier3:6,tier4:12},
+  {tier2:1,tier3:3,tier4:7},
+  {tier2:1,tier3:2,tier4:4}
+];
+
 const INFO={
  visual:['Visual Recall','Remember the objects, then select every object you saw.','VISUAL MEMORY'],
  sequence:['Sequence Recall','Remember the exact order of the objects.','SEQUENCING'],
@@ -40,7 +139,7 @@ const INFO={
  feature:['Feature Memory','Remember each shape together with its colour.','DETAIL MEMORY'],
  direction:['Direction Memory','Remember the direction sequence, then repeat it exactly.','DIRECTIONAL MEMORY'],
  category:['Category Recall','Remember the named category, then select only its members.','CATEGORICAL MEMORY'],
- working:['Working Memory','Hold the sequence in mind, then identify what is missing.','WORKING MEMORY'],
+ working:['What\'s Missing','Study a set, then identify the single item that was removed.','MEMORY CHANGE'],
  count:['Count & Recall','Remember how many times each object appeared.','QUANTITY MEMORY'],
  change:['Change Detective','Compare the two scenes and identify what changed.','CHANGE DETECTION'],
  order:['Order Builder','Remember the order, then rebuild it.','ORDER MEMORY'],
@@ -58,7 +157,7 @@ const RULES={
  feature:'Study each shape and colour combination. Select the exact combinations you remember.',
  direction:'Study the arrows. Then tap the directions in the exact same order.',
  category:'Remember the named category. Then select every object that belongs to it.',
- working:'Study the sequence. One item will disappear; identify the missing item.',
+ working:'Study the set. One item will disappear; identify the single missing object.',
  count:'Study the display. Then choose how many times each object appeared.',
  change:'Study Scene A. Scene B will differ in one place. Identify the changed item.',
  order:'Study the left-to-right order. Rebuild that order from first to last.',
@@ -67,11 +166,62 @@ const RULES={
  interference:'Remember the target sequence. Ignore the distractor sequence and reproduce the target.',
  switchback:'Study the two streams. Rebuild the sequence by switching between them one item at a time.'
 };
+const DIFFICULTY_POINTS=[
+  [{l:1,count:3,show:5600,response:20000},{l:5,count:4,show:5300,response:19100},{l:10,count:5,show:5000,response:18000},{l:15,count:5,show:4700,response:16900},{l:20,count:5,show:4300,response:15800}],
+  [{l:1,count:4,show:5000,response:17500},{l:5,count:5,show:4800,response:16700},{l:10,count:6,show:4500,response:15800},{l:15,count:6,show:4200,response:14800},{l:20,count:6,show:3900,response:13800}],
+  [{l:1,count:5,show:4300,response:15000},{l:5,count:6,show:4100,response:14300},{l:10,count:7,show:3800,response:13500},{l:15,count:7,show:3600,response:12700},{l:20,count:7,show:3300,response:11900}],
+  [{l:1,count:6,show:3700,response:12500},{l:5,count:7,show:3500,response:11900},{l:10,count:8,show:3300,response:11300},{l:15,count:8,show:3100,response:10600},{l:20,count:8,show:2900,response:9900}],
+  [{l:1,count:7,show:3200,response:10500},{l:5,count:8,show:3000,response:10000},{l:10,count:9,show:2900,response:9500},{l:15,count:9,show:2700,response:8900},{l:20,count:9,show:2500,response:8300}]
+];
+function interpolate(points,level,key){
+  if(level<=points[0].l)return points[0][key];
+  for(let i=1;i<points.length;i++){
+    const a=points[i-1],b=points[i];
+    if(level<=b.l){
+      const t=(level-a.l)/(b.l-a.l);
+      return a[key]+(b[key]-a[key])*t;
+    }
+  }
+  return points[points.length-1][key];
+}
 function profile(){
- const age=S.age||0, level=S.level||1;
- const base=[{count:3,show:5600,response:20000,max:5},{count:4,show:5000,response:17500,max:6},{count:5,show:4300,response:15000,max:7},{count:6,show:3700,response:12500,max:8},{count:7,show:3200,response:10500,max:9}][age];
- const step=Math.floor((level-1)/4);
- return {count:clamp(base.count+step,base.count,base.max),show:Math.max(2200,Math.round(base.show*(1-Math.min(.24,(level-1)*.012)))),response:Math.max(7000,Math.round(base.response*(1-Math.min(.22,(level-1)*.011))))};
+  const age=clamp(Number(S.age)||0,0,4),level=clamp(Number(S.level)||1,1,20),points=DIFFICULTY_POINTS[age];
+  return {
+    count:Math.round(interpolate(points,level,'count')),
+    show:Math.round(interpolate(points,level,'show')),
+    response:Math.round(interpolate(points,level,'response'))
+  };
+}
+const LOCATION_GRID=[3,3,4,4,4];
+function memoryGridSize(){
+  const age=clamp(Number(S.age)||0,0,4),level=Number(S.level)||1;
+  if(age===1)return level>=15?4:3;
+  if(age===2)return level>=10?4:3;
+  if(age===3)return level>=10?5:4;
+  if(age===4)return level>=15?5:4;
+  return 3;
+}
+function recentRegistry(){
+  try{return JSON.parse(localStorage.getItem('mindquest-memory-lab-content-v1')||'{}')}catch{return {}}
+}
+function rememberDraw(key,items){
+  try{
+    const r=recentRegistry(),list=Array.isArray(r[key])?r[key]:[];
+    const signature=items.join('|');
+    const next=[signature,...list.filter(x=>x!==signature)].slice(0,4);
+    r[key]=next;localStorage.setItem('mindquest-memory-lab-content-v1',JSON.stringify(r));
+  }catch{}
+}
+function drawUnique(pool,n,key){
+  const source=[...new Set(pool)],recent=recentRegistry()[key]||[];
+  let best=null;
+  for(let attempt=0;attempt<8;attempt++){
+    const draw=shuffle(source).slice(0,n),sig=draw.join('|');
+    if(!recent.includes(sig)){best=draw;break;}
+    best=draw;
+  }
+  rememberDraw(key,best||source.slice(0,n));
+  return best||source.slice(0,n);
 }
 function token(){S.memoryRoundToken=(S.memoryRoundToken||0)+1;return S.memoryRoundToken}
 function clear(){clearTimeout(S.timer);S.timer=null}
@@ -83,24 +233,44 @@ function timeout(ms){S.timer=setTimeout(()=>{if(S.active)fail()},ms)}
 function fail(){if(!S.active)return;S.active=false;clear();MQ.levelFailed()}
 function complete(){if(!S.active)return;S.active=false;clear();const activity=S.memoryActivity||0;const last=activity===3;$('game-message').textContent=last?'✓ Level complete — moving to the next level…':`✓ Activity ${activity+1} complete — loading the next activity…`;S.timer=setTimeout(()=>{if(last){S.memoryActivity=0;MQ.state.active=true;MQ.levelComplete()}else{S.memoryActivity=activity+1;MQ.nextChallenge()}},520)}
 function optionButton(text,cls='choice'){const b=document.createElement('button');b.type='button';b.className=cls;b.textContent=text;return b}
-function visual(){begin((p,t)=>{const a=shuffle(ICONS).slice(0,p.count);const distract=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,clamp(p.count,3,7));stage(shell('visual',`<div class="memory-instruction-banner">Study these objects carefully.</div><div class="memory-items memory-study">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('visual',`<div class="memory-instruction-banner">Select every object you remember.</div><div id="memory-choices" class="memory-items"></div><div class="memory-progress" id="memory-progress">0 / ${a.length} selected</div>`,'Select every object you saw.'));const box=$('memory-choices');let hit=0;S.active=true;shuffle([...a,...distract]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active||b.disabled)return;if(a.includes(x)){b.classList.add('good','selected');b.disabled=true;hit++;$('memory-progress').textContent=`${hit} / ${a.length} selected`;if(hit===a.length)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
-function sequence(){begin((p,t)=>{const a=shuffle(ICONS).slice(0,p.count);stage(shell('sequence',`<div class="memory-instruction-banner">Watch the sequence from left to right.</div><div class="sequence-display">${a.map((x,i)=>`<span class="sequence-token" data-i="${i}">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('sequence',`<div class="memory-instruction-banner">Tap the objects in the same order.</div><div id="seq-options" class="memory-items"></div><div class="picked-sequence" id="seq-picked">Your sequence: <span>—</span></div>`));const box=$('seq-options'),picked=$('seq-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(a)]).forEach(x=>{const b=optionButton(x);b.dataset.value=x;b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
-function direction(){begin((p,t)=>{const len=clamp(p.count,3,8);const a=shuffle(ARROWS).slice(0,len);stage(shell('direction',`<div class="memory-instruction-banner">Watch the direction sequence.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token direction-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('direction',`<div class="memory-instruction-banner">Repeat the directions exactly.</div><div id="dir-options" class="memory-items direction-options"></div><div class="picked-sequence" id="dir-picked">Your sequence: <span>—</span></div>`));const box=$('dir-options'),picked=$('dir-picked').querySelector('span');let i=0;S.active=true;ARROWS.forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
-function reverse(){begin((p,t)=>{const a=shuffle(ICONS).slice(0,p.count),target=[...a].reverse();stage(shell('reverse',`<div class="memory-instruction-banner">Study the sequence, then reproduce it backwards.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('reverse',`<div class="memory-instruction-banner">Start with the last object.</div><div id="rev-options" class="memory-items"></div><div class="picked-sequence" id="rev-picked">Your reverse sequence: <span>—</span></div>`));const box=$('rev-options'),picked=$('rev-picked').querySelector('span');let i=0;S.active=true;shuffle([...a]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==target[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===target.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
-function grid(){begin((p,t)=>{const size=S.age===0?3:S.age===1?(S.level<12?3:4):S.age===2?(S.level<8?3:4):S.age===3?(S.level<6?4:5):4+(S.level>10?1:0);const slots=size*size;const count=clamp(2+Math.floor((S.level-1)/4)+S.age,2,Math.min(10,slots-1));const cells=shuffle([...Array(slots).keys()]).slice(0,count);stage(shell('grid',`<div class="memory-instruction-banner">Memorize the highlighted cells.</div><div class="memory-board" style="--grid:${size}">${[...Array(slots)].map((_,i)=>`<div class="memory-cell ${cells.includes(i)?'placed':''}">${cells.includes(i)?'●':''}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('grid',`<div class="memory-instruction-banner">Tap every highlighted location.</div><div id="grid-recall" class="memory-board" style="--grid:${size}"></div><div class="memory-progress" id="grid-progress">0 / ${cells.length} found</div>`));const box=$('grid-recall');let hit=0;S.active=true;for(let i=0;i<slots;i++){const b=optionButton('','memory-cell recall-cell');b.setAttribute('aria-label',`Grid cell ${i+1}`);b.onclick=()=>{if(!S.active||b.disabled)return;if(!cells.includes(i)){b.classList.add('bad');fail();return}b.classList.add('good','placed');b.disabled=true;b.textContent='●';hit++;$('grid-progress').textContent=`${hit} / ${cells.length} found`;if(hit===cells.length)complete()};box.appendChild(b)}timeout(p.response)},p.show)})}
-function pairs(){begin((p,t)=>{const pairsCount=clamp(2+Math.floor((p.count-2)/2),2,5);const faces=shuffle(ICONS).slice(0,pairsCount);const cards=shuffle(faces.flatMap((x,i)=>[{x,id:i*2},{x,id:i*2+1}]));stage(shell('pairs',`<div class="memory-instruction-banner">Study the matching pairs.</div><div class="pair-grid" style="grid-template-columns:repeat(${pairsCount<4?2:4},minmax(0,1fr))">${cards.map(c=>`<div class="pair-card pair-study">${c.x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('pairs',`<div class="memory-instruction-banner">Turn over two cards at a time and find all pairs.</div><div id="pair-game" class="pair-grid" style="grid-template-columns:repeat(${pairsCount<4?2:4},minmax(0,1fr))"></div><div class="memory-progress" id="pair-progress">0 / ${pairsCount} pairs</div>`));const box=$('pair-game');let first=null,lock=false,matches=0;S.active=true;cards.forEach((c,idx)=>{const b=optionButton('?','pair-card');b.dataset.face=c.x;b.dataset.idx=idx;b.onclick=()=>{if(!S.active||lock||b.classList.contains('flipped')||b.classList.contains('matched'))return;b.classList.add('flipped');b.textContent=c.x;if(!first){first=b;return}if(first.dataset.face===b.dataset.face){first.classList.add('matched');b.classList.add('matched');first=null;matches++;$('pair-progress').textContent=`${matches} / ${pairsCount} pairs`;if(matches===pairsCount)complete()}else{lock=true;const prev=first;setTimeout(()=>{if(S.active){prev.classList.remove('flipped');prev.textContent='?';b.classList.remove('flipped');b.textContent='?'}first=null;lock=false},550)}};box.appendChild(b)});timeout(Math.max(p.response*1.7,12000))},p.show)})}
-function location(){begin((p,t)=>{const size=S.age<2?3:4;const slots=size*size,count=clamp(Math.min(p.count,Math.floor(slots*.55)),3,Math.min(8,slots-1));const icons=shuffle(ICONS).slice(0,count),positions=shuffle([...Array(slots).keys()]).slice(0,count);const map=positions.map((slot,i)=>({slot,icon:icons[i]}));stage(shell('location',`<div class="memory-instruction-banner">Remember each object and where it appears.</div><div class="memory-board" style="--grid:${size}">${[...Array(slots)].map((_,i)=>{const m=map.find(x=>x.slot===i);return `<div class="memory-cell">${m?m.icon:''}</div>`}).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('location',`<div class="memory-instruction-banner">Select an object, then tap its original location.</div><div id="loc-icons" class="location-icons"></div><div id="loc-grid" class="memory-board" style="--grid:${size}"></div>`));const ib=$('loc-icons'),gb=$('loc-grid');let selected=null,placed=0;S.active=true;shuffle(icons).forEach(icon=>{const b=optionButton(icon,'location-icon');b.dataset.icon=icon;b.onclick=()=>{if(!S.active)return;selected=icon;ib.querySelectorAll('.location-icon').forEach(x=>x.classList.remove('selected'));b.classList.add('selected')};ib.appendChild(b)});map.forEach(m=>{const b=optionButton('','memory-cell recall-cell');b.onclick=()=>{if(!S.active||!selected)return;const expected=map.find(x=>x.slot===[...gb.children].indexOf(b));if(expected.icon!==selected){b.classList.add('bad');fail();return}b.classList.add('good','placed');b.textContent=selected;b.disabled=true;const src=[...ib.children].find(x=>x.dataset.icon===selected);if(src)src.disabled=true;selected=null;placed++;if(placed===map.length)complete()};gb.appendChild(b)});timeout(p.response*1.25)},p.show)})}
-function feature(){begin((p,t)=>{const n=clamp(p.count,3,7),items=shuffle(SHAPES).slice(0,n).map((shape,i)=>({shape,color:COLORS[(i+S.level+S.age)%COLORS.length]}));stage(shell('feature',`<div class="memory-instruction-banner">Remember each shape together with its colour.</div><div class="feature-grid">${items.map(x=>`<div class="feature-token"><span>${x.shape}</span><small>${COLOR_EMOJI[x.color]} ${x.color}</small></div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;const distract=shuffle(COLORS.flatMap(c=>SHAPES.map(s=>({shape:s,color:c})) ).filter(x=>!items.some(y=>y.shape===x.shape&&y.color===x.color))).slice(0,Math.min(6,n+2));stage(shell('feature',`<div class="memory-instruction-banner">Select the exact shape + colour combinations you remember.</div><div id="feature-options" class="feature-grid"></div><div class="memory-progress" id="feature-progress">0 / ${n} selected</div>`));const box=$('feature-options');let hit=0;S.active=true;shuffle([...items,...distract]).forEach(x=>{const b=optionButton('', 'feature-option');b.innerHTML=`<span>${x.shape}</span><small>${COLOR_EMOJI[x.color]} ${x.color}</small>`;b.onclick=()=>{if(!S.active||b.disabled)return;if(items.some(y=>y.shape===x.shape&&y.color===x.color)){b.classList.add('good','selected');b.disabled=true;hit++;$('feature-progress').textContent=`${hit} / ${n} selected`;if(hit===n)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
+function visual(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`visual:${S.age}`);const distract=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,clamp(p.count,3,7));stage(shell('visual',`<div class="memory-instruction-banner">Study these objects carefully.</div><div class="memory-items memory-study">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('visual',`<div class="memory-instruction-banner">Select every object you remember.</div><div id="memory-choices" class="memory-items"></div><div class="memory-progress" id="memory-progress">0 / ${a.length} selected</div>`,'Select every object you saw.'));const box=$('memory-choices');let hit=0;S.active=true;shuffle([...a,...distract]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active||b.disabled)return;if(a.includes(x)){b.classList.add('good','selected');b.disabled=true;hit++;$('memory-progress').textContent=`${hit} / ${a.length} selected`;if(hit===a.length)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
+function sequence(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`sequence:${S.age}`);stage(shell('sequence',`<div class="memory-instruction-banner">Watch the sequence from left to right.</div><div class="sequence-display">${a.map((x,i)=>`<span class="sequence-token" data-i="${i}">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('sequence',`<div class="memory-instruction-banner">Tap the objects in the same order.</div><div id="seq-options" class="memory-items"></div><div class="picked-sequence" id="seq-picked">Your sequence: <span>—</span></div>`));const box=$('seq-options'),picked=$('seq-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(a)]).forEach(x=>{const b=optionButton(x);b.dataset.value=x;b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function direction(){begin((p,t)=>{const len=clamp(p.count,3,8);const a=drawUnique(ARROWS,len,`direction:${S.age}`);stage(shell('direction',`<div class="memory-instruction-banner">Watch the direction sequence.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token direction-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('direction',`<div class="memory-instruction-banner">Repeat the directions exactly.</div><div id="dir-options" class="memory-items direction-options"></div><div class="picked-sequence" id="dir-picked">Your sequence: <span>—</span></div>`));const box=$('dir-options'),picked=$('dir-picked').querySelector('span');let i=0;S.active=true;ARROWS.forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function reverse(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`reverse:${S.age}`),target=[...a].reverse();stage(shell('reverse',`<div class="memory-instruction-banner">Study the sequence, then reproduce it backwards.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('reverse',`<div class="memory-instruction-banner">Start with the last object.</div><div id="rev-options" class="memory-items"></div><div class="picked-sequence" id="rev-picked">Your reverse sequence: <span>—</span></div>`));const box=$('rev-options'),picked=$('rev-picked').querySelector('span');let i=0;S.active=true;shuffle([...a]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==target[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===target.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function grid(){begin((p,t)=>{const size=memoryGridSize();const slots=size*size;const count=clamp(p.count,2,Math.min(10,slots-1));const cells=shuffle([...Array(slots).keys()]).slice(0,count);stage(shell('grid',`<div class="memory-instruction-banner">Memorize the highlighted cells.</div><div class="memory-board" style="--grid:${size}">${[...Array(slots)].map((_,i)=>`<div class="memory-cell ${cells.includes(i)?'placed':''}">${cells.includes(i)?'●':''}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('grid',`<div class="memory-instruction-banner">Tap every highlighted location.</div><div id="grid-recall" class="memory-board" style="--grid:${size}"></div><div class="memory-progress" id="grid-progress">0 / ${cells.length} found</div>`));const box=$('grid-recall');let hit=0;S.active=true;for(let i=0;i<slots;i++){const b=optionButton('','memory-cell recall-cell');b.setAttribute('aria-label',`Grid cell ${i+1}`);b.onclick=()=>{if(!S.active||b.disabled)return;if(!cells.includes(i)){b.classList.add('bad');fail();return}b.classList.add('good','placed');b.disabled=true;b.textContent='●';hit++;$('grid-progress').textContent=`${hit} / ${cells.length} found`;if(hit===cells.length)complete()};box.appendChild(b)}timeout(p.response)},p.show)})}
+function pairs(){begin((p,t)=>{const pairsCount=clamp(2+Math.floor((p.count-2)/2),2,5);const faces=drawUnique(ICONS,pairsCount,`pairs:${S.age}`);const cards=shuffle(faces.flatMap((x,i)=>[{x,id:i*2},{x,id:i*2+1}]));stage(shell('pairs',`<div class="memory-instruction-banner">Study the matching pairs.</div><div class="pair-grid" style="grid-template-columns:repeat(${pairsCount<4?2:4},minmax(0,1fr))">${cards.map(c=>`<div class="pair-card pair-study">${c.x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('pairs',`<div class="memory-instruction-banner">Turn over two cards at a time and find all pairs.</div><div id="pair-game" class="pair-grid" style="grid-template-columns:repeat(${pairsCount<4?2:4},minmax(0,1fr))"></div><div class="memory-progress" id="pair-progress">0 / ${pairsCount} pairs</div>`));const box=$('pair-game');let first=null,lock=false,matches=0;S.active=true;cards.forEach((c,idx)=>{const b=optionButton('?','pair-card');b.dataset.face=c.x;b.dataset.idx=idx;b.onclick=()=>{if(!S.active||lock||b.classList.contains('flipped')||b.classList.contains('matched'))return;b.classList.add('flipped');b.textContent=c.x;if(!first){first=b;return}if(first.dataset.face===b.dataset.face){first.classList.add('matched');b.classList.add('matched');first=null;matches++;$('pair-progress').textContent=`${matches} / ${pairsCount} pairs`;if(matches===pairsCount)complete()}else{lock=true;const prev=first;setTimeout(()=>{if(S.active){prev.classList.remove('flipped');prev.textContent='?';b.classList.remove('flipped');b.textContent='?'}first=null;lock=false},550)}};box.appendChild(b)});timeout(Math.max(p.response*1.7,12000))},p.show)})}
+function location(){begin((p,t)=>{const size=LOCATION_GRID[S.age]||3;const slots=size*size,count=clamp(Math.min(p.count,Math.floor(slots*.55)),3,Math.min(8,slots-1));const icons=drawUnique(ICONS,count,`location:${S.age}`),positions=shuffle([...Array(slots).keys()]).slice(0,count);const map=positions.map((slot,i)=>({slot,icon:icons[i]}));stage(shell('location',`<div class="memory-instruction-banner">Remember each object and where it appears.</div><div class="memory-board" style="--grid:${size}">${[...Array(slots)].map((_,i)=>{const m=map.find(x=>x.slot===i);return `<div class="memory-cell">${m?m.icon:''}</div>`}).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('location',`<div class="memory-instruction-banner">Select an object, then tap its original location.</div><div id="loc-icons" class="location-icons"></div><div id="loc-grid" class="memory-board" style="--grid:${size}"></div>`));const ib=$('loc-icons'),gb=$('loc-grid');let selected=null,placed=0;S.active=true;shuffle(icons).forEach(icon=>{const b=optionButton(icon,'location-icon');b.dataset.icon=icon;b.onclick=()=>{if(!S.active)return;selected=icon;ib.querySelectorAll('.location-icon').forEach(x=>x.classList.remove('selected'));b.classList.add('selected')};ib.appendChild(b)});map.forEach(m=>{const b=optionButton('','memory-cell recall-cell');b.onclick=()=>{if(!S.active||!selected)return;const expected=map.find(x=>x.slot===[...gb.children].indexOf(b));if(expected.icon!==selected){b.classList.add('bad');fail();return}b.classList.add('good','placed');b.textContent=selected;b.disabled=true;const src=[...ib.children].find(x=>x.dataset.icon===selected);if(src)src.disabled=true;selected=null;placed++;if(placed===map.length)complete()};gb.appendChild(b)});timeout(p.response*1.25)},p.show)})}
+function feature(){begin((p,t)=>{const n=clamp(p.count,3,8),items=drawUnique(SHAPES,n,`feature:${S.age}`).map((shape,i)=>({shape,color:COLORS[(i+S.level+S.age)%COLORS.length]}));stage(shell('feature',`<div class="memory-instruction-banner">Remember each shape together with its colour.</div><div class="feature-grid">${items.map(x=>`<div class="feature-token"><span>${x.shape}</span><small>${COLOR_EMOJI[x.color]} ${x.color}</small></div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;const distract=shuffle(COLORS.flatMap(c=>SHAPES.map(s=>({shape:s,color:c})) ).filter(x=>!items.some(y=>y.shape===x.shape&&y.color===x.color))).slice(0,Math.min(6,n+2));stage(shell('feature',`<div class="memory-instruction-banner">Select the exact shape + colour combinations you remember.</div><div id="feature-options" class="feature-grid"></div><div class="memory-progress" id="feature-progress">0 / ${n} selected</div>`));const box=$('feature-options');let hit=0;S.active=true;shuffle([...items,...distract]).forEach(x=>{const b=optionButton('', 'feature-option');b.innerHTML=`<span>${x.shape}</span><small>${COLOR_EMOJI[x.color]} ${x.color}</small>`;b.onclick=()=>{if(!S.active||b.disabled)return;if(items.some(y=>y.shape===x.shape&&y.color===x.color)){b.classList.add('good','selected');b.disabled=true;hit++;$('feature-progress').textContent=`${hit} / ${n} selected`;if(hit===n)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
 function category(){begin((p,t)=>{const groups={animals:['🐶','🐱','🐼','🦊'],foods:['🍎','🍕','🍌','🥕'],vehicles:['🚗','🚌','🚲','✈️'],nature:['🌳','🌊','🌻','⛰️']};const names=Object.keys(groups),name=names[(S.level+S.age)%names.length],target=groups[name];const distract=shuffle(Object.values(groups).flat()).filter(x=>!target.includes(x)).slice(0,Math.max(3,p.count));const study=shuffle([...target,...distract]);stage(shell('category',`<div class="memory-instruction-banner">Remember the category: <strong>${name.toUpperCase()}</strong></div><div class="memory-items">${study.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('category',`<div class="memory-instruction-banner">Select every object from the <strong>${name}</strong> category.</div><div id="cat-options" class="memory-items"></div><div class="memory-progress" id="cat-progress">0 / ${target.length} selected</div>`));const box=$('cat-options');let hit=0;S.active=true;shuffle(study).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active||b.disabled)return;if(target.includes(x)){b.classList.add('good','selected');b.disabled=true;hit++;$('cat-progress').textContent=`${hit} / ${target.length} selected`;if(hit===target.length)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
-function count(){begin((p,t)=>{const n=clamp(3+Math.floor((S.level-1)/7),3,5),types=shuffle(ICONS).slice(0,n),counts=types.map((_,i)=>2+((S.level+i+S.age)%3));const pool=shuffle(types.flatMap((x,i)=>Array(counts[i]).fill(x)));stage(shell('count',`<div class="memory-instruction-banner">Remember how many times each object appears.</div><div class="memory-items">${pool.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('count',`<div class="memory-instruction-banner">Choose the correct count for each object.</div><div id="count-list" class="count-list"></div>`));const box=$('count-list');let done=0;S.active=true;types.forEach((icon,i)=>{const row=document.createElement('div');row.className='count-row';row.innerHTML=`<span class="count-object">${icon}</span><div class="count-choices"></div>`;const cb=row.querySelector('.count-choices'),correct=counts[i];const vals=shuffle([...new Set([correct,1,2,3,4,5,6])]).slice(0,4);if(!vals.includes(correct))vals[0]=correct;shuffle(vals).forEach(v=>{const b=optionButton(String(v),'word-option');b.onclick=()=>{if(!S.active||b.disabled)return;if(v!==correct){b.classList.add('bad');fail();return}b.classList.add('good','selected');b.disabled=true;done++;if(done===types.length)complete()};cb.appendChild(b)});box.appendChild(row)});timeout(p.response*1.25)},p.show)})}
-function working(){begin((p,t)=>{const a=shuffle(ICONS).slice(0,p.count),missingIndex=Math.floor(a.length/2),missing=a[missingIndex];stage(shell('working',`<div class="memory-instruction-banner">Study the sequence. One item will disappear.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;const shown=a.map((x,i)=>i===missingIndex?'❓':x);const distract=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,3);stage(shell('working',`<div class="memory-instruction-banner">Which object was missing?</div><div class="sequence-display">${shown.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div id="work-options" class="memory-items"></div>`));const box=$('work-options');S.active=true;shuffle([missing,...distract]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x===missing){b.classList.add('good');complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
-function change(){begin((p,t)=>{const a=shuffle(ICONS).slice(0,p.count),idx=Math.floor(a.length/2),changed=shuffle(ICONS.filter(x=>!a.includes(x)))[0],b=[...a];b[idx]=changed;stage(shell('change',`<div class="memory-instruction-banner">Study Scene A carefully.</div><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('change',`<div class="memory-instruction-banner">Which object changed?</div><div class="change-scenes"><div><small>SCENE A</small><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div><div><small>SCENE B</small><div class="memory-items">${b.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div></div><div id="change-options" class="memory-items"></div>`));const box=$('change-options');S.active=true;shuffle([a[idx],changed,...shuffle(ICONS.filter(x=>!a.includes(x)&&x!==changed)).slice(0,2)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x===changed){b.classList.add('good');complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
-function order(){begin((p,t)=>{const a=shuffle(ICONS).slice(0,p.count);stage(shell('order',`<div class="memory-instruction-banner">Remember this left-to-right order.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('order',`<div class="memory-instruction-banner">Tap the objects from first to last.</div><div id="order-options" class="memory-items"></div><div class="picked-sequence" id="order-picked">Your order: <span>—</span></div>`));const box=$('order-options'),picked=$('order-picked').querySelector('span');let i=0;S.active=true;shuffle([...a]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
-function dual(){begin((p,t)=>{const n=clamp(Math.floor(p.count/2),2,4),a=shuffle(ICONS).slice(0,n),b=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,n),seq=[];for(let i=0;i<n;i++)seq.push(a[i],b[i]);stage(shell('dual',`<div class="memory-instruction-banner">Remember Stream A and Stream B, then alternate them.</div><div class="dual-streams"><div><small>STREAM A</small><div>${a.join(' ')}</div></div><div><small>STREAM B</small><div>${b.join(' ')}</div></div></div><div class="sequence-display">${seq.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('dual',`<div class="memory-instruction-banner">Tap A, then B, then A, then B.</div><div id="dual-options" class="memory-items"></div><div class="picked-sequence" id="dual-picked">Your sequence: <span>—</span></div>`));const box=$('dual-options'),picked=$('dual-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(seq)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==seq[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===seq.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
-function interference(){begin((p,t)=>{const n=clamp(p.count,3,7),target=shuffle(ICONS).slice(0,n),distract=shuffle(ICONS.filter(x=>!target.includes(x))).slice(0,clamp(2+S.age,2,5));stage(shell('interference',`<div class="memory-instruction-banner"><strong>Target</strong>: remember this sequence. Ignore the distractors.</div><div class="sequence-display">${target.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div class="memory-distractor"><span>DISTRACTOR</span>${distract.join(' ')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('interference',`<div class="memory-instruction-banner">Tap the TARGET sequence in the original order.</div><div id="int-options" class="memory-items"></div><div class="picked-sequence" id="int-picked">Target: <span>—</span></div>`));const box=$('int-options'),picked=$('int-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set([...target,...distract])]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==target[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===target.length)complete()};box.appendChild(b)});timeout(p.response)},Math.max(1800,p.show+900))})}
-function switchback(){begin((p,t)=>{const n=clamp(Math.floor(p.count/2),2,4),a=shuffle(ICONS).slice(0,n),b=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,n),seq=[];for(let i=0;i<n;i++){seq.push(a[i]);seq.push(b[i])}stage(shell('switchback',`<div class="memory-instruction-banner">Remember the alternating switch between the two streams.</div><div class="dual-streams"><div><small>A</small><div>${a.join(' ')}</div></div><div><small>B</small><div>${b.join(' ')}</div></div></div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('switchback',`<div class="memory-instruction-banner">Rebuild the sequence by switching A → B → A → B.</div><div id="switch-options" class="memory-items"></div><div class="picked-sequence" id="switch-picked">Your sequence: <span>—</span></div>`));const box=$('switch-options'),picked=$('switch-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(seq)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==seq[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===seq.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function count(){begin((p,t)=>{const n=clamp(p.count-1,3,5),types=drawUnique(ICONS,n,`count:${S.age}`),counts=types.map((_,i)=>2+((S.level+i+S.age)%3));const pool=shuffle(types.flatMap((x,i)=>Array(counts[i]).fill(x)));stage(shell('count',`<div class="memory-instruction-banner">Remember how many times each object appears.</div><div class="memory-items">${pool.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('count',`<div class="memory-instruction-banner">Choose the correct count for each object.</div><div id="count-list" class="count-list"></div>`));const box=$('count-list');let done=0;S.active=true;types.forEach((icon,i)=>{const row=document.createElement('div');row.className='count-row';row.innerHTML=`<span class="count-object">${icon}</span><div class="count-choices"></div>`;const cb=row.querySelector('.count-choices'),correct=counts[i];const vals=shuffle([...new Set([correct,1,2,3,4,5,6])]).slice(0,4);if(!vals.includes(correct))vals[0]=correct;shuffle(vals).forEach(v=>{const b=optionButton(String(v),'word-option');b.onclick=()=>{if(!S.active||b.disabled)return;if(v!==correct){b.classList.add('bad');fail();return}b.classList.add('good','selected');b.disabled=true;done++;if(done===types.length)complete()};cb.appendChild(b)});box.appendChild(row)});timeout(p.response*1.25)},p.show)})}
+function working(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`working:${S.age}`),missingIndex=Math.floor(a.length/2),missing=a[missingIndex];stage(shell('working',`<div class="memory-instruction-banner">Study the sequence. One item will disappear.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;const shown=a.map((x,i)=>i===missingIndex?'❓':x);const distract=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,3);stage(shell('working',`<div class="memory-instruction-banner">Which object was missing?</div><div class="sequence-display">${shown.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div id="work-options" class="memory-items"></div>`));const box=$('work-options');S.active=true;shuffle([missing,...distract]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x===missing){b.classList.add('good');complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
+function change(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`change:${S.age}`),idx=Math.floor(a.length/2),changed=shuffle(ICONS.filter(x=>!a.includes(x)))[0],b=[...a];b[idx]=changed;stage(shell('change',`<div class="memory-instruction-banner">Study Scene A carefully.</div><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('change',`<div class="memory-instruction-banner">Which object changed?</div><div class="change-scenes"><div><small>SCENE A</small><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div><div><small>SCENE B</small><div class="memory-items">${b.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div></div><div id="change-options" class="memory-items"></div>`));const box=$('change-options');S.active=true;shuffle([a[idx],changed,...shuffle(ICONS.filter(x=>!a.includes(x)&&x!==changed)).slice(0,2)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x===changed){b.classList.add('good');complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
+function order(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`order:${S.age}`);stage(shell('order',`<div class="memory-instruction-banner">Remember this left-to-right order.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('order',`<div class="memory-instruction-banner">Tap the objects from first to last.</div><div id="order-options" class="memory-items"></div><div class="picked-sequence" id="order-picked">Your order: <span>—</span></div>`));const box=$('order-options'),picked=$('order-picked').querySelector('span');let i=0;S.active=true;shuffle([...a]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function dual(){begin((p,t)=>{const n=clamp(Math.floor(p.count/2),2,4),a=drawUnique(ICONS,n,`dual-a:${S.age}`),b=drawUnique(ICONS.filter(x=>!a.includes(x)),n,`dual-b:${S.age}`),seq=[];for(let i=0;i<n;i++)seq.push(a[i],b[i]);stage(shell('dual',`<div class="memory-instruction-banner">Remember Stream A and Stream B, then alternate them.</div><div class="dual-streams"><div><small>STREAM A</small><div>${a.join(' ')}</div></div><div><small>STREAM B</small><div>${b.join(' ')}</div></div></div><div class="sequence-display">${seq.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('dual',`<div class="memory-instruction-banner">Tap A, then B, then A, then B.</div><div id="dual-options" class="memory-items"></div><div class="picked-sequence" id="dual-picked">Your sequence: <span>—</span></div>`));const box=$('dual-options'),picked=$('dual-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(seq)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==seq[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===seq.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function interference(){begin((p,t)=>{const n=clamp(p.count,3,7),target=drawUnique(ICONS,n,`interference:${S.age}`),distract=shuffle(ICONS.filter(x=>!target.includes(x))).slice(0,clamp(2+S.age,2,5));stage(shell('interference',`<div class="memory-instruction-banner"><strong>Target</strong>: remember this sequence. Ignore the distractors.</div><div class="sequence-display">${target.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div class="memory-distractor"><span>DISTRACTOR</span>${distract.join(' ')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('interference',`<div class="memory-instruction-banner">Tap the TARGET sequence in the original order.</div><div id="int-options" class="memory-items"></div><div class="picked-sequence" id="int-picked">Target: <span>—</span></div>`));const box=$('int-options'),picked=$('int-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set([...target,...distract])]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==target[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===target.length)complete()};box.appendChild(b)});timeout(p.response)},Math.max(1800,p.show+900))})}
+function switchback(){begin((p,t)=>{const n=clamp(Math.floor(p.count/2),2,4),a=drawUnique(ICONS,n,`switch-a:${S.age}`),b=drawUnique(ICONS.filter(x=>!a.includes(x)),n,`switch-b:${S.age}`),seq=[];for(let i=0;i<n;i++){seq.push(a[i]);seq.push(b[i])}stage(shell('switchback',`<div class="memory-instruction-banner">Remember the alternating switch between the two streams.</div><div class="dual-streams"><div><small>A</small><div>${a.join(' ')}</div></div><div><small>B</small><div>${b.join(' ')}</div></div></div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('switchback',`<div class="memory-instruction-banner">Rebuild the sequence by switching A → B → A → B.</div><div id="switch-options" class="memory-items"></div><div class="picked-sequence" id="switch-picked">Your sequence: <span>—</span></div>`));const box=$('switch-options'),picked=$('switch-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(seq)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==seq[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===seq.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
 function runType(type){({visual,sequence,grid,pairs,location,feature,direction,category,working,count,change,order,reverse,dual,interference,switchback}[type]||visual)()}
 function instructions(type){const i=INFO[type]||INFO.visual,p=profile();clear();S.active=false;stage(`<div class="memory-instruction-screen"><div class="instruction-icon">🧠</div><span class="memory-kind">${i[2]}</span><div class="instruction-activity">Activity ${(S.memoryActivity||0)+1} of 4</div><h2>${i[0]}</h2><p class="instruction-purpose">${i[1]}</p><div class="instruction-rule"><strong>How to play</strong><p>${RULES[type]||RULES.visual}</p></div><div class="instruction-timing"><span>⏱️ Study: ${(p.show/1000).toFixed(1)} sec</span><span>🎯 Response: ${Math.round(p.response/1000)} sec</span></div><button id="start-memory-activity" type="button" class="primary-btn instruction-start">Start Activity →</button></div>`);$('start-memory-activity').onclick=()=>runType(type)}
-function run(){S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;const plan=PLANS[clamp((S.level||1)-1,0,19)]||PLANS[0];const type=plan[clamp(S.memoryActivity,0,3)]||'visual';instructions(type)}
-window.MQMemoryLab={run};
+function validatePlans(){
+  const errors=[];
+  PLANS_BY_AGE.forEach((plan,age)=>{
+    if(plan.length!==20)errors.push(`age ${age}: expected 20 levels`);
+    plan.forEach((row,l)=>{
+      if(row.length!==4)errors.push(`age ${age} level ${l+1}: expected 4 activities`);
+      if(new Set(row).size!==4)errors.push(`age ${age} level ${l+1}: duplicate mechanic`);
+      if(l>0)row.forEach((m,slot)=>{if(m===plan[l-1][slot])errors.push(`age ${age} level ${l+1} slot ${slot+1}: consecutive repeat ${m}`)});
+    });
+    if(age===0&&plan.flat().some(m=>['reverse','dual','interference','switchback'].includes(m)))errors.push('age 3–5 contains Tier 4');
+  });
+  return errors;
+}
+const PLAN_ERRORS=validatePlans();
+function run(){
+  S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;
+  const age=clamp(Number(S.age)||0,0,4),level=clamp(Number(S.level)||1,1,20);
+  const plan=PLANS_BY_AGE[age]||PLANS_BY_AGE[0],row=plan[level-1]||plan[0];
+  const type=row[clamp(S.memoryActivity,0,3)]||'visual';
+  instructions(type);
+}
+window.MQMemoryLab={run,plans:PLANS_BY_AGE,unlocks:UNLOCKS_BY_AGE,difficulty:DIFFICULTY_POINTS,planErrors:PLAN_ERRORS,mechanics:Object.keys(INFO)};
 })();
