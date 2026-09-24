@@ -692,3 +692,23 @@ body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom
     font-size:17px;
   }
 }
+
+/* v8.24 — Memory Lab Location Memory cleanup: keep placement status above the board so it never appears as a clipped extra cell. */
+#game.active .memory-wrap:has(#loc-grid) .location-progress-inline{
+  display:block;
+  width:max-content;
+  margin:3px auto 4px;
+  padding:2px 8px;
+  border:0;
+  background:transparent;
+  color:#68728a;
+  font-size:8px;
+  line-height:1.2;
+  border-radius:0;
+}
+#game.active .memory-wrap:has(#loc-grid) .memory-board{
+  margin:4px auto 0;
+}
+@media(max-width:700px){
+  #game.active .memory-wrap:has(#loc-grid) .location-progress-inline{font-size:8px;margin:2px auto 3px;padding:2px 7px}
+}
