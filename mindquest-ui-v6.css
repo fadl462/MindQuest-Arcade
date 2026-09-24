@@ -612,3 +612,83 @@ body.mq-premium-mode .mq-console-insight,body.mq-premium-mode .mq-console-bottom
   #game.active .memory-instruction-screen .instruction-purpose{font-size:9px}
   #game.active .memory-instruction-screen .instruction-rule p{font-size:8.5px}
 }
+
+
+/* v8.23 — Memory Lab no-clipping guarantee
+   Keep every live activity fully visible inside the single-screen canvas.
+   Location Memory receives a tighter vertical composition so the object tray,
+   board and progress indicator can never be clipped on smaller viewports. */
+#game.active .game-card:has(.memory-wrap),
+#game.active .game-card:has(.memory-instruction-screen){
+  height:clamp(455px,calc(100vh - 190px),620px);
+  min-height:455px;
+  overflow:visible;
+}
+#game.active #game-stage:has(.memory-wrap),
+#game.active #game-stage:has(.memory-instruction-screen){
+  overflow:visible;
+}
+#game.active .memory-wrap{
+  width:min(860px,100%);
+  max-height:100%;
+  overflow:visible;
+  box-sizing:border-box;
+}
+#game.active .memory-wrap:has(#loc-grid){
+  padding-bottom:2px;
+}
+#game.active .memory-wrap:has(#loc-grid) .memory-lab-head{
+  margin-bottom:4px;
+  padding-bottom:4px;
+}
+#game.active .memory-wrap:has(#loc-grid) .memory-instruction-banner{
+  margin:4px auto 5px;
+  padding:6px 9px;
+}
+#game.active .memory-wrap:has(#loc-grid) .location-icons{
+  margin:5px auto;
+  gap:4px;
+  min-height:0;
+}
+#game.active .memory-wrap:has(#loc-grid) .location-icon{
+  width:40px;
+  min-width:40px;
+  height:36px;
+  min-height:36px;
+  padding:3px;
+  font-size:18px;
+  border-radius:9px;
+}
+#game.active .memory-wrap:has(#loc-grid) .memory-board{
+  width:200px;
+  max-width:200px;
+  margin:5px auto 4px;
+  gap:3px;
+}
+#game.active .memory-wrap:has(#loc-grid) .memory-board .memory-cell{
+  font-size:16px;
+  border-radius:7px;
+}
+#game.active .memory-wrap:has(#loc-grid) .memory-progress{
+  margin:3px auto 0;
+  padding:4px 8px;
+  font-size:8px;
+}
+@media(max-width:700px){
+  #game.active .game-card:has(.memory-wrap),
+  #game.active .game-card:has(.memory-instruction-screen){
+    height:clamp(420px,calc(100vh - 170px),560px);
+    min-height:420px;
+  }
+  #game.active .memory-wrap:has(#loc-grid) .memory-board{
+    width:180px;
+    max-width:180px;
+  }
+  #game.active .memory-wrap:has(#loc-grid) .location-icon{
+    width:38px;
+    min-width:38px;
+    height:34px;
+    min-height:34px;
+    font-size:17px;
+  }
+}
