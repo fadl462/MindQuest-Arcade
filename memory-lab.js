@@ -274,19 +274,53 @@ function optionButton(text,cls='choice'){const b=document.createElement('button'
 function visual(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`visual:${S.age}`);const distract=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,clamp(p.count,3,7));stage(shell('visual',`<div class="memory-instruction-banner">Study these objects carefully.</div><div class="memory-items memory-study">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('visual',`<div class="memory-instruction-banner">Select every object you remember.</div><div id="memory-choices" class="memory-items"></div><div class="memory-progress" id="memory-progress">0 / ${a.length} selected</div>`,'Select every object you saw.'));const box=$('memory-choices');let hit=0;S.active=true;shuffle([...a,...distract]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active||b.disabled)return;if(a.includes(x)){b.classList.add('good','selected');b.disabled=true;hit++;$('memory-progress').textContent=`${hit} / ${a.length} selected`;if(hit===a.length)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
 function sequence(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`sequence:${S.age}`);stage(shell('sequence',`<div class="memory-instruction-banner">Watch the sequence from left to right.</div><div class="sequence-display">${a.map((x,i)=>`<span class="sequence-token" data-i="${i}">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('sequence',`<div class="memory-instruction-banner">Tap the objects in the same order.</div><div id="seq-options" class="memory-items"></div><div class="picked-sequence" id="seq-picked">Your sequence: <span>—</span></div>`));const box=$('seq-options'),picked=$('seq-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(a)]).forEach(x=>{const b=optionButton(x);b.dataset.value=x;b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
 function direction(){begin((p,t)=>{const len=clamp(p.count,3,8);const a=drawUnique(ARROWS,len,`direction:${S.age}`);stage(shell('direction',`<div class="memory-instruction-banner">Watch the direction sequence.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token direction-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('direction',`<div class="memory-instruction-banner">Repeat the directions exactly.</div><div id="dir-options" class="memory-items direction-options"></div><div class="picked-sequence" id="dir-picked">Your sequence: <span>—</span></div>`));const box=$('dir-options'),picked=$('dir-picked').querySelector('span');let i=0;S.active=true;ARROWS.forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function advancedItemCount(type, age, level, fallback){
+  age=clamp(Number(age)||0,0,4); level=clamp(Number(level)||1,1,20);
+  // Advanced mechanics are deliberately lighter than the generic item-count curve.
+  // Ages 3–5 are not eligible for Tier 4; the runtime guard below falls back safely.
+  const reverseCaps=[3,4,5,6,7];
+  const reverseStarts=[3,3,4,5,5];
+  const reverseLate=[3,4,5,6,7];
+  const switchPairs=[2,2,3,3,3];
+  if(type==='reverse'){
+    if(age===0)return 3;
+    const start=reverseStarts[age],cap=reverseCaps[age],late=reverseLate[age];
+    const threshold=age===1?19:age===2?14:age===3?10:8;
+    if(level<threshold)return start;
+    return Math.min(cap, start + (level>=threshold+5 ? 1 : 0));
+  }
+  if(type==='switchback'){
+    if(age===0)return 2;
+    let n=switchPairs[age];
+    // Keep each stream compact. Only the oldest pathway may reach four per stream,
+    // and only late in the pathway.
+    if(age===4 && level>=12)n=4;
+    if(age===3 && level>=16)n=4;
+    return n;
+  }
+  if(type==='dual'){
+    if(age===0)return 2;
+    return age===1?2:age===2?3:age===3?3:4;
+  }
+  if(type==='interference'){
+    if(age===0)return 3;
+    return age===1?3:age===2?4:age===3?5:6;
+  }
+  return clamp(fallback,3,7);
+}
 function reverse(){begin((p,t)=>{
-  const a=drawUnique(ICONS,p.count,`reverse:${S.age}`),target=[...a].reverse();
+  const age=clamp(Number(S.age)||0,0,4), level=clamp(Number(S.level)||1,1,20);
+  const count=advancedItemCount('reverse',age,level,p.count);
+  const a=drawUnique(ICONS,count,`reverse:${age}`),target=[...a].reverse();
 
-  // Reverse Recall needs a substantially longer, age-aware study phase than the
-  // generic Memory Lab timer. The player must have enough time to encode both
-  // the items and their original order before being asked to work backwards.
-  const age=clamp(Number(S.age)||0,0,4);
-  const reverseStudyBase=[11000,12500,14000,15500,17000][age];
-  const reverseStudyPerItem=[1500,1600,1800,2000,2200][age];
-  const studyMs=clamp(reverseStudyBase+(a.length-3)*reverseStudyPerItem,11000,32000);
-  const responseBase=[26000,28000,30000,32000,34000][age];
-  const responsePerItem=[2500,2600,2800,3000,3200][age];
-  const responseMs=Math.max(30000,Math.min(50000,responseBase+a.length*responsePerItem));
+  // Reverse Recall is a game, not a speed test. Give the player enough time to
+  // encode the objects AND their order before asking them to reverse it.
+  const studyPerItem=[0,3800,4000,4200,4400][age];
+  const studyBase=[12000,13500,14500,15500,16500][age];
+  const studyMs=clamp(studyBase+Math.max(0,count-3)*studyPerItem,12000,32000);
+  const responseBase=[30000,36000,40000,44000,48000][age];
+  const responsePerItem=[2500,3000,3200,3400,3600][age];
+  const responseMs=clamp(responseBase+count*responsePerItem,32000,60000);
   let remaining=studyMs;
 
   stage(shell('reverse',`
@@ -499,26 +533,124 @@ function interference(){begin((p,t)=>{
     timeout(responseMs);
   },studyMs);
 })}
-function switchback(){begin((p,t)=>{const n=clamp(Math.floor(p.count/2),2,4),a=drawUnique(ICONS,n,`switch-a:${S.age}`),b=drawUnique(ICONS.filter(x=>!a.includes(x)),n,`switch-b:${S.age}`),seq=[];for(let i=0;i<n;i++){seq.push(a[i]);seq.push(b[i])}stage(shell('switchback',`<div class="memory-instruction-banner">Remember the alternating switch between the two streams.</div><div class="dual-streams"><div><small>A</small><div>${a.join(' ')}</div></div><div><small>B</small><div>${b.join(' ')}</div></div></div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('switchback',`<div class="memory-instruction-banner">Rebuild the sequence by switching A → B → A → B.</div><div id="switch-options" class="memory-items"></div><div class="picked-sequence" id="switch-picked">Your sequence: <span>—</span></div>`));const box=$('switch-options'),picked=$('switch-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(seq)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==seq[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===seq.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function switchback(){begin((p,t)=>{
+  const age=clamp(Number(S.age)||0,0,4), level=clamp(Number(S.level)||1,1,20);
+  const n=advancedItemCount('switchback',age,level,p.count);
+  const a=drawUnique(ICONS,n,`switch-a:${age}`),
+    b=drawUnique(ICONS.filter(x=>!a.includes(x)),n,`switch-b:${age}`),
+    seq=[];
+  for(let i=0;i<n;i++)seq.push({stream:'A',index:i,value:a[i]},{stream:'B',index:i,value:b[i]});
+
+  // Keep the streams compact and give enough quiet study time to encode both
+  // the items and the alternating rule.
+  const studyBase=[14000,17000,19000,21000,23000][age];
+  const studyPerItem=[0,2200,2300,2400,2500][age];
+  const studyMs=clamp(studyBase+Math.max(0,n-2)*studyPerItem,14000,32000);
+  const responseBase=[32000,38000,42000,46000,50000][age];
+  const responsePerStep=[3000,3200,3400,3500,3600][age];
+  const responseMs=clamp(responseBase+(seq.length*responsePerStep),35000,65000);
+  const esc=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const streamMarkup=(name,items,active=false)=>`
+    <div class="dual-memory-stream ${active?'is-active':''}" data-stream="${name}">
+      <div class="dual-memory-stream-head"><span>STREAM ${name}</span><small>${active?'YOUR TURN':'WAIT'}</small></div>
+      <div class="dual-memory-row">${items.map((x,i)=>`<span class="dual-memory-token" data-stream="${name}" data-index="${i}">${esc(x)}</span>`).join('')}</div>
+    </div>`;
+
+  $('game-message').textContent='';
+  stage(shell('switchback',`
+    <div class="dual-phase-label study"><span>MEMORIZE</span><strong>Study both streams carefully.</strong></div>
+    <div class="memory-instruction-banner"><strong>Remember the pattern:</strong> first item in A, first item in B, then second in A, second in B.</div>
+    <div class="dual-study-board">${streamMarkup('A',a)}${streamMarkup('B',b)}</div>
+    <div class="memory-progress dual-study-progress" id="switch-study-progress">Memorize now • ${(studyMs/1000).toFixed(1)} sec remaining</div>
+  `));
+
+  let remaining=studyMs;
+  const update=()=>{
+    if(t!==S.memoryRoundToken)return;
+    remaining=Math.max(0,remaining-100);
+    const el=$('switch-study-progress');
+    if(el)el.textContent=remaining>0?`Memorize now • ${(remaining/1000).toFixed(1)} sec remaining`:'Get ready…';
+    if(remaining>0)S.studyTicker=setTimeout(update,100);
+  };
+  S.studyTicker=setTimeout(update,100);
+
+  S.timer=setTimeout(()=>{
+    if(t!==S.memoryRoundToken)return;
+    clearTimeout(S.studyTicker);
+    stage(shell('switchback',`
+      <div class="dual-phase-label response"><span>YOUR TURN</span><strong>Switch between A and B one item at a time.</strong></div>
+      <div class="memory-instruction-banner"><strong>Follow the highlighted turn.</strong> Choose one item from the active stream, then switch to the other stream.</div>
+      <div class="dual-pattern-guide">A → B → A → B → …</div>
+      <div class="dual-response-board" id="switch-response-board">${streamMarkup('A',a,true)}${streamMarkup('B',b,false)}</div>
+      <div class="dual-turn" id="switch-turn"><span>YOUR TURN</span><strong>Stream A</strong><small>Choose item 1 of ${n}</small></div>
+      <div class="picked-sequence" id="switch-picked">Your sequence: <span>—</span></div>
+    `));
+
+    const board=$('switch-response-board'),turn=$('switch-turn'),picked=$('switch-picked').querySelector('span');
+    let i=0;S.active=true;
+    const groups={A:board.querySelector('[data-stream="A"]'),B:board.querySelector('[data-stream="B"]')};
+    const setTurn=()=>{
+      const expected=seq[i];
+      ['A','B'].forEach(stream=>{
+        const group=groups[stream],active=stream===expected.stream;
+        group.classList.toggle('is-active',active);group.classList.toggle('is-waiting',!active);
+        group.querySelector('.dual-memory-stream-head small').textContent=active?'YOUR TURN':'WAIT';
+        group.querySelectorAll('.dual-memory-token').forEach(btn=>{btn.disabled=!active||btn.dataset.used==='1';btn.setAttribute('aria-disabled',String(!active||btn.dataset.used==='1'));});
+      });
+      turn.innerHTML=`<span>YOUR TURN</span><strong>Stream ${expected.stream}</strong><small>Choose item ${expected.index+1} of ${n}</small>`;
+    };
+    const bind=(stream,group)=>group.querySelectorAll('.dual-memory-token').forEach(btn=>{
+      btn.type='button';
+      btn.addEventListener('click',()=>{
+        if(!S.active||btn.disabled)return;
+        const expected=seq[i],index=Number(btn.dataset.index);
+        if(stream!==expected.stream||index!==expected.index){btn.classList.remove('wrong-flash');void btn.offsetWidth;btn.classList.add('wrong-flash');fail();return;}
+        btn.dataset.used='1';btn.classList.add('correct-picked');btn.disabled=true;
+        picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+btn.textContent;
+        i++;if(i===seq.length){complete();return;}setTurn();
+      });
+    });
+    bind('A',groups.A);bind('B',groups.B);setTurn();timeout(responseMs);
+  },studyMs);
+})}
 function runType(type){S.memoryCurrentType=type;({visual,sequence,grid,pairs,location,feature,direction,category,working,count,change,order,reverse,dual,interference,switchback}[type]||visual)()}
 function activityStudyMs(type,p){
-  if(type==='dual'){const n=clamp(Math.floor(p.count/2),2,4);return clamp(15000+n*2500,17500,25000)}
-  if(type==='interference'){const n=clamp(p.count,3,7);return clamp(14000+n*1400,16000,22000)}
+  const age=clamp(Number(S.age)||0,0,4), level=clamp(Number(S.level)||1,1,20);
+  if(type==='dual'){
+    const n=advancedItemCount('dual',age,level,p.count);
+    return clamp([14000,17000,19000,21000,23000][age]+Math.max(0,n-2)*[0,2200,2300,2400,2500][age],14000,32000);
+  }
+  if(type==='interference'){
+    const n=advancedItemCount('interference',age,level,p.count);
+    return clamp([15000,18000,20000,22000,24000][age]+Math.max(0,n-3)*[0,1800,2000,2200,2400][age],15000,32000);
+  }
   if(type==='reverse'){
-    const age=clamp(Number(S.age)||0,0,4);
-    const base=[11000,12500,14000,15500,17000][age];
-    const perItem=[1500,1600,1800,2000,2200][age];
-    return clamp(base+(p.count-3)*perItem,11000,32000);
+    const n=advancedItemCount('reverse',age,level,p.count);
+    return clamp([12000,13500,14500,15500,16500][age]+Math.max(0,n-3)*[0,3800,4000,4200,4400][age],12000,32000);
+  }
+  if(type==='switchback'){
+    const n=advancedItemCount('switchback',age,level,p.count);
+    return clamp([14000,17000,19000,21000,23000][age]+Math.max(0,n-2)*[0,2200,2300,2400,2500][age],14000,32000);
   }
   return p.show;
 }
 function activityResponseMs(type,p){
-  if(type==='dual'||type==='interference')return Math.max(30000,p.response*1.8);
+  const age=clamp(Number(S.age)||0,0,4), level=clamp(Number(S.level)||1,1,20);
+  if(type==='dual'){
+    const n=advancedItemCount('dual',age,level,p.count),steps=n*2;
+    return clamp([32000,38000,42000,46000,50000][age]+steps*[3000,3200,3400,3500,3600][age],35000,65000);
+  }
+  if(type==='interference'){
+    const n=advancedItemCount('interference',age,level,p.count);
+    return clamp([32000,36000,40000,44000,48000][age]+n*[2800,3000,3200,3400,3500][age],35000,60000);
+  }
   if(type==='reverse'){
-    const age=clamp(Number(S.age)||0,0,4);
-    const base=[26000,28000,30000,32000,34000][age];
-    const perItem=[2500,2600,2800,3000,3200][age];
-    return Math.max(30000,Math.min(50000,base+p.count*perItem));
+    const n=advancedItemCount('reverse',age,level,p.count);
+    return clamp([30000,36000,40000,44000,48000][age]+n*[2500,3000,3200,3400,3600][age],32000,60000);
+  }
+  if(type==='switchback'){
+    const n=advancedItemCount('switchback',age,level,p.count),steps=n*2;
+    return clamp([32000,38000,42000,46000,50000][age]+steps*[3000,3200,3400,3500,3600][age],35000,65000);
   }
   return p.response;
 }
@@ -541,7 +673,13 @@ function run(){
   S.memoryActivity=Number.isFinite(S.memoryActivity)?S.memoryActivity:0;
   const age=clamp(Number(S.age)||0,0,4),level=clamp(Number(S.level)||1,1,20);
   const plan=PLANS_BY_AGE[age]||PLANS_BY_AGE[0],row=plan[level-1]||plan[0];
-  const type=row[clamp(S.memoryActivity,0,3)]||'visual';
+  let type=row[clamp(S.memoryActivity,0,3)]||'visual';
+  // Hard safety gate: Tier 4 is intentionally unavailable to ages 3–5.
+  // This protects players even if an older cached schedule is still present.
+  if(age===0 && ['reverse','dual','interference','switchback'].includes(type)){
+    const fallback=['visual','category','direction','grid'];
+    type=fallback[clamp(S.memoryActivity,0,3)];
+  }
   instructions(type);
 }
 window.MQMemoryLab={run,plans:PLANS_BY_AGE,unlocks:UNLOCKS_BY_AGE,difficulty:DIFFICULTY_POINTS,planErrors:PLAN_ERRORS,mechanics:Object.keys(INFO)};
