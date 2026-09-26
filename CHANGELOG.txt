@@ -1,46 +1,19 @@
-MindQuest Memory Lab — v8.36
+MindQuest Memory Lab — v8.38
 
-PERMANENT PACING / COGNITIVE-LOAD PASS
+3–5 AGE BAND PACING REBALANCE
 
-1. Direction Memory
-- Reduced sequence lengths across every age band.
-- 3–5 now uses 2–3 directions rather than long sequences.
-- Older groups scale gradually up to 7 directions.
-- Study and response timing remains age-aware.
+This build corrects an earlier testing mix-up where timing changes were made while the 15–18 age band was being tested and then carried into the younger experience.
 
-2. Grid Recall
-- Reworked completely with an age-aware item cap.
-- 3–5 starts at 2–3 highlighted locations.
-- Older groups scale gradually to a maximum of 7 locations.
-- Grid size is capped at 4×4 and unlocks gradually.
-- Added a dedicated memorisation countdown before recall.
-- Added longer study time and a clear response phase.
+For ages 3–5:
+- Reduced the general memorisation/study windows across Memory Lab so children do not have to wait unnecessarily after they have encoded the material.
+- Reduced the general response windows while keeping enough time to answer comfortably.
+- Direction Memory now uses a compact study window appropriate to its smaller 3–5 sequence.
+- Grid Recall now uses a shorter study window and retains its small 2–3 location load.
+- Order Builder now uses a shorter study window and retains its compact 2–3 item load.
+- Activities using the shared age-profile timer (Visual Recall, Sequence Recall, Pair Memory, Location Memory, Feature Memory, Category Recall, What's Missing, Count & Recall, Change Detective) inherit the corrected 3–5 pacing.
+- Older age groups remain unchanged by this 3–5-specific correction.
 
-3. All standard Memory Lab activities
-- Rebalanced the 20-level difficulty curve for all five age bands.
-- Reduced excessive item loads.
-- Increased study windows so difficulty does not come primarily from speed.
-- Added additional study/response time automatically when item count increases.
-- Response windows are capped so activities remain purposeful rather than slow.
+DESIGN PRINCIPLE
+The 3–5 experience should feel playful and achievable: enough time to notice and encode, but not so much that the child is forced to sit through a long countdown after they already know the answer.
 
-4. Other activities
-- Feature Memory now has age-aware item caps.
-- Location Memory has smaller placement loads, especially for ages 3–5.
-- Count & Recall now uses fewer object types and bounded repetitions.
-- Category Recall uses a smaller target set for ages 3–5.
-- Existing Reverse, Dual-Sequence, Interference and Switchback age-aware pacing is retained.
-
-5. Design principle
-Memory Lab is a game for cognitive development, not a speed test. Difficulty should rise gradually through level progression and cognitive complexity while preserving enough time and mental space for children to observe, encode, recall and enjoy the activity.
-
-v8.37 — Order Builder Cognitive Load Fix
-- Reduced Order Builder sequence lengths by age and mastery level.
-- Ages 3–5: 2 items initially, rising to 3 only later.
-- Ages 6–8: 3 items initially, rising to 4 later.
-- Ages 9–11: 3 items initially, rising to 4–5 later.
-- Ages 12–14: 4 items initially, rising gradually to 5–6.
-- Ages 15–18: 4 items initially, rising gradually to 5–6.
-- Added a dedicated, age-aware memorisation countdown before recall.
-- Increased response time proportionally to sequence length.
-- Added response progress indicator.
-- Disabled already-selected answer buttons to make ordering clearer.
+Validated with Node.js syntax check.

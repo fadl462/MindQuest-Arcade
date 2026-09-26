@@ -209,7 +209,7 @@ const RULES={
 // not by flooding the player with items or shrinking the study window.
 // age index: 0=3–5, 1=6–8, 2=9–11, 3=12–14, 4=15–18
 const DIFFICULTY_POINTS=[
-  [{l:1,count:3,show:9000,response:30000},{l:5,count:3,show:9500,response:30000},{l:10,count:4,show:9000,response:29000},{l:15,count:4,show:8500,response:28000},{l:20,count:4,show:8000,response:27000}],
+  [{l:1,count:3,show:6000,response:24000},{l:5,count:3,show:6200,response:24000},{l:10,count:4,show:6000,response:23000},{l:15,count:4,show:5800,response:22000},{l:20,count:4,show:5600,response:21000}],
   [{l:1,count:3,show:8500,response:29000},{l:5,count:4,show:8500,response:29000},{l:10,count:4,show:8000,response:28000},{l:15,count:5,show:7500,response:27000},{l:20,count:5,show:7000,response:26000}],
   [{l:1,count:4,show:8000,response:28000},{l:5,count:4,show:8000,response:28000},{l:10,count:5,show:7500,response:27000},{l:15,count:6,show:7000,response:25000},{l:20,count:6,show:6500,response:24000}],
   [{l:1,count:5,show:7500,response:27000},{l:5,count:5,show:7500,response:27000},{l:10,count:6,show:7000,response:26000},{l:15,count:7,show:6500,response:24000},{l:20,count:7,show:6000,response:23000}],
@@ -229,7 +229,7 @@ function interpolate(points,level,key){
 function pacingSummary(){
   return {
     ageBands:['3–5','6–8','9–11','12–14','15–18'],
-    note:'Memory Lab pacing uses smaller item loads, longer study windows, and bounded response time. Advanced mechanics use their own age-aware caps.'
+    note:'Memory Lab pacing is age-aware. Ages 3–5 use compact loads and shorter study windows so children can move on promptly after encoding, while older groups receive progressively longer windows. Advanced mechanics use their own age-aware caps.'
   };
 }
 function profile(){
@@ -239,8 +239,8 @@ function profile(){
   const baseResponse=Math.round(interpolate(points,level,'response'));
   // Add a little study time as the load grows. A player should never be asked
   // to encode a longer sequence inside the same fixed window.
-  const show=Math.min(12000,baseShow+Math.max(0,count-3)*850);
-  const response=Math.min(40000,baseResponse+Math.max(0,count-3)*1800);
+  const show=Math.min(9000,baseShow+Math.max(0,count-3)*600);
+  const response=Math.min(32000,baseResponse+Math.max(0,count-3)*1400);
   return {count,show,response};
 }
 const LOCATION_GRID=[3,3,4,4,4];
@@ -303,12 +303,12 @@ function direction(){begin((p,t)=>{
   ];
   const len=clamp(countByAge[age],3,8);
   const a=drawUnique(ARROWS,len,`direction:${age}`);
-  const studyBase=[8500,9000,9500,10000,10500][age];
-  const studyPerItem=[1400,1450,1500,1550,1600][age];
-  const studyMs=clamp(studyBase+Math.max(0,len-3)*studyPerItem,8500,23000);
-  const responseBase=[28000,30000,33000,36000,40000][age];
+  const studyBase=[6000,9000,9500,10000,10500][age];
+  const studyPerItem=[900,1450,1500,1550,1600][age];
+  const studyMs=clamp(studyBase+Math.max(0,len-3)*studyPerItem,5500,23000);
+  const responseBase=[24000,30000,33000,36000,40000][age];
   const responsePerItem=[2500,2700,2900,3100,3300][age];
-  const responseMs=clamp(responseBase+len*responsePerItem,30000,65000);
+  const responseMs=clamp(responseBase+len*responsePerItem,24000,65000);
   let remaining=studyMs;
 
   stage(shell('direction',`<div class="memory-instruction-banner"><strong>MEMORIZE NOW</strong> — Study the direction sequence carefully. It will stay visible until the study timer finishes.</div><div class="sequence-display direction-study-sequence">${a.map(x=>`<span class="sequence-token direction-token">${x}</span>`).join('')}</div><div class="memory-progress direction-study-progress" id="direction-study-progress">Memorize now • ${(studyMs/1000).toFixed(1)} sec remaining</div>`));
@@ -429,10 +429,10 @@ function grid(){begin((p,t)=>{
   const levelBonus=level>=12?1:0;
   const count=clamp(Math.min(countCaps[age]+levelBonus- (age===0?levelBonus:0),p.count,slots-1),2,Math.min(7,slots-1));
   const cells=shuffle([...Array(slots).keys()]).slice(0,count);
-  const studyBase=[10500,10000,9500,9000,8500][age];
-  const perCell=[1700,1600,1500,1400,1300][age];
-  const studyMs=clamp(studyBase+Math.max(0,count-3)*perCell,10000,21000);
-  const responseMs=clamp([30000,30000,28000,27000,26000][age]+count*[2500,2400,2300,2200,2100][age],30000,50000);
+  const studyBase=[6000,8500,9000,9000,8500][age];
+  const perCell=[900,1600,1500,1400,1300][age];
+  const studyMs=clamp(studyBase+Math.max(0,count-3)*perCell,5500,21000);
+  const responseMs=clamp([24000,30000,28000,27000,26000][age]+count*[1800,2400,2300,2200,2100][age],24000,50000);
   let remaining=studyMs;
   stage(shell('grid',`<div class="memory-instruction-banner"><strong>MEMORIZE NOW</strong> — Study the highlighted locations. The board will stay visible until the timer finishes.</div><div class="memory-board" style="--grid:${size}">${[...Array(slots)].map((_,i)=>`<div class="memory-cell ${cells.includes(i)?'placed':''}">${cells.includes(i)?'●':''}</div>`).join('')}</div><div class="memory-progress" id="grid-study-progress">Memorize now • ${(studyMs/1000).toFixed(1)} sec remaining</div>`));
   const update=()=>{
@@ -472,12 +472,12 @@ function order(){begin((p,t)=>{
   ];
   const len=countByAge[age];
   const a=drawUnique(ICONS,len,`order:${age}`);
-  const studyBase=[11000,10500,10500,10000,9500][age];
-  const studyPerItem=[1800,1750,1700,1650,1600][age];
-  const studyMs=clamp(studyBase+Math.max(0,len-2)*studyPerItem,11000,22000);
-  const responseBase=[30000,30000,31000,32000,34000][age];
+  const studyBase=[6500,9500,10000,10000,9500][age];
+  const studyPerItem=[900,1750,1700,1650,1600][age];
+  const studyMs=clamp(studyBase+Math.max(0,len-2)*studyPerItem,6000,22000);
+  const responseBase=[24000,30000,31000,32000,34000][age];
   const responsePerItem=[3000,3000,3000,3000,3000][age];
-  const responseMs=clamp(responseBase+Math.max(0,len-2)*responsePerItem,30000,60000);
+  const responseMs=clamp(responseBase+Math.max(0,len-2)*responsePerItem,24000,60000);
 
   stage(shell('order',`<div class="memory-instruction-banner"><strong>MEMORIZE</strong> — Study the left-to-right order carefully. The board will stay visible until the timer finishes.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div class="memory-progress" id="order-study-progress">Memorize now • ${(studyMs/1000).toFixed(1)} sec remaining</div>`));
   let remaining=studyMs;
