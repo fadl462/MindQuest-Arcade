@@ -1,12 +1,8 @@
-MindQuest Memory Lab v8.30
+MindQuest Memory Lab v8.31
 
-Dual-Sequence Recall UX and interaction fix.
-
-1. Study and response layouts now mirror each other.
-2. Response phase highlights the active stream and disables the waiting stream.
-3. Player is told exactly which stream and item to choose next.
-4. Correct selections remain visibly marked.
-5. Wrong selections trigger the existing retry/restart mechanism.
-6. Stale game messages are cleared when the activity starts and when response begins.
-7. Dedicated, longer study and response windows are used for Dual-Sequence Recall.
-8. Added cache-busting from memory-lab.js?v=8.0 to v8.30 so GitHub Pages fetches the new file.
+Dual-Sequence Recall viewport/containment fix:
+- Study and response stream boards now use a two-column desktop layout so both streams remain fully visible in the single-screen activity canvas.
+- Reduced stream/token dimensions and vertical spacing without changing the underlying activity logic.
+- Mobile fallback switches to one column below 520px and allows token wrapping.
+- Added explicit containment rules to prevent stream content from being clipped by the Memory Lab canvas.
+- Bumped memory-lab.js cache version to 8.31 in index.html.
