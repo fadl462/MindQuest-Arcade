@@ -273,7 +273,48 @@ function complete(){if(!S.active)return;S.active=false;clear();S.memoryAttempts=
 function optionButton(text,cls='choice'){const b=document.createElement('button');b.type='button';b.className=cls;b.textContent=text;return b}
 function visual(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`visual:${S.age}`);const distract=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,clamp(p.count,3,7));stage(shell('visual',`<div class="memory-instruction-banner">Study these objects carefully.</div><div class="memory-items memory-study">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('visual',`<div class="memory-instruction-banner">Select every object you remember.</div><div id="memory-choices" class="memory-items"></div><div class="memory-progress" id="memory-progress">0 / ${a.length} selected</div>`,'Select every object you saw.'));const box=$('memory-choices');let hit=0;S.active=true;shuffle([...a,...distract]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active||b.disabled)return;if(a.includes(x)){b.classList.add('good','selected');b.disabled=true;hit++;$('memory-progress').textContent=`${hit} / ${a.length} selected`;if(hit===a.length)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
 function sequence(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`sequence:${S.age}`);stage(shell('sequence',`<div class="memory-instruction-banner">Watch the sequence from left to right.</div><div class="sequence-display">${a.map((x,i)=>`<span class="sequence-token" data-i="${i}">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('sequence',`<div class="memory-instruction-banner">Tap the objects in the same order.</div><div id="seq-options" class="memory-items"></div><div class="picked-sequence" id="seq-picked">Your sequence: <span>—</span></div>`));const box=$('seq-options'),picked=$('seq-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(a)]).forEach(x=>{const b=optionButton(x);b.dataset.value=x;b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
-function direction(){begin((p,t)=>{const len=clamp(p.count,3,8);const a=drawUnique(ARROWS,len,`direction:${S.age}`);stage(shell('direction',`<div class="memory-instruction-banner">Watch the direction sequence.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token direction-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('direction',`<div class="memory-instruction-banner">Repeat the directions exactly.</div><div id="dir-options" class="memory-items direction-options"></div><div class="picked-sequence" id="dir-picked">Your sequence: <span>—</span></div>`));const box=$('dir-options'),picked=$('dir-picked').querySelector('span');let i=0;S.active=true;ARROWS.forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function direction(){begin((p,t)=>{
+  const age=clamp(Number(S.age)||0,0,4), level=clamp(Number(S.level)||1,1,20);
+  // Direction Memory is a learning game, so the study phase must remain visible
+  // long enough for the player to encode the full sequence before the response board appears.
+  // Keep the cognitive load age-appropriate instead of inheriting the generic profile count.
+  const countByAge=[
+    level<=8?3:level<=16?3:4,
+    level<=8?3:level<=16?4:5,
+    level<=6?4:level<=14?5:6,
+    level<=5?5:level<=12?6:7,
+    level<=4?5:level<=10?6:level<=16?7:8
+  ];
+  const len=clamp(countByAge[age],3,8);
+  const a=drawUnique(ARROWS,len,`direction:${age}`);
+  const studyBase=[8500,9000,9500,10000,10500][age];
+  const studyPerItem=[1400,1450,1500,1550,1600][age];
+  const studyMs=clamp(studyBase+Math.max(0,len-3)*studyPerItem,8500,23000);
+  const responseBase=[28000,30000,33000,36000,40000][age];
+  const responsePerItem=[2500,2700,2900,3100,3300][age];
+  const responseMs=clamp(responseBase+len*responsePerItem,30000,65000);
+  let remaining=studyMs;
+
+  stage(shell('direction',`<div class="memory-instruction-banner"><strong>MEMORIZE NOW</strong> — Study the direction sequence carefully. It will stay visible until the study timer finishes.</div><div class="sequence-display direction-study-sequence">${a.map(x=>`<span class="sequence-token direction-token">${x}</span>`).join('')}</div><div class="memory-progress direction-study-progress" id="direction-study-progress">Memorize now • ${(studyMs/1000).toFixed(1)} sec remaining</div>`));
+
+  const update=()=>{
+    if(t!==S.memoryRoundToken)return;
+    remaining=Math.max(0,remaining-100);
+    const el=$('direction-study-progress');
+    if(el)el.textContent=remaining>0?`Memorize now • ${(remaining/1000).toFixed(1)} sec remaining`:'Get ready…';
+    if(remaining>0)S.studyTicker=setTimeout(update,100);
+  };
+  clearTimeout(S.studyTicker); S.studyTicker=setTimeout(update,100);
+
+  S.timer=setTimeout(()=>{
+    if(t!==S.memoryRoundToken)return;
+    clearTimeout(S.studyTicker);
+    stage(shell('direction',`<div class="memory-instruction-banner"><strong>YOUR TURN</strong> — Tap the directions in the exact order you memorized.</div><div id="dir-options" class="memory-items direction-options"></div><div class="picked-sequence" id="dir-picked">Your sequence: <span>—</span></div><div class="memory-progress" id="direction-response-progress">0 / ${a.length} directions</div>`));
+    const box=$('dir-options'),picked=$('dir-picked').querySelector('span');let i=0;S.active=true;
+    ARROWS.forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');b.disabled=true;picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;const prog=$('direction-response-progress');if(prog)prog.textContent=`${i} / ${a.length} directions`;if(i===a.length)complete()};box.appendChild(b)});
+    timeout(responseMs);
+  },studyMs);
+})}
 function advancedItemCount(type, age, level, fallback){
   age=clamp(Number(age)||0,0,4); level=clamp(Number(level)||1,1,20);
   // Advanced mechanics are deliberately lighter than the generic item-count curve.
