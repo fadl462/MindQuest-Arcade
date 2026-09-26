@@ -2,6 +2,37 @@
 "use strict";
 const MQ=window.MQ;if(!MQ)return;
 const S=MQ.state,$=MQ.$;
+function ensureDualSequenceStyles(){
+  if(document.getElementById('mq-dual-sequence-v830'))return;
+  const style=document.createElement('style');style.id='mq-dual-sequence-v830';
+  style.textContent=`
+    .dual-study-board,.dual-response-board{display:grid;gap:14px;max-width:620px;margin:16px auto 12px}
+    .dual-memory-stream{border:1px solid #dfe3f2;border-radius:16px;background:#fff;padding:12px 14px;transition:all .18s ease}
+    .dual-memory-stream.is-active{border-color:#5b5ce2;box-shadow:0 0 0 3px rgba(91,92,226,.10);background:#fbfbff}
+    .dual-memory-stream.is-waiting{opacity:.52}
+    .dual-memory-stream-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;font-size:11px;font-weight:800;letter-spacing:.08em}
+    .dual-memory-stream-head small{font-size:9px;letter-spacing:.04em;padding:4px 8px;border-radius:999px;background:#f0f1f8;color:#69708a}
+    .dual-memory-stream.is-active .dual-memory-stream-head small{background:#ecebff;color:#4d4ed0}
+    .dual-memory-row{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}
+    .dual-memory-token{width:58px;height:58px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #d8ddec;border-radius:12px;background:#fff;font-size:29px;line-height:1;cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease,opacity .12s ease}
+    .dual-study-board .dual-memory-token{cursor:default}
+    .dual-response-board .dual-memory-token:not(:disabled):hover{transform:translateY(-2px);border-color:#6869e8;box-shadow:0 5px 14px rgba(60,60,120,.10)}
+    .dual-response-board .dual-memory-token:disabled{cursor:not-allowed;opacity:.48}
+    .dual-response-board .dual-memory-token.correct-picked{border-color:#35a36a;background:#eefbf4;opacity:.62}
+    .dual-response-board .dual-memory-token.wrong-flash{border-color:#df5d66;background:#fff0f1;animation:mqDualWrong .32s ease}
+    @keyframes mqDualWrong{50%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+    .dual-phase-label{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px auto 8px;font-size:12px}
+    .dual-phase-label span{font-size:9px;font-weight:900;letter-spacing:.09em;padding:5px 8px;border-radius:999px;background:#eeeefe;color:#5557d8}
+    .dual-phase-label strong{font-size:13px}
+    .dual-pattern-guide{text-align:center;font-size:12px;font-weight:800;color:#66708b;margin:8px 0}
+    .dual-turn{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:10px auto 8px;padding:8px 14px;border-radius:12px;background:#f5f6fb;border:1px solid #e1e4f0;max-width:360px}
+    .dual-turn span{font-size:9px;font-weight:900;letter-spacing:.08em;color:#5a5bd7}.dual-turn strong{font-size:14px}.dual-turn small{font-size:10px;color:#68718b}
+    .dual-study-progress{margin:10px auto 0;max-width:360px}
+    @media(max-width:620px){.dual-memory-token{width:50px;height:50px;font-size:25px}.dual-study-board,.dual-response-board{gap:10px}.dual-memory-stream{padding:10px}}
+  `;
+  document.head.appendChild(style);
+}
+ensureDualSequenceStyles();
 const shuffle=a=>{const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x};
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const ICONS=['🐶','🐱','🐰','🐼','🦊','🐸','🐵','🐯','🐨','🐷','🐮','🐙','🐳','🦋','🐝','🐢','🍎','🍌','🍊','🍉','🍓','🍇','🥕','🌽','🍪','🍕','🧁','🥭','🍍','🥝','🍋','🍒','🚗','🚌','🚲','🚀','✈️','🚁','🚂','⛵','🎈','🪁','⚽','🎸','🎨','🎁','🧸','🛴','⭐','🌙','☀️','☁️','🌈','🌳','🌻','🌊','🔥','❄️','🌟','🍀','🌺','🌴','⛰️','🌋'];
@@ -246,7 +277,110 @@ function count(){begin((p,t)=>{const n=clamp(p.count-1,3,5),types=drawUnique(ICO
 function working(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`working:${S.age}`),missingIndex=Math.floor(a.length/2),missing=a[missingIndex];stage(shell('working',`<div class="memory-instruction-banner">Study the sequence. One item will disappear.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;const shown=a.map((x,i)=>i===missingIndex?'❓':x);const distract=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,3);stage(shell('working',`<div class="memory-instruction-banner">Which object was missing?</div><div class="sequence-display">${shown.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div id="work-options" class="memory-items"></div>`));const box=$('work-options');S.active=true;shuffle([missing,...distract]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x===missing){b.classList.add('good');complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
 function change(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`change:${S.age}`),idx=Math.floor(a.length/2),changed=shuffle(ICONS.filter(x=>!a.includes(x)))[0],b=[...a];b[idx]=changed;stage(shell('change',`<div class="memory-instruction-banner">Study Scene A carefully.</div><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('change',`<div class="memory-instruction-banner">Which object changed?</div><div class="change-scenes"><div><small>SCENE A</small><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div><div><small>SCENE B</small><div class="memory-items">${b.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div></div><div id="change-options" class="memory-items"></div>`));const box=$('change-options');S.active=true;shuffle([a[idx],changed,...shuffle(ICONS.filter(x=>!a.includes(x)&&x!==changed)).slice(0,2)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x===changed){b.classList.add('good');complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
 function order(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`order:${S.age}`);stage(shell('order',`<div class="memory-instruction-banner">Remember this left-to-right order.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('order',`<div class="memory-instruction-banner">Tap the objects from first to last.</div><div id="order-options" class="memory-items"></div><div class="picked-sequence" id="order-picked">Your order: <span>—</span></div>`));const box=$('order-options'),picked=$('order-picked').querySelector('span');let i=0;S.active=true;shuffle([...a]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
-function dual(){begin((p,t)=>{const n=clamp(Math.floor(p.count/2),2,4),a=drawUnique(ICONS,n,`dual-a:${S.age}`),b=drawUnique(ICONS.filter(x=>!a.includes(x)),n,`dual-b:${S.age}`),seq=[];for(let i=0;i<n;i++)seq.push({stream:'A',index:i,value:a[i]},{stream:'B',index:i,value:b[i]});const studyMs=clamp(13000+n*2200,15000,20000);stage(shell('dual',`<div class="memory-instruction-banner"><strong>Memorize now.</strong> Study both streams carefully. The board will stay visible until the study timer finishes.</div><div class="dual-streams"><div><small>STREAM A</small><div>${a.map((x,i)=>`<span class="dual-token" data-stream="A" data-index="${i}">${x}</span>`).join(' ')}</div></div><div><small>STREAM B</small><div>${b.map((x,i)=>`<span class="dual-token" data-stream="B" data-index="${i}">${x}</span>`).join(' ')}</div></div></div><div class="memory-progress dual-study-progress" id="dual-study-progress">Memorize now • ${(studyMs/1000).toFixed(1)} sec</div>`));let remaining=studyMs;const update=()=>{if(t!==S.memoryRoundToken)return;remaining=Math.max(0,remaining-100);const el=$('dual-study-progress');if(el)el.textContent=remaining>0?`Memorize now • ${(remaining/1000).toFixed(1)} sec remaining`:'Get ready…';if(remaining>0)S.studyTicker=setTimeout(update,100)};S.studyTicker=setTimeout(update,100);S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;clearTimeout(S.studyTicker);stage(shell('dual',`<div class="memory-instruction-banner"><strong>Now reproduce the pattern.</strong> Alternate exactly: <strong>A → B → A → B</strong>.</div><div class="dual-response" id="dual-options"><div class="dual-response-group"><small>STREAM A</small><div id="dual-options-a" class="memory-items"></div></div><div class="dual-response-group"><small>STREAM B</small><div id="dual-options-b" class="memory-items"></div></div></div><div class="memory-progress" id="dual-next">Next: Stream A</div><div class="picked-sequence" id="dual-picked">Your sequence: <span>—</span></div>`));const picked=$('dual-picked').querySelector('span'),next=$('dual-next'),boxA=$('dual-options-a'),boxB=$('dual-options-b');let i=0;S.active=true;const addButton=(value,stream,index,box)=>{const btn=optionButton(value);btn.dataset.stream=stream;btn.dataset.index=String(index);btn.dataset.value=value;btn.onclick=()=>{if(!S.active||btn.disabled)return;const expected=seq[i];if(stream!==expected.stream||Number(btn.dataset.index)!==expected.index){btn.classList.add('bad');setTimeout(()=>btn.classList.remove('bad'),350);fail();return}btn.classList.add('good','selected');btn.disabled=true;picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+value;i++;if(i===seq.length){complete();return}next.textContent=`Next: Stream ${seq[i].stream}`};box.appendChild(btn)};a.forEach((x,j)=>addButton(x,'A',j,boxA));b.forEach((x,j)=>addButton(x,'B',j,boxB));timeout(Math.max(p.response*1.25,12000))},studyMs)})}
+function dual(){begin((p,t)=>{
+  const n=clamp(Math.floor(p.count/2),2,4),
+    a=drawUnique(ICONS,n,`dual-a:${S.age}`),
+    b=drawUnique(ICONS.filter(x=>!a.includes(x)),n,`dual-b:${S.age}`),
+    seq=[];
+  for(let i=0;i<n;i++)seq.push({stream:'A',index:i,value:a[i]},{stream:'B',index:i,value:b[i]});
+
+  // Dual-Sequence gets its own generous study window. The response board mirrors
+  // the study board so the player is never asked to translate between layouts.
+  const studyMs=clamp(15000+n*2500,17500,25000);
+  const responseMs=Math.max(30000,p.response*1.8);
+  const esc=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const streamMarkup=(name,items,active=false)=>`
+    <div class="dual-memory-stream ${active?'is-active':''}" data-stream="${name}">
+      <div class="dual-memory-stream-head"><span>STREAM ${name}</span><small>${active?'YOUR TURN':'WAIT'}</small></div>
+      <div class="dual-memory-row">${items.map((x,i)=>`<span class="dual-memory-token" data-stream="${name}" data-index="${i}">${esc(x)}</span>`).join('')}</div>
+    </div>`;
+
+  $('game-message').textContent='';
+  stage(shell('dual',`
+    <div class="dual-phase-label study"><span>MEMORIZE</span><strong>Study both streams carefully.</strong></div>
+    <div class="memory-instruction-banner"><strong>Remember the pattern:</strong> first item in A, first item in B, then second item in A, second item in B.</div>
+    <div class="dual-study-board">
+      ${streamMarkup('A',a)}
+      ${streamMarkup('B',b)}
+    </div>
+    <div class="memory-progress dual-study-progress" id="dual-study-progress">Memorize now • ${(studyMs/1000).toFixed(1)} sec remaining</div>
+  `));
+
+  let remaining=studyMs;
+  const update=()=>{
+    if(t!==S.memoryRoundToken)return;
+    remaining=Math.max(0,remaining-100);
+    const el=$('dual-study-progress');
+    if(el)el.textContent=remaining>0?`Memorize now • ${(remaining/1000).toFixed(1)} sec remaining`:'Get ready…';
+    if(remaining>0)S.studyTicker=setTimeout(update,100);
+  };
+  S.studyTicker=setTimeout(update,100);
+
+  S.timer=setTimeout(()=>{
+    if(t!==S.memoryRoundToken)return;
+    clearTimeout(S.studyTicker);
+    $('game-message').textContent='';
+
+    stage(shell('dual',`
+      <div class="dual-phase-label response"><span>YOUR TURN</span><strong>Rebuild the pattern one step at a time.</strong></div>
+      <div class="memory-instruction-banner"><strong>Follow the highlighted turn.</strong> Choose exactly one item from the active stream. Then the game will switch to the other stream.</div>
+      <div class="dual-pattern-guide" id="dual-pattern-guide">A → B → A → B → …</div>
+      <div class="dual-response-board" id="dual-response-board">
+        ${streamMarkup('A',a,true)}
+        ${streamMarkup('B',b,false)}
+      </div>
+      <div class="dual-turn" id="dual-turn"><span>YOUR TURN</span><strong>Stream A</strong><small>Choose item 1 of ${n}</small></div>
+      <div class="picked-sequence" id="dual-picked">Your sequence: <span>—</span></div>
+    `));
+
+    const board=$('dual-response-board'),turn=$('dual-turn'),picked=$('dual-picked').querySelector('span');
+    let i=0;
+    S.active=true;
+
+    const groups={A:board.querySelector('[data-stream="A"]'),B:board.querySelector('[data-stream="B"]')};
+    const setTurn=()=>{
+      const expected=seq[i];
+      ['A','B'].forEach(stream=>{
+        const group=groups[stream];
+        const active=stream===expected.stream;
+        group.classList.toggle('is-active',active);
+        group.classList.toggle('is-waiting',!active);
+        group.querySelector('.dual-memory-stream-head small').textContent=active?'YOUR TURN':'WAIT';
+        group.querySelectorAll('.dual-memory-token').forEach(btn=>{
+          btn.disabled=!active || btn.dataset.used==='1';
+          btn.setAttribute('aria-disabled',String(!active || btn.dataset.used==='1'));
+        });
+      });
+      turn.innerHTML=`<span>YOUR TURN</span><strong>Stream ${expected.stream}</strong><small>Choose item ${expected.index+1} of ${n}</small>`;
+    };
+
+    groups.A.querySelectorAll('.dual-memory-token').forEach(btn=>btn.type='button');
+    groups.B.querySelectorAll('.dual-memory-token').forEach(btn=>btn.type='button');
+
+    const bind=(stream,group)=>group.querySelectorAll('.dual-memory-token').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        if(!S.active || btn.disabled)return;
+        const expected=seq[i];
+        const index=Number(btn.dataset.index);
+        if(stream!==expected.stream || index!==expected.index){
+          btn.classList.remove('wrong-flash');void btn.offsetWidth;btn.classList.add('wrong-flash');
+          fail();
+          return;
+        }
+        btn.dataset.used='1';
+        btn.classList.add('correct-picked');
+        btn.disabled=true;
+        const label=btn.textContent;
+        picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ') + label;
+        i++;
+        if(i===seq.length){complete();return;}
+        setTurn();
+      });
+    });
+    bind('A',groups.A);bind('B',groups.B);setTurn();
+    timeout(responseMs);
+  },studyMs);
+});}
 function interference(){begin((p,t)=>{const n=clamp(p.count,3,7),target=drawUnique(ICONS,n,`interference:${S.age}`),distract=shuffle(ICONS.filter(x=>!target.includes(x))).slice(0,clamp(2+S.age,2,5));stage(shell('interference',`<div class="memory-instruction-banner"><strong>Target</strong>: remember this sequence. Ignore the distractors.</div><div class="sequence-display">${target.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div class="memory-distractor"><span>DISTRACTOR</span>${distract.join(' ')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('interference',`<div class="memory-instruction-banner">Tap the TARGET sequence in the original order.</div><div id="int-options" class="memory-items"></div><div class="picked-sequence" id="int-picked">Target: <span>—</span></div>`));const box=$('int-options'),picked=$('int-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set([...target,...distract])]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==target[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===target.length)complete()};box.appendChild(b)});timeout(p.response)},Math.max(1800,p.show+900))})}
 function switchback(){begin((p,t)=>{const n=clamp(Math.floor(p.count/2),2,4),a=drawUnique(ICONS,n,`switch-a:${S.age}`),b=drawUnique(ICONS.filter(x=>!a.includes(x)),n,`switch-b:${S.age}`),seq=[];for(let i=0;i<n;i++){seq.push(a[i]);seq.push(b[i])}stage(shell('switchback',`<div class="memory-instruction-banner">Remember the alternating switch between the two streams.</div><div class="dual-streams"><div><small>A</small><div>${a.join(' ')}</div></div><div><small>B</small><div>${b.join(' ')}</div></div></div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('switchback',`<div class="memory-instruction-banner">Rebuild the sequence by switching A → B → A → B.</div><div id="switch-options" class="memory-items"></div><div class="picked-sequence" id="switch-picked">Your sequence: <span>—</span></div>`));const box=$('switch-options'),picked=$('switch-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(seq)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==seq[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===seq.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
 function runType(type){S.memoryCurrentType=type;({visual,sequence,grid,pairs,location,feature,direction,category,working,count,change,order,reverse,dual,interference,switchback}[type]||visual)()}
