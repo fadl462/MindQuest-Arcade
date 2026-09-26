@@ -1,8 +1,9 @@
-MindQuest Memory Lab v8.31
+MindQuest Memory Lab v8.32
 
-Dual-Sequence Recall viewport/containment fix:
-- Study and response stream boards now use a two-column desktop layout so both streams remain fully visible in the single-screen activity canvas.
-- Reduced stream/token dimensions and vertical spacing without changing the underlying activity logic.
-- Mobile fallback switches to one column below 520px and allows token wrapping.
-- Added explicit containment rules to prevent stream content from being clipped by the Memory Lab canvas.
-- Bumped memory-lab.js cache version to 8.31 in index.html.
+Interference Recall memorisation/timing fix:
+- Replaced the generic short study timer with a dedicated 16–22 second study window based on sequence length.
+- Added a visible memorisation countdown so the player can clearly see how much study time remains.
+- Kept the TARGET sequence fully visible until the study phase ends; distractors are explicitly labelled as IGNORE.
+- Added a dedicated response window of at least 30 seconds.
+- Updated the Memory Lab instruction screen so Dual-Sequence and Interference Recall show their actual extended study/response timings instead of the generic profile timer.
+- Bumped memory-lab.js cache version to 8.32 in index.html.

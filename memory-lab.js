@@ -388,10 +388,73 @@ function dual(){begin((p,t)=>{
     timeout(responseMs);
   },studyMs);
 });}
-function interference(){begin((p,t)=>{const n=clamp(p.count,3,7),target=drawUnique(ICONS,n,`interference:${S.age}`),distract=shuffle(ICONS.filter(x=>!target.includes(x))).slice(0,clamp(2+S.age,2,5));stage(shell('interference',`<div class="memory-instruction-banner"><strong>Target</strong>: remember this sequence. Ignore the distractors.</div><div class="sequence-display">${target.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div class="memory-distractor"><span>DISTRACTOR</span>${distract.join(' ')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('interference',`<div class="memory-instruction-banner">Tap the TARGET sequence in the original order.</div><div id="int-options" class="memory-items"></div><div class="picked-sequence" id="int-picked">Target: <span>—</span></div>`));const box=$('int-options'),picked=$('int-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set([...target,...distract])]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==target[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===target.length)complete()};box.appendChild(b)});timeout(p.response)},Math.max(1800,p.show+900))})}
+function interference(){begin((p,t)=>{
+  const n=clamp(p.count,3,7),
+    target=drawUnique(ICONS,n,`interference:${S.age}`),
+    distract=shuffle(ICONS.filter(x=>!target.includes(x))).slice(0,clamp(2+S.age,2,5));
+
+  // Interference Recall needs a deliberate memorisation phase. The generic Memory Lab
+  // show timer becomes too short at higher levels, so this activity uses its own
+  // generous study window and keeps the target visible until that window ends.
+  const studyMs=clamp(14000+n*1400,16000,22000);
+  const responseMs=Math.max(30000,p.response*1.8);
+  let remaining=studyMs;
+
+  stage(shell('interference',`
+    <div class="memory-instruction-banner"><strong>MEMORIZE THE TARGET</strong> — Ignore the distractors and study the target sequence from left to right.</div>
+    <div class="sequence-display interference-target">${target.map((x,i)=>`<span class="sequence-token" data-i="${i}">${x}</span>`).join('')}</div>
+    <div class="memory-distractor"><span>DISTRACTORS — IGNORE</span>${distract.join(' ')}</div>
+    <div class="memory-progress interference-study-progress" id="interference-study-progress">Memorize now • ${(studyMs/1000).toFixed(1)} sec remaining</div>
+  `));
+
+  const update=()=>{
+    if(t!==S.memoryRoundToken)return;
+    remaining=Math.max(0,remaining-100);
+    const el=$('interference-study-progress');
+    if(el)el.textContent=remaining>0?`Memorize now • ${(remaining/1000).toFixed(1)} sec remaining`:'Get ready…';
+    if(remaining>0)S.studyTicker=setTimeout(update,100);
+  };
+  S.studyTicker=setTimeout(update,100);
+
+  S.timer=setTimeout(()=>{
+    if(t!==S.memoryRoundToken)return;
+    clearTimeout(S.studyTicker);
+    stage(shell('interference',`
+      <div class="memory-instruction-banner"><strong>YOUR TURN</strong> — Tap the TARGET sequence in the original order.</div>
+      <div id="int-options" class="memory-items interference-options"></div>
+      <div class="picked-sequence" id="int-picked">Target: <span>—</span></div>
+    `));
+    const box=$('int-options'),picked=$('int-picked').querySelector('span');
+    let i=0;
+    S.active=true;
+    shuffle([...new Set([...target,...distract])]).forEach(x=>{
+      const b=optionButton(x);
+      b.onclick=()=>{
+        if(!S.active||b.disabled)return;
+        if(x!==target[i]){b.classList.add('bad');fail();return}
+        b.classList.add('good','selected');
+        b.disabled=true;
+        picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;
+        i++;
+        if(i===target.length)complete();
+      };
+      box.appendChild(b);
+    });
+    timeout(responseMs);
+  },studyMs);
+})}
 function switchback(){begin((p,t)=>{const n=clamp(Math.floor(p.count/2),2,4),a=drawUnique(ICONS,n,`switch-a:${S.age}`),b=drawUnique(ICONS.filter(x=>!a.includes(x)),n,`switch-b:${S.age}`),seq=[];for(let i=0;i<n;i++){seq.push(a[i]);seq.push(b[i])}stage(shell('switchback',`<div class="memory-instruction-banner">Remember the alternating switch between the two streams.</div><div class="dual-streams"><div><small>A</small><div>${a.join(' ')}</div></div><div><small>B</small><div>${b.join(' ')}</div></div></div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('switchback',`<div class="memory-instruction-banner">Rebuild the sequence by switching A → B → A → B.</div><div id="switch-options" class="memory-items"></div><div class="picked-sequence" id="switch-picked">Your sequence: <span>—</span></div>`));const box=$('switch-options'),picked=$('switch-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(seq)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==seq[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===seq.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
 function runType(type){S.memoryCurrentType=type;({visual,sequence,grid,pairs,location,feature,direction,category,working,count,change,order,reverse,dual,interference,switchback}[type]||visual)()}
-function instructions(type){const i=INFO[type]||INFO.visual,p=profile();clear();S.active=false;stage(`<div class="memory-instruction-screen"><div class="instruction-icon">🧠</div><span class="memory-kind">${i[2]}</span><div class="instruction-activity">Activity ${(S.memoryActivity||0)+1} of 4</div><h2>${i[0]}</h2><p class="instruction-purpose">${i[1]}</p><div class="instruction-rule"><strong>How to play</strong><p>${RULES[type]||RULES.visual}</p></div><div class="instruction-timing"><span>⏱️ Study: ${(p.show/1000).toFixed(1)} sec</span><span>🎯 Response: ${Math.round(p.response/1000)} sec</span></div><button id="start-memory-activity" type="button" class="primary-btn instruction-start">Start Activity →</button></div>`);$('start-memory-activity').onclick=()=>{S.memoryAttempts=0;S.memoryCurrentType=type;runType(type)}}
+function activityStudyMs(type,p){
+  if(type==='dual'){const n=clamp(Math.floor(p.count/2),2,4);return clamp(15000+n*2500,17500,25000)}
+  if(type==='interference'){const n=clamp(p.count,3,7);return clamp(14000+n*1400,16000,22000)}
+  return p.show;
+}
+function activityResponseMs(type,p){
+  if(type==='dual'||type==='interference')return Math.max(30000,p.response*1.8);
+  return p.response;
+}
+function instructions(type){const i=INFO[type]||INFO.visual,p=profile(),studyMs=activityStudyMs(type,p),responseMs=activityResponseMs(type,p);clear();S.active=false;stage(`<div class="memory-instruction-screen"><div class="instruction-icon">🧠</div><span class="memory-kind">${i[2]}</span><div class="instruction-activity">Activity ${(S.memoryActivity||0)+1} of 4</div><h2>${i[0]}</h2><p class="instruction-purpose">${i[1]}</p><div class="instruction-rule"><strong>How to play</strong><p>${RULES[type]||RULES.visual}</p></div><div class="instruction-timing"><span>⏱️ Study: ${(studyMs/1000).toFixed(1)} sec</span><span>🎯 Response: ${Math.round(responseMs/1000)} sec</span></div><button id="start-memory-activity" type="button" class="primary-btn instruction-start">Start Activity →</button></div>`);$('start-memory-activity').onclick=()=>{S.memoryAttempts=0;S.memoryCurrentType=type;runType(type)}}
 function validatePlans(){
   const errors=[];
   PLANS_BY_AGE.forEach((plan,age)=>{
