@@ -456,8 +456,73 @@ function pairs(){begin((p,t)=>{const pairsCount=clamp(2+Math.floor((p.count-2)/2
 function location(){begin((p,t)=>{const age=clamp(Number(S.age)||0,0,4),size=LOCATION_GRID[age]||3;const slots=size*size;const minCount=age===0?2:3;const count=clamp(Math.min(p.count,Math.floor(slots*.45),[3,4,5,6,7][age]),minCount,Math.min(7,slots-1));const icons=drawUnique(ICONS,count,`location:${S.age}`),positions=shuffle([...Array(slots).keys()]).slice(0,count),map=positions.map((slot,i)=>({slot,icon:icons[i]}));stage(shell('location',`<div class="memory-instruction-banner">Remember each object and where it appears.</div><div class="memory-board" style="--grid:${size}">${[...Array(slots)].map((_,i)=>{const m=map.find(x=>x.slot===i);return `<div class="memory-cell">${m?m.icon:''}</div>`}).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('location',`<div class="memory-instruction-banner">Select an object, then tap its original location.</div><div id="loc-icons" class="location-icons" aria-label="Objects to place"></div><div class="memory-progress location-progress-inline" id="loc-progress">0 / ${map.length} placed</div><div id="loc-grid" class="memory-board" style="--grid:${size}" aria-label="Location memory board"></div>`));const ib=$('loc-icons'),gb=$('loc-grid');let selected=null,placed=0;S.active=true;shuffle(icons).forEach(icon=>{const b=optionButton(icon,'location-icon');b.dataset.icon=icon;b.setAttribute('aria-label',`Select ${icon}`);b.onclick=()=>{if(!S.active||b.disabled)return;selected=icon;ib.querySelectorAll('.location-icon').forEach(x=>x.classList.remove('selected'));b.classList.add('selected')};ib.appendChild(b)});for(let i=0;i<slots;i++){const b=optionButton('','memory-cell recall-cell');b.dataset.slot=String(i);b.setAttribute('aria-label',`Grid position ${i+1}`);b.onclick=()=>{if(!S.active||!selected||b.disabled)return;const slot=Number(b.dataset.slot),expected=map.find(x=>x.slot===slot);if(!expected||expected.icon!==selected){b.classList.add('bad');fail();return}b.classList.add('good','placed');b.textContent=selected;b.disabled=true;const src=[...ib.children].find(x=>x.dataset.icon===selected);if(src){src.disabled=true;src.classList.remove('selected');src.classList.add('used')}selected=null;placed++;$('loc-progress').textContent=`${placed} / ${map.length} placed`;if(placed===map.length)complete()};gb.appendChild(b)}timeout(p.response*1.25)},p.show)})}
 function feature(){begin((p,t)=>{const age=clamp(Number(S.age)||0,0,4);const n=clamp(Math.min(p.count,[3,4,5,6,7][age]),3,7),items=drawUnique(SHAPES,n,`feature:${S.age}`).map((shape,i)=>({shape,color:COLORS[(i+S.level+S.age)%COLORS.length]}));stage(shell('feature',`<div class="memory-instruction-banner">Remember each shape together with its colour.</div><div class="feature-grid">${items.map(x=>`<div class="feature-token"><span>${x.shape}</span><small>${COLOR_EMOJI[x.color]} ${x.color}</small></div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;const distract=shuffle(COLORS.flatMap(c=>SHAPES.map(s=>({shape:s,color:c})) ).filter(x=>!items.some(y=>y.shape===x.shape&&y.color===x.color))).slice(0,Math.min(6,n+2));stage(shell('feature',`<div class="memory-instruction-banner">Select the exact shape + colour combinations you remember.</div><div id="feature-options" class="feature-grid"></div><div class="memory-progress" id="feature-progress">0 / ${n} selected</div>`));const box=$('feature-options');let hit=0;S.active=true;shuffle([...items,...distract]).forEach(x=>{const b=optionButton('', 'feature-option');b.innerHTML=`<span>${x.shape}</span><small>${COLOR_EMOJI[x.color]} ${x.color}</small>`;b.onclick=()=>{if(!S.active||b.disabled)return;if(items.some(y=>y.shape===x.shape&&y.color===x.color)){b.classList.add('good','selected');b.disabled=true;hit++;$('feature-progress').textContent=`${hit} / ${n} selected`;if(hit===n)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
 function category(){begin((p,t)=>{const age=clamp(Number(S.age)||0,0,4);const groups=age===0?{animals:['🐶','🐱','🐼'],foods:['🍎','🍕','🍌'],vehicles:['🚗','🚌','🚲'],nature:['🌳','🌊','🌻']}:{animals:['🐶','🐱','🐼','🦊'],foods:['🍎','🍕','🍌','🥕'],vehicles:['🚗','🚌','🚲','✈️'],nature:['🌳','🌊','🌻','⛰️']};const names=Object.keys(groups),name=names[(S.level+S.age)%names.length],target=groups[name];const distract=shuffle(Object.values(groups).flat()).filter(x=>!target.includes(x)).slice(0,Math.max(3,p.count));const study=shuffle([...target,...distract]);stage(shell('category',`<div class="memory-instruction-banner">Remember the category: <strong>${name.toUpperCase()}</strong></div><div class="memory-items">${study.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('category',`<div class="memory-instruction-banner">Select every object from the <strong>${name}</strong> category.</div><div id="cat-options" class="memory-items"></div><div class="memory-progress" id="cat-progress">0 / ${target.length} selected</div>`));const box=$('cat-options');let hit=0;S.active=true;shuffle(study).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active||b.disabled)return;if(target.includes(x)){b.classList.add('good','selected');b.disabled=true;hit++;$('cat-progress').textContent=`${hit} / ${target.length} selected`;if(hit===target.length)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
-function count(){begin((p,t)=>{const age=clamp(Number(S.age)||0,0,4);const n=clamp(Math.min(p.count-1,[2,3,3,4,4][age]),2,4),types=drawUnique(ICONS,n,`count:${S.age}`),counts=types.map((_,i)=>2+((S.level+i+S.age)%([2,2,3,3,3][age])));const pool=shuffle(types.flatMap((x,i)=>Array(counts[i]).fill(x)));stage(shell('count',`<div class="memory-instruction-banner">Remember how many times each object appears.</div><div class="memory-items">${pool.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('count',`<div class="memory-instruction-banner">Choose the correct count for each object.</div><div id="count-list" class="count-list"></div>`));const box=$('count-list');let done=0;S.active=true;types.forEach((icon,i)=>{const row=document.createElement('div');row.className='count-row';row.innerHTML=`<span class="count-object">${icon}</span><div class="count-choices"></div>`;const cb=row.querySelector('.count-choices'),correct=counts[i];const vals=shuffle([...new Set([correct,1,2,3,4,5,6])]).slice(0,4);if(!vals.includes(correct))vals[0]=correct;shuffle(vals).forEach(v=>{const b=optionButton(String(v),'word-option');b.onclick=()=>{if(!S.active||b.disabled)return;if(v!==correct){b.classList.add('bad');fail();return}b.classList.add('good','selected');b.disabled=true;done++;if(done===types.length)complete()};cb.appendChild(b)});box.appendChild(row)});timeout(p.response*1.25)},p.show)})}
-function working(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`working:${S.age}`),missingIndex=Math.floor(a.length/2),missing=a[missingIndex];stage(shell('working',`<div class="memory-instruction-banner">Study the sequence. One item will disappear.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;const shown=a.map((x,i)=>i===missingIndex?'❓':x);const distract=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,3);stage(shell('working',`<div class="memory-instruction-banner">Which object was missing?</div><div class="sequence-display">${shown.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div id="work-options" class="memory-items"></div>`));const box=$('work-options');S.active=true;shuffle([missing,...distract]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x===missing){b.classList.add('good');complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
+function count(){begin((p,t)=>{
+  const age=clamp(Number(S.age)||0,0,4);
+  const n=clamp(Math.min(p.count-1,[2,3,3,4,4][age]),2,4);
+  const types=drawUnique(ICONS,n,`count:${S.age}`);
+  const counts=types.map((_,i)=>2+((S.level+i+S.age)%([2,2,3,3,3][age])));
+  const pool=shuffle(types.flatMap((x,i)=>Array(counts[i]).fill(x)));
+
+  stage(shell('count',`<div class="memory-instruction-banner">Remember how many times each object appears.</div><div class="memory-items">${pool.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div><div class="memory-progress">${types.length} objects to remember</div>`));
+
+  S.timer=setTimeout(()=>{
+    if(t!==S.memoryRoundToken)return;
+    stage(shell('count',`<div class="memory-instruction-banner">Choose the correct count for each object.</div><div id="count-list" class="count-list"></div><div class="memory-progress" id="count-progress">0 / ${types.length} completed</div>`));
+    const box=$('count-list');
+    let done=0;
+    let finishing=false;
+    S.active=true;
+
+    const finish=()=>{
+      if(finishing||!S.active)return;
+      finishing=true;
+      S.active=false;
+      clear();
+      const prog=$('count-progress');
+      if(prog)prog.textContent=`✓ ${types.length} / ${types.length} completed`;
+      const banner=document.querySelector('#game-stage .memory-instruction-banner');
+      if(banner)banner.textContent='Great job! All counts are correct.';
+      // Give the player a brief confirmation, then use the same central
+      // completion/next-activity flow as every other Memory Lab activity.
+      S.timer=setTimeout(()=>{
+        S.active=true;
+        complete();
+      },450);
+    };
+
+    types.forEach((icon,i)=>{
+      const row=document.createElement('div');
+      row.className='count-row';
+      row.innerHTML=`<span class="count-object">${icon}</span><div class="count-choices"></div>`;
+      const cb=row.querySelector('.count-choices'),correct=counts[i];
+      const vals=shuffle([...new Set([correct,1,2,3,4,5,6])]).slice(0,4);
+      if(!vals.includes(correct))vals[0]=correct;
+      shuffle(vals).forEach(v=>{
+        const b=optionButton(String(v),'word-option');
+        b.onclick=()=>{
+          if(!S.active||finishing||b.disabled)return;
+          if(v!==correct){
+            b.classList.add('bad');
+            fail();
+            return;
+          }
+          b.classList.add('good','selected');
+          // Once a row is answered, lock the entire row so the player has a
+          // clear visual indication that this object is finished.
+          cb.querySelectorAll('button').forEach(x=>x.disabled=true);
+          row.classList.add('count-complete');
+          done++;
+          const prog=$('count-progress');
+          if(prog)prog.textContent=`${done} / ${types.length} completed`;
+          if(done===types.length)finish();
+        };
+        cb.appendChild(b);
+      });
+      box.appendChild(row);
+    });
+    timeout(p.response*1.25);
+  },p.show);
+})}
 function change(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`change:${S.age}`),idx=Math.floor(a.length/2),changed=shuffle(ICONS.filter(x=>!a.includes(x)))[0],b=[...a];b[idx]=changed;stage(shell('change',`<div class="memory-instruction-banner">Study Scene A carefully.</div><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('change',`<div class="memory-instruction-banner">Which object changed?</div><div class="change-scenes"><div><small>SCENE A</small><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div><div><small>SCENE B</small><div class="memory-items">${b.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div></div><div id="change-options" class="memory-items"></div>`));const box=$('change-options');S.active=true;shuffle([a[idx],changed,...shuffle(ICONS.filter(x=>!a.includes(x)&&x!==changed)).slice(0,2)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x===changed){b.classList.add('good');complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
 function order(){begin((p,t)=>{
   const age=clamp(Number(S.age)||0,0,4), level=clamp(Number(S.level)||1,1,20);

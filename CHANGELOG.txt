@@ -17,3 +17,16 @@ DESIGN PRINCIPLE
 The 3–5 experience should feel playful and achievable: enough time to notice and encode, but not so much that the child is forced to sit through a long countdown after they already know the answer.
 
 Validated with Node.js syntax check.
+
+
+MindQuest Memory Lab — v8.39
+
+COUNT & RECALL COMPLETION FIX
+
+- Correct answers now visibly mark the entire object row as complete.
+- A completion counter shows progress (for example, 3 / 3 completed).
+- After all counts are correct, the activity gives a brief confirmation and reliably enters the central Memory Lab completion flow so the next activity loads.
+- Wrong answers still consume an attempt and restart the activity as intended.
+- Added a cache-busting script version to ensure the corrected Memory Lab JavaScript is loaded after deployment.
+
+Validated with Node.js syntax check.
