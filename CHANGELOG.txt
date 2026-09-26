@@ -32,3 +32,15 @@ PERMANENT PACING / COGNITIVE-LOAD PASS
 
 5. Design principle
 Memory Lab is a game for cognitive development, not a speed test. Difficulty should rise gradually through level progression and cognitive complexity while preserving enough time and mental space for children to observe, encode, recall and enjoy the activity.
+
+v8.37 — Order Builder Cognitive Load Fix
+- Reduced Order Builder sequence lengths by age and mastery level.
+- Ages 3–5: 2 items initially, rising to 3 only later.
+- Ages 6–8: 3 items initially, rising to 4 later.
+- Ages 9–11: 3 items initially, rising to 4–5 later.
+- Ages 12–14: 4 items initially, rising gradually to 5–6.
+- Ages 15–18: 4 items initially, rising gradually to 5–6.
+- Added a dedicated, age-aware memorisation countdown before recall.
+- Increased response time proportionally to sequence length.
+- Added response progress indicator.
+- Disabled already-selected answer buttons to make ordering clearer.

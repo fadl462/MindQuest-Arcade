@@ -459,7 +459,45 @@ function category(){begin((p,t)=>{const age=clamp(Number(S.age)||0,0,4);const gr
 function count(){begin((p,t)=>{const age=clamp(Number(S.age)||0,0,4);const n=clamp(Math.min(p.count-1,[2,3,3,4,4][age]),2,4),types=drawUnique(ICONS,n,`count:${S.age}`),counts=types.map((_,i)=>2+((S.level+i+S.age)%([2,2,3,3,3][age])));const pool=shuffle(types.flatMap((x,i)=>Array(counts[i]).fill(x)));stage(shell('count',`<div class="memory-instruction-banner">Remember how many times each object appears.</div><div class="memory-items">${pool.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('count',`<div class="memory-instruction-banner">Choose the correct count for each object.</div><div id="count-list" class="count-list"></div>`));const box=$('count-list');let done=0;S.active=true;types.forEach((icon,i)=>{const row=document.createElement('div');row.className='count-row';row.innerHTML=`<span class="count-object">${icon}</span><div class="count-choices"></div>`;const cb=row.querySelector('.count-choices'),correct=counts[i];const vals=shuffle([...new Set([correct,1,2,3,4,5,6])]).slice(0,4);if(!vals.includes(correct))vals[0]=correct;shuffle(vals).forEach(v=>{const b=optionButton(String(v),'word-option');b.onclick=()=>{if(!S.active||b.disabled)return;if(v!==correct){b.classList.add('bad');fail();return}b.classList.add('good','selected');b.disabled=true;done++;if(done===types.length)complete()};cb.appendChild(b)});box.appendChild(row)});timeout(p.response*1.25)},p.show)})}
 function working(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`working:${S.age}`),missingIndex=Math.floor(a.length/2),missing=a[missingIndex];stage(shell('working',`<div class="memory-instruction-banner">Study the sequence. One item will disappear.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;const shown=a.map((x,i)=>i===missingIndex?'❓':x);const distract=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,3);stage(shell('working',`<div class="memory-instruction-banner">Which object was missing?</div><div class="sequence-display">${shown.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div id="work-options" class="memory-items"></div>`));const box=$('work-options');S.active=true;shuffle([missing,...distract]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x===missing){b.classList.add('good');complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
 function change(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`change:${S.age}`),idx=Math.floor(a.length/2),changed=shuffle(ICONS.filter(x=>!a.includes(x)))[0],b=[...a];b[idx]=changed;stage(shell('change',`<div class="memory-instruction-banner">Study Scene A carefully.</div><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('change',`<div class="memory-instruction-banner">Which object changed?</div><div class="change-scenes"><div><small>SCENE A</small><div class="memory-items">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div><div><small>SCENE B</small><div class="memory-items">${b.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div></div></div><div id="change-options" class="memory-items"></div>`));const box=$('change-options');S.active=true;shuffle([a[idx],changed,...shuffle(ICONS.filter(x=>!a.includes(x)&&x!==changed)).slice(0,2)]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x===changed){b.classList.add('good');complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
-function order(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`order:${S.age}`);stage(shell('order',`<div class="memory-instruction-banner">Remember this left-to-right order.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('order',`<div class="memory-instruction-banner">Tap the objects from first to last.</div><div id="order-options" class="memory-items"></div><div class="picked-sequence" id="order-picked">Your order: <span>—</span></div>`));const box=$('order-options'),picked=$('order-picked').querySelector('span');let i=0;S.active=true;shuffle([...a]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function order(){begin((p,t)=>{
+  const age=clamp(Number(S.age)||0,0,4), level=clamp(Number(S.level)||1,1,20);
+  // Order Builder is about sequencing, not brute-force memorisation. Keep the
+  // sequence compact and let complexity grow gradually with age and mastery.
+  const countByAge=[
+    level<=10?2:3,
+    level<=10?3:level<=18?4:4,
+    level<=8?3:level<=16?4:5,
+    level<=6?4:level<=14?5:6,
+    level<=5?4:level<=12?5:level<=18?6:6
+  ];
+  const len=countByAge[age];
+  const a=drawUnique(ICONS,len,`order:${age}`);
+  const studyBase=[11000,10500,10500,10000,9500][age];
+  const studyPerItem=[1800,1750,1700,1650,1600][age];
+  const studyMs=clamp(studyBase+Math.max(0,len-2)*studyPerItem,11000,22000);
+  const responseBase=[30000,30000,31000,32000,34000][age];
+  const responsePerItem=[3000,3000,3000,3000,3000][age];
+  const responseMs=clamp(responseBase+Math.max(0,len-2)*responsePerItem,30000,60000);
+
+  stage(shell('order',`<div class="memory-instruction-banner"><strong>MEMORIZE</strong> — Study the left-to-right order carefully. The board will stay visible until the timer finishes.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div><div class="memory-progress" id="order-study-progress">Memorize now • ${(studyMs/1000).toFixed(1)} sec remaining</div>`));
+  let remaining=studyMs;
+  const update=()=>{
+    if(t!==S.memoryRoundToken)return;
+    remaining=Math.max(0,remaining-100);
+    const el=$('order-study-progress');
+    if(el)el.textContent=remaining>0?`Memorize now • ${(remaining/1000).toFixed(1)} sec remaining`:'Get ready…';
+    if(remaining>0)S.orderStudyTicker=setTimeout(update,100);
+  };
+  clearTimeout(S.orderStudyTicker);S.orderStudyTicker=setTimeout(update,100);
+  S.timer=setTimeout(()=>{
+    if(t!==S.memoryRoundToken)return;
+    clearTimeout(S.orderStudyTicker);
+    stage(shell('order',`<div class="memory-instruction-banner"><strong>YOUR TURN</strong> — Tap the objects from first to last.</div><div id="order-options" class="memory-items"></div><div class="picked-sequence" id="order-picked">Your order: <span>—</span></div><div class="memory-progress" id="order-response-progress">0 / ${a.length} placed</div>`));
+    const box=$('order-options'),picked=$('order-picked').querySelector('span');let i=0;S.active=true;
+    shuffle([...a]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active||b.disabled)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('good','selected');b.disabled=true;picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;const prog=$('order-response-progress');if(prog)prog.textContent=`${i} / ${a.length} placed`;if(i===a.length)complete()};box.appendChild(b)});
+    timeout(responseMs);
+  },studyMs);
+})}
 function dual(){begin((p,t)=>{
   const n=clamp(Math.floor(p.count/2),2,4),
     a=drawUnique(ICONS,n,`dual-a:${S.age}`),
