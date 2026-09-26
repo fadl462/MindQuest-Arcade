@@ -1,9 +1,34 @@
-MindQuest Memory Lab v8.35 — Direction Memory Timing Fix
+MindQuest Memory Lab — v8.36
 
-- Direction Memory now uses an explicit age-aware study phase instead of the generic short profile timer.
-- Study time scales with age and sequence length: 8.5–23 seconds.
-- Response time scales with age and sequence length: 30–65 seconds.
-- Direction sequence remains visible until the study countdown finishes.
-- Added visible study countdown and response progress.
-- Direction item counts are age/level aware and remain bounded.
-- Preserved existing Memory Lab architecture and v8.34 pacing/load fixes.
+PERMANENT PACING / COGNITIVE-LOAD PASS
+
+1. Direction Memory
+- Reduced sequence lengths across every age band.
+- 3–5 now uses 2–3 directions rather than long sequences.
+- Older groups scale gradually up to 7 directions.
+- Study and response timing remains age-aware.
+
+2. Grid Recall
+- Reworked completely with an age-aware item cap.
+- 3–5 starts at 2–3 highlighted locations.
+- Older groups scale gradually to a maximum of 7 locations.
+- Grid size is capped at 4×4 and unlocks gradually.
+- Added a dedicated memorisation countdown before recall.
+- Added longer study time and a clear response phase.
+
+3. All standard Memory Lab activities
+- Rebalanced the 20-level difficulty curve for all five age bands.
+- Reduced excessive item loads.
+- Increased study windows so difficulty does not come primarily from speed.
+- Added additional study/response time automatically when item count increases.
+- Response windows are capped so activities remain purposeful rather than slow.
+
+4. Other activities
+- Feature Memory now has age-aware item caps.
+- Location Memory has smaller placement loads, especially for ages 3–5.
+- Count & Recall now uses fewer object types and bounded repetitions.
+- Category Recall uses a smaller target set for ages 3–5.
+- Existing Reverse, Dual-Sequence, Interference and Switchback age-aware pacing is retained.
+
+5. Design principle
+Memory Lab is a game for cognitive development, not a speed test. Difficulty should rise gradually through level progression and cognitive complexity while preserving enough time and mental space for children to observe, encode, recall and enjoy the activity.
