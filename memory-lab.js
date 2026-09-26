@@ -274,7 +274,63 @@ function optionButton(text,cls='choice'){const b=document.createElement('button'
 function visual(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`visual:${S.age}`);const distract=shuffle(ICONS.filter(x=>!a.includes(x))).slice(0,clamp(p.count,3,7));stage(shell('visual',`<div class="memory-instruction-banner">Study these objects carefully.</div><div class="memory-items memory-study">${a.map(x=>`<div class="memory-item">${x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('visual',`<div class="memory-instruction-banner">Select every object you remember.</div><div id="memory-choices" class="memory-items"></div><div class="memory-progress" id="memory-progress">0 / ${a.length} selected</div>`,'Select every object you saw.'));const box=$('memory-choices');let hit=0;S.active=true;shuffle([...a,...distract]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active||b.disabled)return;if(a.includes(x)){b.classList.add('good','selected');b.disabled=true;hit++;$('memory-progress').textContent=`${hit} / ${a.length} selected`;if(hit===a.length)complete()}else{b.classList.add('bad');fail()}};box.appendChild(b)});timeout(p.response)},p.show)})}
 function sequence(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`sequence:${S.age}`);stage(shell('sequence',`<div class="memory-instruction-banner">Watch the sequence from left to right.</div><div class="sequence-display">${a.map((x,i)=>`<span class="sequence-token" data-i="${i}">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('sequence',`<div class="memory-instruction-banner">Tap the objects in the same order.</div><div id="seq-options" class="memory-items"></div><div class="picked-sequence" id="seq-picked">Your sequence: <span>—</span></div>`));const box=$('seq-options'),picked=$('seq-picked').querySelector('span');let i=0;S.active=true;shuffle([...new Set(a)]).forEach(x=>{const b=optionButton(x);b.dataset.value=x;b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
 function direction(){begin((p,t)=>{const len=clamp(p.count,3,8);const a=drawUnique(ARROWS,len,`direction:${S.age}`);stage(shell('direction',`<div class="memory-instruction-banner">Watch the direction sequence.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token direction-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('direction',`<div class="memory-instruction-banner">Repeat the directions exactly.</div><div id="dir-options" class="memory-items direction-options"></div><div class="picked-sequence" id="dir-picked">Your sequence: <span>—</span></div>`));const box=$('dir-options'),picked=$('dir-picked').querySelector('span');let i=0;S.active=true;ARROWS.forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==a[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===a.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
-function reverse(){begin((p,t)=>{const a=drawUnique(ICONS,p.count,`reverse:${S.age}`),target=[...a].reverse();stage(shell('reverse',`<div class="memory-instruction-banner">Study the sequence, then reproduce it backwards.</div><div class="sequence-display">${a.map(x=>`<span class="sequence-token">${x}</span>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('reverse',`<div class="memory-instruction-banner">Start with the last object.</div><div id="rev-options" class="memory-items"></div><div class="picked-sequence" id="rev-picked">Your reverse sequence: <span>—</span></div>`));const box=$('rev-options'),picked=$('rev-picked').querySelector('span');let i=0;S.active=true;shuffle([...a]).forEach(x=>{const b=optionButton(x);b.onclick=()=>{if(!S.active)return;if(x!==target[i]){b.classList.add('bad');fail();return}b.classList.add('selected');picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;i++;if(i===target.length)complete()};box.appendChild(b)});timeout(p.response)},p.show)})}
+function reverse(){begin((p,t)=>{
+  const a=drawUnique(ICONS,p.count,`reverse:${S.age}`),target=[...a].reverse();
+
+  // Reverse Recall needs a substantially longer, age-aware study phase than the
+  // generic Memory Lab timer. The player must have enough time to encode both
+  // the items and their original order before being asked to work backwards.
+  const age=clamp(Number(S.age)||0,0,4);
+  const reverseStudyBase=[11000,12500,14000,15500,17000][age];
+  const reverseStudyPerItem=[1500,1600,1800,2000,2200][age];
+  const studyMs=clamp(reverseStudyBase+(a.length-3)*reverseStudyPerItem,11000,32000);
+  const responseBase=[26000,28000,30000,32000,34000][age];
+  const responsePerItem=[2500,2600,2800,3000,3200][age];
+  const responseMs=Math.max(30000,Math.min(50000,responseBase+a.length*responsePerItem));
+  let remaining=studyMs;
+
+  stage(shell('reverse',`
+    <div class="memory-instruction-banner"><strong>MEMORIZE NOW</strong> — Study the sequence from left to right. You will reproduce it from the last item to the first.</div>
+    <div class="sequence-display reverse-study-sequence">${a.map((x,i)=>`<span class="sequence-token" data-i="${i}">${x}</span>`).join('')}</div>
+    <div class="memory-progress reverse-study-progress" id="reverse-study-progress">Memorize now • ${(studyMs/1000).toFixed(1)} sec remaining</div>
+  `));
+
+  const update=()=>{
+    if(t!==S.memoryRoundToken)return;
+    remaining=Math.max(0,remaining-100);
+    const el=$('reverse-study-progress');
+    if(el)el.textContent=remaining>0?`Memorize now • ${(remaining/1000).toFixed(1)} sec remaining`:'Get ready…';
+    if(remaining>0)S.studyTicker=setTimeout(update,100);
+  };
+  S.studyTicker=setTimeout(update,100);
+
+  S.timer=setTimeout(()=>{
+    if(t!==S.memoryRoundToken)return;
+    clearTimeout(S.studyTicker);
+    stage(shell('reverse',`
+      <div class="memory-instruction-banner"><strong>YOUR TURN</strong> — Start with the last object and work backwards, one object at a time.</div>
+      <div id="rev-options" class="memory-items reverse-options"></div>
+      <div class="picked-sequence" id="rev-picked">Your reverse sequence: <span>—</span></div>
+    `));
+    const box=$('rev-options'),picked=$('rev-picked').querySelector('span');
+    let i=0;
+    S.active=true;
+    shuffle([...a]).forEach(x=>{
+      const b=optionButton(x);
+      b.onclick=()=>{
+        if(!S.active||b.disabled)return;
+        if(x!==target[i]){b.classList.add('bad');fail();return}
+        b.classList.add('good','selected');
+        b.disabled=true;
+        picked.textContent=(picked.textContent==='—'?'':picked.textContent+' ')+x;
+        i++;
+        if(i===target.length)complete();
+      };
+      box.appendChild(b);
+    });
+    timeout(responseMs);
+  },studyMs);
+})}
 function grid(){begin((p,t)=>{const size=memoryGridSize();const slots=size*size;const count=clamp(p.count,2,Math.min(10,slots-1));const cells=shuffle([...Array(slots).keys()]).slice(0,count);stage(shell('grid',`<div class="memory-instruction-banner">Memorize the highlighted cells.</div><div class="memory-board" style="--grid:${size}">${[...Array(slots)].map((_,i)=>`<div class="memory-cell ${cells.includes(i)?'placed':''}">${cells.includes(i)?'●':''}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('grid',`<div class="memory-instruction-banner">Tap every highlighted location.</div><div id="grid-recall" class="memory-board" style="--grid:${size}"></div><div class="memory-progress" id="grid-progress">0 / ${cells.length} found</div>`));const box=$('grid-recall');let hit=0;S.active=true;for(let i=0;i<slots;i++){const b=optionButton('','memory-cell recall-cell');b.setAttribute('aria-label',`Grid cell ${i+1}`);b.onclick=()=>{if(!S.active||b.disabled)return;if(!cells.includes(i)){b.classList.add('bad');fail();return}b.classList.add('good','placed');b.disabled=true;b.textContent='●';hit++;$('grid-progress').textContent=`${hit} / ${cells.length} found`;if(hit===cells.length)complete()};box.appendChild(b)}timeout(p.response)},p.show)})}
 function pairs(){begin((p,t)=>{const pairsCount=clamp(2+Math.floor((p.count-2)/2),2,5);const faces=drawUnique(ICONS,pairsCount,`pairs:${S.age}`);const cards=shuffle(faces.flatMap((x,i)=>[{x,id:i*2},{x,id:i*2+1}]));stage(shell('pairs',`<div class="memory-instruction-banner">Study the matching pairs.</div><div class="pair-grid" style="grid-template-columns:repeat(${pairsCount<4?2:4},minmax(0,1fr))">${cards.map(c=>`<div class="pair-card pair-study">${c.x}</div>`).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('pairs',`<div class="memory-instruction-banner">Turn over two cards at a time and find all pairs.</div><div id="pair-game" class="pair-grid" style="grid-template-columns:repeat(${pairsCount<4?2:4},minmax(0,1fr))"></div><div class="memory-progress" id="pair-progress">0 / ${pairsCount} pairs</div>`));const box=$('pair-game');let first=null,lock=false,matches=0;S.active=true;cards.forEach((c,idx)=>{const b=optionButton('?','pair-card');b.dataset.face=c.x;b.dataset.idx=idx;b.onclick=()=>{if(!S.active||lock||b.classList.contains('flipped')||b.classList.contains('matched'))return;b.classList.add('flipped');b.textContent=c.x;if(!first){first=b;return}if(first.dataset.face===b.dataset.face){first.classList.add('matched');b.classList.add('matched');first=null;matches++;$('pair-progress').textContent=`${matches} / ${pairsCount} pairs`;if(matches===pairsCount)complete()}else{lock=true;const prev=first;setTimeout(()=>{if(S.active){prev.classList.remove('flipped');prev.textContent='?';b.classList.remove('flipped');b.textContent='?'}first=null;lock=false},550)}};box.appendChild(b)});timeout(Math.max(p.response*1.7,12000))},p.show)})}
 function location(){begin((p,t)=>{const size=LOCATION_GRID[S.age]||3;const slots=size*size,count=clamp(Math.min(p.count,Math.floor(slots*.55)),3,Math.min(8,slots-1));const icons=drawUnique(ICONS,count,`location:${S.age}`),positions=shuffle([...Array(slots).keys()]).slice(0,count),map=positions.map((slot,i)=>({slot,icon:icons[i]}));stage(shell('location',`<div class="memory-instruction-banner">Remember each object and where it appears.</div><div class="memory-board" style="--grid:${size}">${[...Array(slots)].map((_,i)=>{const m=map.find(x=>x.slot===i);return `<div class="memory-cell">${m?m.icon:''}</div>`}).join('')}</div>`));S.timer=setTimeout(()=>{if(t!==S.memoryRoundToken)return;stage(shell('location',`<div class="memory-instruction-banner">Select an object, then tap its original location.</div><div id="loc-icons" class="location-icons" aria-label="Objects to place"></div><div class="memory-progress location-progress-inline" id="loc-progress">0 / ${map.length} placed</div><div id="loc-grid" class="memory-board" style="--grid:${size}" aria-label="Location memory board"></div>`));const ib=$('loc-icons'),gb=$('loc-grid');let selected=null,placed=0;S.active=true;shuffle(icons).forEach(icon=>{const b=optionButton(icon,'location-icon');b.dataset.icon=icon;b.setAttribute('aria-label',`Select ${icon}`);b.onclick=()=>{if(!S.active||b.disabled)return;selected=icon;ib.querySelectorAll('.location-icon').forEach(x=>x.classList.remove('selected'));b.classList.add('selected')};ib.appendChild(b)});for(let i=0;i<slots;i++){const b=optionButton('','memory-cell recall-cell');b.dataset.slot=String(i);b.setAttribute('aria-label',`Grid position ${i+1}`);b.onclick=()=>{if(!S.active||!selected||b.disabled)return;const slot=Number(b.dataset.slot),expected=map.find(x=>x.slot===slot);if(!expected||expected.icon!==selected){b.classList.add('bad');fail();return}b.classList.add('good','placed');b.textContent=selected;b.disabled=true;const src=[...ib.children].find(x=>x.dataset.icon===selected);if(src){src.disabled=true;src.classList.remove('selected');src.classList.add('used')}selected=null;placed++;$('loc-progress').textContent=`${placed} / ${map.length} placed`;if(placed===map.length)complete()};gb.appendChild(b)}timeout(p.response*1.25)},p.show)})}
@@ -448,10 +504,22 @@ function runType(type){S.memoryCurrentType=type;({visual,sequence,grid,pairs,loc
 function activityStudyMs(type,p){
   if(type==='dual'){const n=clamp(Math.floor(p.count/2),2,4);return clamp(15000+n*2500,17500,25000)}
   if(type==='interference'){const n=clamp(p.count,3,7);return clamp(14000+n*1400,16000,22000)}
+  if(type==='reverse'){
+    const age=clamp(Number(S.age)||0,0,4);
+    const base=[11000,12500,14000,15500,17000][age];
+    const perItem=[1500,1600,1800,2000,2200][age];
+    return clamp(base+(p.count-3)*perItem,11000,32000);
+  }
   return p.show;
 }
 function activityResponseMs(type,p){
   if(type==='dual'||type==='interference')return Math.max(30000,p.response*1.8);
+  if(type==='reverse'){
+    const age=clamp(Number(S.age)||0,0,4);
+    const base=[26000,28000,30000,32000,34000][age];
+    const perItem=[2500,2600,2800,3000,3200][age];
+    return Math.max(30000,Math.min(50000,base+p.count*perItem));
+  }
   return p.response;
 }
 function instructions(type){const i=INFO[type]||INFO.visual,p=profile(),studyMs=activityStudyMs(type,p),responseMs=activityResponseMs(type,p);clear();S.active=false;stage(`<div class="memory-instruction-screen"><div class="instruction-icon">🧠</div><span class="memory-kind">${i[2]}</span><div class="instruction-activity">Activity ${(S.memoryActivity||0)+1} of 4</div><h2>${i[0]}</h2><p class="instruction-purpose">${i[1]}</p><div class="instruction-rule"><strong>How to play</strong><p>${RULES[type]||RULES.visual}</p></div><div class="instruction-timing"><span>⏱️ Study: ${(studyMs/1000).toFixed(1)} sec</span><span>🎯 Response: ${Math.round(responseMs/1000)} sec</span></div><button id="start-memory-activity" type="button" class="primary-btn instruction-start">Start Activity →</button></div>`);$('start-memory-activity').onclick=()=>{S.memoryAttempts=0;S.memoryCurrentType=type;runType(type)}}

@@ -7,3 +7,11 @@ Interference Recall memorisation/timing fix:
 - Added a dedicated response window of at least 30 seconds.
 - Updated the Memory Lab instruction screen so Dual-Sequence and Interference Recall show their actual extended study/response timings instead of the generic profile timer.
 - Bumped memory-lab.js cache version to 8.32 in index.html.
+
+v8.33 — Reverse Recall timing fix
+- Reworked Reverse Recall with a dedicated age-aware memorisation window for all five age categories.
+- Added a visible study countdown so the player knows exactly how much memorisation time remains.
+- Reverse Recall study time now scales with both age category and sequence length, with a 11–32 second range.
+- Reverse Recall response time now scales with age and sequence length, with a 30–50 second range.
+- The response phase explicitly tells the player to start with the last object and work backwards.
+- Updated the instruction-screen timing calculation so the displayed Reverse Recall timings match the actual activity timers.
